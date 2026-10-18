@@ -14,7 +14,7 @@ Este projeto é uma aplicação Node.js utilizando o framework Express e o motor
 ### 1. Clone o repositório
 ```sh
 git clone <url-do-repositorio>
-cd template-express-ejs
+cd memorium
 ```
 
 ### 2. Instale as dependências
