@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <%- include('../../partials/head', { titulo: 'Cadastrar Assinaturas' }) %>
+  <%- include('../../partials/formataçãoFormulario') %>
+
+<body class="bg-light">
+
+  <%- include('../../partials/header') %>
+
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+
+    <div class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="assinaturaFormTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-calendar2-check-fill"></i></span>
+            <div>
+              <h1 id="assinaturaFormTitle">Cadastrar Assinatura</h1>
+              <p>Escolha o plano e a duração da assinatura</p>
+            </div>
+          </header>
+
+          <form class="config-form" action="/Assinatura/cadastrarAssinatura" method="post">
+            <% if (mensagem) { %>
+              <div class="alert alert-<%= mensagem.tipo === 'success' ? 'success' : 'danger' %> config-alert" role="alert">
+                <% if (mensagem.titulo) { %><strong><%= mensagem.titulo %></strong><br><% } %>
+                <span><%= mensagem.valor %></span>
+              </div>
+            <% } %>
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-calendar-week-fill"></i></span>
+              <div>
+                <label for="dias">Dias de assinatura</label>
+                <input type="number" class="form-control" id="dias" name="dias" min="30" max="365" placeholder="30 a 365" required>
+                <div class="config-help">Informe o período em dias (mínimo 30, máximo 365).</div>
+              </div>
+            </div>
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-credit-card-fill"></i></span>
+              <div>
+                <label for="plano">Plano</label>
+                <select class="form-select" id="plano" name="plano" required>
+                  <option value="" disabled selected>Selecione um plano</option>
+                  <% planos.forEach(plano => { %>
+                    <option value="<%= plano.id %>"><%= plano.nome %></option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="config-footer">
+              <button type="submit" class="btn config-save"><i class="bi bi-floppy-fill me-2" aria-hidden="true"></i>Salvar assinatura</button>
+              <a href="/dashboard" class="btn config-secondary">Voltar</a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+</body>
+</html>

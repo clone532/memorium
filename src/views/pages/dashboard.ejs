@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <%- include('../partials/head') %>
+
+  <style>
+        body {
+            background-color: #eee1f4 !important;
+            background-image: url("/IMGS/gallery/background.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Georgia, serif;
+        }
+
+        .dashboard {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+        }
+
+        .conteudo {
+            text-align: center;
+            margin-top: -20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            font-family: Arial, sans-serif;
+            font-size: 58px;
+            font-weight: 900;
+            color: #7137c5;
+            letter-spacing: -2px;
+        }
+
+        .subtitulo {
+            color: #7137c5;
+            font-size: 27px;
+            font-style: italic;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        .btn-memorium {
+            display: block;
+            width: 245px;
+            height: 55px;
+            margin: 15px auto;
+            border: none;
+            border-radius: 15px;
+            background: #7a3dcc;
+            color: white;
+            font-family: Georgia, serif;
+            font-size: 17px;
+            text-decoration: none;
+            line-height: 55px;
+            transition: 0.3s;
+        }
+
+        .btn-memorium:hover {
+            background: #6127aa;
+            color: white;
+            transform: scale(1.03);
+        }
+
+        @media (max-width: 768px) {
+            .logo {font-size: 45px;}
+            .subtitulo {font-size: 23px;}
+            .btn-memorium {width: 220px;}
+        }
+    </style>
+
+<body class="bg-light">
+  <%- include('../partials/header') %>
+  <div class="d-flex">
+    <%- include('../partials/sidebar') %>
+    <main class="dashboard">
+        <div class="conteudo">
+            <h1 class="logo">
+                MEMORIUM
+            </h1>
+            <p class="subtitulo">
+                criando memorias
+            </p>
+            <a
+                href="/mural/cadastrar"
+                class="btn-memorium">
+
+                Criar primeira lembrança
+            </a>
+            <a
+                href="/guardiao/cadastrar"
+                class="btn-memorium">
+                Definir Guardião
+            </a>
+        </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

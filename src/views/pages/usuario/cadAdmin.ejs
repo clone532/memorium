@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head') %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<body class="bg-light">
+
+  <%- include('../../partials/header') %>
+
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+
+    <main class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="cadastroUsuarioTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-plus-fill"></i></span>
+            <div>
+              <h1 id="cadastroUsuarioTitle"><%= titulo %></h1>
+              <p>Preencha os dados para cadastrar um usuário</p>
+            </div>
+          </header>
+
+          <form class="config-form" action="/usuario/cadAdmin" method="post">
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+              <div>
+                <label for="nome">Nome</label>
+                <input class="form-control" type="text" name="nome" id="nome" required>
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+              <div>
+                <label for="email">Email</label>
+                <input class="form-control" type="email" name="email" id="email" required>
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
+              <div>
+                <label for="senha">Senha</label>
+                <input class="form-control" type="password" name="senha" id="senha" required>
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-calendar-event-fill"></i></span>
+              <div>
+                <label for="dataNasc">Data de nascimento</label>
+                <input class="form-control" type="date" name="dataNasc" id="dataNasc" required>
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-badge-fill"></i></span>
+              <div>
+                <label for="tipo">Tipo</label>
+                <select name="tipo" id="tipo" class="form-select" required>
+                  <option value="USUARIO">Usuário</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-footer">
+              <button type="submit" class="btn config-save"><i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>Cadastrar</button>
+              <a href="/usuario/listar" class="btn config-secondary">Voltar</a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <% if (mensagem) { %>
+
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+
+  <% } %>
+</body>
+
+</html>

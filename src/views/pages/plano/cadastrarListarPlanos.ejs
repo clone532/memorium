@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<%- include('../../partials/head', { titulo: 'Planos' }) %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .plan-management-page { width: 100%; overflow: hidden; border: 1px solid rgba(255,255,255,.9); border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgba(70,42,105,.07); }
+    .plan-management-page .config-page,
+    .plan-management-page .records-page { width: 100%; max-width: none; min-height: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .plan-management-page .config-page { overflow: visible; }
+    .plan-management-page .records-page { border-top: 1px solid #eeeaf8; }
+    .records-page { display: flex; flex-direction: column; width: 100%; max-width: none; min-height: 100%; margin: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.9); border-radius: 12px; background: rgba(255,255,255,.78); box-shadow: 0 8px 24px rgba(70,42,105,.07); }
+    .records-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 16px; border-bottom: 1px solid #eeeaf8; }
+    .records-heading { display: flex; align-items: center; gap: 12px; }
+    .records-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 8px; background: #f0edff; color: #7047c5; font-size: 17px; }
+    .records-heading h2 { margin: 0; color: #27243b; font-size: 20px; font-weight: 600; }
+    .records-heading p { margin: 3px 0 0; color: #777487; font-size: 12px; }
+    .records-search { display: flex; align-items: center; gap: 8px; width: min(300px, 45%); padding: 0 11px; border: 1px solid #e9e5f7; border-radius: 20px; background: #fbfaff; color: #7956ba; }
+    .records-search input { width: 100%; min-width: 0; padding: 8px 0; border: 0; outline: 0; background: transparent; color: #332d48; font-size: 12px; }
+    .records-table-wrap { flex: 1; overflow: auto; margin: 8px 12px 0; padding: 0; border: 1px solid #e9e5f7; border-radius: 10px; background: #fff; }
+    .records-table { margin: 0; color: #343146; font-size: 13px; }
+    .records-table thead th { padding: 9px 12px; border: 0; background: #f0edff; color: #48415f; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .records-table thead th:first-child { border-radius: 7px 0 0 7px; }
+    .records-table thead th:last-child { border-radius: 0 7px 7px 0; }
+    .records-table tbody td { padding: 7px 12px; border-color: #eeeaf7; vertical-align: middle; }
+    .records-table tbody tr:hover { background: #faf9ff; }
+    .records-table td:first-child { width: 48px; text-align: center; color: #716b83; }
+    .record-actions { display: flex; gap: 6px; white-space: nowrap; }
+    .record-actions .btn { min-width: 76px; padding: 4px 9px; border: 0; border-radius: 5px; color: #fff; font-size: 11px; }
+    .btn-record-edit { background: #6541bd; }
+    .btn-record-edit:hover { background: #52319e; color: #fff; }
+    .btn-record-delete { background: #e53d5c; }
+    .btn-record-delete:hover { background: #c72d49; color: #fff; }
+    .empty-records { padding: 24px !important; color: #777487; text-align: center; }
+    .records-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; margin: 8px; padding: 7px 12px; border-radius: 8px; background: #f5f3fc; }
+    .records-summary { margin: 0; color: #666176; font-size: 11px; }
+    .records-pagination { display: flex; align-items: center; gap: 5px; }
+    .records-pagination button { min-width: 28px; height: 28px; padding: 0 8px; border: 0; border-radius: 50%; background: transparent; color: #665d7b; font-size: 11px; }
+    .records-pagination button[aria-current="page"] { background: #7047c5; color: #fff; }
+    .records-pagination button:disabled { opacity: .4; }
+    @media (max-width: 640px) { .records-toolbar { align-items: stretch; flex-direction: column; gap: 12px; } .records-search { width: 100%; } .records-footer { align-items: flex-start; flex-direction: column; } .records-table { min-width: 650px; } }
+</style>
+
+<body class="bg-light">
+
+    <%- include('../../partials/header') %>
+
+    <div class="d-flex">
+        <%- include('../../partials/sidebar') %>
+
+        <div class="content w-100">
+            <% const planoParaEditar = typeof planoEditar !== 'undefined' ? planoEditar : null; %>
+            <section class="plan-management-page" aria-label="Gerenciar planos">
+            <div class="container-fluid p-0">
+                <section class="config-page" aria-labelledby="planoFormTitle">
+                    <header class="config-header">
+                        <span class="config-icon" aria-hidden="true"><i class="bi bi-credit-card-fill"></i></span>
+                        <div>
+                            <h1 id="planoFormTitle"><%= planoParaEditar ? 'Editar Plano' : 'Cadastro de Planos' %></h1>
+                            <p>Defina o valor e o armazenamento do plano</p>
+                        </div>
+                    </header>
+                    <form class="config-form" action="<%= planoParaEditar ? ('/plano/editar/' + planoParaEditar.id) : '/plano/cadastrarListarPlanos' %>" method="post">
+                        <div class="config-field">
+                            <span class="field-icon" aria-hidden="true"><i class="bi bi-card-text"></i></span>
+                            <div>
+                                <label for="nomePlano">Nome do Plano</label>
+                                <input type="text" class="form-control" id="nomePlano" name="nomePlano" placeholder="Digite o nome do plano" required value="<%= planoParaEditar ? planoParaEditar.nomePlano : '' %>">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <span class="field-icon" aria-hidden="true"><i class="bi bi-currency-dollar"></i></span>
+                            <div>
+                                <label for="valorMensal">Valor Mensal</label>
+                                <input type="number" step="0.01" class="form-control" id="valorMensal" name="valorMensal" placeholder="Digite o valor mensal" required value="<%= planoParaEditar ? planoParaEditar.valorMensal : '' %>">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <span class="field-icon" aria-hidden="true"><i class="bi bi-device-hdd-fill"></i></span>
+                            <div>
+                                <label for="armazenamentoGB">Armazenamento (GB)</label>
+                                <input type="number" class="form-control" id="armazenamentoGB" name="armazenamentoGB" placeholder="Digite a capacidade em GB" required value="<%= planoParaEditar ? planoParaEditar.armazenamentoGB : '' %>">
+                            </div>
+                        </div>
+                        <div class="config-footer">
+                            <button id="main-action" type="submit" class="btn config-save"><i class="bi bi-floppy-fill me-2" aria-hidden="true"></i><%= planoParaEditar ? 'Salvar' : 'Cadastrar' %></button>
+                            <% if (planoParaEditar) { %>
+                                <a href="/plano/cadastrarListarPlanos" class="btn config-secondary">Cancelar</a>
+                            <% } %>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <div class="container-fluid p-0">
+                <section class="records-page" aria-labelledby="planosTitle">
+                    <header class="records-toolbar">
+                        <div class="records-heading">
+                            <span class="records-icon" aria-hidden="true"><i class="bi bi-card-list"></i></span>
+                            <div>
+                                <h2 id="planosTitle">Planos</h2>
+                                <p>Gerencie os planos cadastrados</p>
+                            </div>
+                        </div>
+                        <label class="records-search">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <input id="planoSearch" type="search" placeholder="Buscar por nome ou valor..." aria-label="Buscar planos">
+                        </label>
+                    </header>
+                    <div class="records-table-wrap">
+                        <table class="table records-table">
+                            <thead>
+                                <tr><th scope="col">#</th><th scope="col">Nome</th><th scope="col">Valor</th><th scope="col">Armazenamento</th><th scope="col">Ações</th></tr>
+                            </thead>
+                            <tbody>
+                                <% if (planos && planos.length) { %>
+                                    <% planos.forEach((plano, i) => { %>
+                                        <tr class="plano-row">
+                                            <td><%= i + 1 %></td>
+                                            <td><%= plano.nome %></td>
+                                            <td>R$ <%= plano.valor %></td>
+                                            <td><%= plano.descricao %></td>
+                                            <td><div class="record-actions">
+                                                <form action="/plano/editar/<%= plano.id %>" method="get"><button type="submit" class="btn btn-record-edit"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Editar</button></form>
+                                                <form class="form-excluir" action="/plano/excluir/<%= plano.id %>" method="post"><button type="submit" class="btn btn-record-delete"><i class="bi bi-trash-fill me-1" aria-hidden="true"></i>Excluir</button></form>
+                                            </div></td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                                <tr id="emptyPlanos" hidden><td class="empty-records" colspan="5">Nenhum plano encontrado.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <footer class="records-footer">
+                        <p class="records-summary" id="planoSummary" aria-live="polite"></p>
+                        <nav class="records-pagination" id="planoPagination" aria-label="Paginação dos planos"></nav>
+                    </footer>
+                </section>
+            </div>
+            </section>
+        </div>
+    </div>
+
+    <%- include('../../partials/scripts') %>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const planoRows = Array.from(document.querySelectorAll('.plano-row'));
+        const planoSearch = document.getElementById('planoSearch');
+        const planoSummary = document.getElementById('planoSummary');
+        const planoPagination = document.getElementById('planoPagination');
+        const emptyPlanos = document.getElementById('emptyPlanos');
+        const pageSize = 12;
+        const visiblePageCount = 5;
+        let currentPage = 1;
+
+        function renderPlanoPage() {
+            const query = planoSearch.value.trim().toLocaleLowerCase('pt-BR');
+            const filteredRows = planoRows.filter((row) => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+            const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+            currentPage = Math.min(currentPage, pageCount);
+            const firstPage = Math.min(currentPage, Math.max(1, pageCount - visiblePageCount + 1));
+            const lastPage = Math.min(firstPage + visiblePageCount - 1, pageCount);
+            const firstVisible = (currentPage - 1) * pageSize;
+            const lastVisible = Math.min(firstVisible + pageSize, filteredRows.length);
+
+            planoRows.forEach((row) => { row.hidden = true; });
+            filteredRows.slice(firstVisible, lastVisible).forEach((row) => { row.hidden = false; });
+            emptyPlanos.hidden = filteredRows.length > 0;
+            planoSummary.textContent = filteredRows.length
+                ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filteredRows.length} registros`
+                : 'Mostrando 0 de 0 registros';
+
+            planoPagination.replaceChildren();
+            const addPageButton = (label, page, ariaLabel, isCurrent, isDisabled) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.innerHTML = label;
+                button.setAttribute('aria-label', ariaLabel);
+                button.disabled = isDisabled;
+                if (isCurrent) button.setAttribute('aria-current', 'page');
+                button.addEventListener('click', () => { currentPage = page; renderPlanoPage(); });
+                planoPagination.appendChild(button);
+            };
+
+            if (firstPage > 1) addPageButton('<i class="bi bi-chevron-double-left"></i>', 1, 'Primeira página', false, false);
+            addPageButton('<i class="bi bi-chevron-left"></i>', currentPage - 1, 'Página anterior', false, currentPage === 1);
+            for (let page = firstPage; page <= lastPage; page += 1) addPageButton(String(page), page, `Página ${page}`, page === currentPage, false);
+            addPageButton('<i class="bi bi-chevron-right"></i>', currentPage + 1, 'Próxima página', false, currentPage === pageCount);
+            if (lastPage < pageCount) addPageButton('<i class="bi bi-chevron-double-right"></i>', pageCount, 'Última página', false, false);
+        }
+
+        planoSearch.addEventListener('input', () => { currentPage = 1; renderPlanoPage(); });
+        renderPlanoPage();
+
+        const formsExcluir = document.getElementsByClassName('form-excluir');
+        for (const formExcluir of formsExcluir) {
+            formExcluir.addEventListener('submit', (e) => {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Deseja realmente excluir?',
+                    icon: 'warning',
+                    backdrop: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formExcluir.submit();
+                    }
+                });
+            });
+        }
+
+        (function() {
+            const nameInput = document.querySelector('input[name="nomePlano"]');
+            if (nameInput && nameInput.value) {
+                nameInput.focus();
+                nameInput.select();
+            }
+        })();
+    </script>
+
+    <% if (mensagem) { %>
+        <script>
+            Swal.fire({
+                toast: true,
+                position: 'center',
+                icon: '<%= mensagem.tipo %>',
+                text: '<%= mensagem.valor %>',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                backdrop: false
+            });
+        </script>
+    <% } %>
+
+</body>
+</html>

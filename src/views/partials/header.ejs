@@ -1,0 +1,94 @@
+<nav class="navbar navbar-dark bg-black">
+  <div class="container-fluid">
+
+    <div class="d-flex align-items-center">
+      <button class="btn btn-outline-light me-3" id="toggleSidebar" type="button" aria-label="Alternar menu" title="Alternar menu">
+        <i class="bi bi-list" aria-hidden="true"></i>
+      </button>
+
+      <a class="navbar-brand memorium-brand" href="/dashboard">
+        MEMORIUM
+      </a>
+    </div>
+
+    <div class="dropdown">
+      <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="bi bi-person-circle me-2" aria-hidden="true"></i>
+        <%= usuario.nome %>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="/usuario/perfil">Perfil</a></li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <form action="/usuario/deslogar" method="POST">
+            <button type="submit" class="dropdown-item text-danger">
+              Sair
+            </button>
+          </form>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .navbar.navbar-dark.bg-black {
+    background: #54208f !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .16);
+  }
+
+  .navbar.navbar-dark .btn-outline-light {
+    border-color: rgba(255, 255, 255, .55);
+    color: #fff;
+  }
+
+  .navbar.navbar-dark .btn-outline-light:hover {
+    border-color: #fff;
+    background: #451a78;
+    color: #fff;
+  }
+
+  .memorium-brand {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #fff;
+  }
+
+  .navbar.navbar-dark .memorium-brand:hover {
+    color: #eee4fb;
+  }
+
+  .navbar .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    color: #fff !important;
+  }
+
+  .sidebar.bg-dark {
+    border-right: 1px solid #51208f;
+    background: #6127aa !important;
+    color: #fff !important;
+  }
+
+  .sidebar.bg-dark h5 {
+    color: #fff;
+  }
+
+  .sidebar.bg-dark .nav-link {
+    color: #f7f2ff !important;
+  }
+
+  .sidebar.bg-dark .nav-link:hover,
+  .sidebar.bg-dark .nav-link:focus-visible {
+    background-color: #51208f;
+    color: #fff !important;
+  }
+
+  .sidebar.bg-dark .bi {
+    color: #d9c5ff;
+  }
+</style>

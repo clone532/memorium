@@ -1,0 +1,163 @@
+<div class="perfil-container">
+  <div class="perfil-header">
+    <div class="perfil-avatar">
+      <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="60" fill="#2c2c2c"/>
+        <circle cx="60" cy="40" r="20" fill="#a0a0a0"/>
+        <ellipse cx="60" cy="75" rx="30" ry="25" fill="#a0a0a0"/>
+      </svg>
+    </div>
+    
+    <h1 class="perfil-name"><%= usuario.nome %></h1>
+    
+    <div class="perfil-divider"></div>
+    
+    <div class="perfil-tabs">
+      <a href="#biografia" class="perfil-tab biografia-tab">
+        Biografia
+      </a>
+      <a href="#mural" class="perfil-tab mural-tab">
+        Mural
+      </a>
+    </div>
+  </div>
+  
+  <div class="perfil-content">
+    <div id="biografia" class="perfil-section biografia-section">
+      <!-- Conteúdo da Biografia -->
+    </div>
+    
+    <div id="mural" class="perfil-section mural-section">
+      <!-- Conteúdo do Mural -->
+    </div>
+  </div>
+</div>
+
+<style>
+  .perfil-container {
+    width: 100%;
+    background: #eee1f4;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .perfil-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .perfil-avatar {
+    margin-bottom: 30px;
+  }
+
+  .perfil-avatar svg {
+    width: 120px;
+    height: 120px;
+  }
+
+  .perfil-name {
+    font-size: 32px;
+    color: #4a3a5a;
+    margin: 20px 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .perfil-divider {
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #b88cc9, transparent);
+    margin: 30px auto;
+  }
+
+  .perfil-tabs {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .perfil-tab {
+    padding: 12px 40px;
+    background: linear-gradient(135deg, #b88cc9 0%, #a878b5 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(184, 140, 201, 0.3);
+    cursor: pointer;
+    border: none;
+  }
+
+  .perfil-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(184, 140, 201, 0.4);
+  }
+
+  .perfil-content {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .perfil-section {
+    display: none;
+  }
+
+  .perfil-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .perfil-name {
+      font-size: 24px;
+    }
+
+    .perfil-tab {
+      padding: 10px 30px;
+      font-size: 14px;
+    }
+
+    .perfil-divider {
+      width: 90%;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.perfil-tab');
+    const sections = document.querySelectorAll('.perfil-section');
+    
+    // Mostrar primeira seção por padrão
+    if (sections.length > 0) {
+      sections[0].classList.add('active');
+    }
+    
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Remove active de todas as seções
+        sections.forEach(section => section.classList.remove('active'));
+        
+        // Adiciona active na seção correspondente
+        if (sections[index]) {
+          sections[index].classList.add('active');
+        }
+      });
+    });
+  });
+</script>

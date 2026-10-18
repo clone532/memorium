@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../../partials/head', { titulo: 'Cadastrar Tipo de Mensagem' }) %>
+  <%- include('../../partials/formataçãoFormulario') %>
+
+    <style>
+      .type-management-page {
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, .9);
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(70, 42, 105, .07);
+      }
+
+      .type-management-page .config-page,
+      .type-management-page .type-list-page {
+        width: 100%;
+        max-width: none;
+        min-height: 0;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .type-management-page .config-page {
+        overflow: visible;
+      }
+
+      .type-management-page .type-list-page {
+        border-top: 1px solid #eeeaf8;
+      }
+
+      .type-list-page {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: none;
+        min-height: 100%;
+        margin: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, .9);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .78);
+        box-shadow: 0 8px 24px rgba(70, 42, 105, .07);
+      }
+
+      .type-list-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #eeeaf8;
+        background: rgba(255, 255, 255, .58);
+      }
+
+      .type-list-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .type-list-icon {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: #e8e1ff;
+        color: #5d359d;
+      }
+
+      .type-list-heading h2 {
+        margin: 0;
+        color: #27243b;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .type-list-heading p {
+        margin: 3px 0 0;
+        color: #777487;
+        font-size: 11px;
+      }
+
+      .type-list-search {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        width: min(220px, 44%);
+        padding: 0 10px;
+        border: 1px solid #e9e5f7;
+        border-radius: 18px;
+        background: #fbfaff;
+        color: #7956ba;
+      }
+
+      .type-list-search input {
+        width: 100%;
+        min-width: 0;
+        padding: 7px 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #332d48;
+        font-size: 11px;
+      }
+
+      .type-list-table-wrap {
+        flex: 1;
+        overflow: auto;
+        margin: 8px 12px 0;
+        padding: 0;
+        border: 1px solid #e9e5f7;
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .type-list-table {
+        margin: 0;
+        color: #343146;
+        font-size: 13px;
+      }
+
+      .type-list-table thead th {
+        padding: 9px 12px;
+        border: 0;
+        background: #f0edff;
+        color: #48415f;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .type-list-table thead th:first-child {
+        width: 48px;
+        border-radius: 7px 0 0 7px;
+        text-align: center;
+      }
+
+      .type-list-table thead th:last-child {
+        border-radius: 0 7px 7px 0;
+        text-align: right;
+      }
+
+      .type-list-table tbody td {
+        padding: 8px 12px;
+        border-color: #eeeaf7;
+        vertical-align: middle;
+      }
+
+      .type-list-table tbody tr:hover {
+        background: #faf9ff;
+      }
+
+      .type-list-table tbody td:first-child {
+        width: 48px;
+        text-align: center;
+        color: #716b83;
+      }
+
+      .type-list-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .type-list-actions .btn {
+        min-width: 70px;
+        padding: 4px 8px;
+        border: 0;
+        border-radius: 5px;
+        color: #fff;
+        font-size: 11px;
+      }
+
+      .btn-type-edit {
+        background: #6541bd;
+      }
+
+      .btn-type-edit:hover {
+        background: #52319e;
+        color: #fff;
+      }
+
+      .btn-type-delete {
+        background: #e53d5c;
+      }
+
+      .btn-type-delete:hover {
+        background: #c72d49;
+        color: #fff;
+      }
+
+      .type-list-empty {
+        padding: 24px !important;
+        color: #777487;
+        text-align: center;
+      }
+
+      .type-list-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 46px;
+        margin: 8px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #f5f3fc;
+      }
+
+      .type-list-summary {
+        margin: 0;
+        color: #666176;
+        font-size: 11px;
+      }
+
+      .type-list-pagination {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .type-list-pagination button {
+        min-width: 27px;
+        height: 27px;
+        padding: 0 7px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #665d7b;
+        font-size: 11px;
+      }
+
+      .type-list-pagination button[aria-current="page"] {
+        background: #7047c5;
+        color: #fff;
+      }
+
+      .type-list-pagination button:disabled {
+        opacity: .4;
+      }
+
+      @media (max-width: 575px) {
+        .type-list-toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .type-list-search {
+          width: 100%;
+        }
+
+        .type-list-footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+
+    <body class="bg-light">
+
+      <%- include('../../partials/header') %>
+
+        <div class="d-flex">
+          <%- include('../../partials/sidebar') %>
+
+            <div class="content">
+              <section class="type-management-page" aria-label="Gerenciar tipos de mensagem">
+                <div class="container-fluid p-0">
+                  <section class="config-page" aria-labelledby="tipoMensagemFormTitle">
+                    <header class="config-header">
+                      <span class="config-icon" aria-hidden="true"><i class="bi bi-chat-square-text-fill"></i></span>
+                      <div>
+                        <h1 id="tipoMensagemFormTitle">
+                          <%= tipoMensagemParaEditar ? 'Editar Tipo de Mensagem' : 'Tipo de Mensagem' %>
+                        </h1>
+                        <p>
+                          <%= tipoMensagemParaEditar ? 'Atualize o nome deste formato'
+                            : 'Cadastre um formato de mensagem' %>
+                        </p>
+                      </div>
+                    </header>
+                    <form class="config-form"
+                      action="<%= tipoMensagemParaEditar ? ('/tipoMensagem/editar/' + tipoMensagemParaEditar.id) : '/TipoMensagem/cadastrarTipoMensagem' %>"
+                      method="post">
+                      <div class="config-field">
+                        <span class="field-icon" aria-hidden="true"><i class="bi bi-fonts"></i></span>
+                        <div>
+                          <label for="nomeTipo">Nome do Tipo</label>
+                          <input type="text" class="form-control" id="nomeTipo" name="nomeTipo"
+                            placeholder="Ex: Texto, Áudio ou Vídeo"
+                            value="<%= tipoMensagemParaEditar ? tipoMensagemParaEditar.nomeTipo : '' %>" required>
+                        </div>
+                      </div>
+                      <div class="config-footer">
+                        <button type="submit" class="btn config-save"><i class="bi bi-floppy-fill me-2"
+                            aria-hidden="true"></i>
+                          <%= tipoMensagemParaEditar ? 'Atualizar' : 'Salvar' %>
+                        </button>
+                        <% if (tipoMensagemParaEditar) { %>
+                          <a href="/tipoMensagem/cadastrarTipoMensagem" class="btn config-secondary">Cancelar</a>
+                          <% } else { %>
+                            <a href="/dashboard" class="btn config-secondary">Voltar</a>
+                            <% } %>
+                      </div>
+                    </form>
+                  </section>
+                </div>
+
+                <div class="container-fluid p-0">
+                  <section class="type-list-page" aria-labelledby="tiposMensagemTitle">
+                    <header class="type-list-toolbar">
+                      <div class="type-list-heading">
+                        <span class="type-list-icon" aria-hidden="true"><i class="bi bi-card-list"></i></span>
+                        <div>
+                          <h2 id="tiposMensagemTitle">Tipos cadastrados</h2>
+                          <p>Consulte os tipos de mensagem disponíveis</p>
+                        </div>
+                      </div>
+                      <label class="type-list-search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <input id="tipoMensagemSearch" type="search" placeholder="Buscar tipo..."
+                          aria-label="Buscar tipos de mensagem">
+                      </label>
+                    </header>
+                    <div class="type-list-table-wrap">
+                      <table class="table type-list-table">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Nome do tipo</th>
+                            <th scope="col">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% if (tiposMensagem && tiposMensagem.length) { %>
+                            <% tiposMensagem.forEach((tipo, i)=> { %>
+                              <tr class="tipo-mensagem-row">
+                                <td>
+                                  <%= i + 1 %>
+                                </td>
+                                <td>
+                                  <%= tipo.nomeTipo %>
+                                </td>
+                                <td>
+                                  <div class="type-list-actions">
+                                    <form action="/tipoMensagem/editar/<%= tipo.id %>" method="get">
+                                      <button type="submit" class="btn btn-type-edit"><i class="bi bi-pencil-fill me-1"
+                                          aria-hidden="true"></i>Editar</button>
+                                    </form>
+                                    <form class="form-excluir" action="/tipoMensagem/excluir/<%= tipo.id %>"
+                                      method="post">
+                                      <button type="submit" class="btn btn-type-delete"><i class="bi bi-trash-fill me-1"
+                                          aria-hidden="true"></i>Excluir</button>
+                                    </form>
+                                  </div>
+                                </td>
+                              </tr>
+                              <% }) %>
+                                <% } %>
+                                  <tr id="emptyTiposMensagem" hidden>
+                                    <td class="type-list-empty" colspan="3">Nenhum tipo de mensagem encontrado.</td>
+                                  </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <footer class="type-list-footer">
+                      <p class="type-list-summary" id="tipoMensagemSummary" aria-live="polite"></p>
+                      <nav class="type-list-pagination" id="tipoMensagemPagination"
+                        aria-label="Paginação dos tipos de mensagem"></nav>
+                    </footer>
+                  </section>
+                </div>
+              </section>
+            </div>
+        </div>
+
+        <%- include('../../partials/scripts') %>
+          <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+          <script>
+            const tipoMensagemRows = Array.from(document.querySelectorAll('.tipo-mensagem-row'));
+            const tipoMensagemSearch = document.getElementById('tipoMensagemSearch');
+            const tipoMensagemSummary = document.getElementById('tipoMensagemSummary');
+            const tipoMensagemPagination = document.getElementById('tipoMensagemPagination');
+            const emptyTiposMensagem = document.getElementById('emptyTiposMensagem');
+            const pageSize = 12;
+            const visiblePageCount = 5;
+            let currentPage = 1;
+
+            function renderTipoMensagemPage() {
+              const query = tipoMensagemSearch.value.trim().toLocaleLowerCase('pt-BR');
+              const filteredRows = tipoMensagemRows.filter((row) => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+              const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+              currentPage = Math.min(currentPage, pageCount);
+              const firstPage = Math.min(currentPage, Math.max(1, pageCount - visiblePageCount + 1));
+              const lastPage = Math.min(firstPage + visiblePageCount - 1, pageCount);
+              const firstVisible = (currentPage - 1) * pageSize;
+              const lastVisible = Math.min(firstVisible + pageSize, filteredRows.length);
+
+              tipoMensagemRows.forEach((row) => { row.hidden = true; });
+              filteredRows.slice(firstVisible, lastVisible).forEach((row) => { row.hidden = false; });
+              emptyTiposMensagem.hidden = filteredRows.length > 0;
+              tipoMensagemSummary.textContent = filteredRows.length
+                ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filteredRows.length} registros`
+                : 'Mostrando 0 de 0 registros';
+
+              tipoMensagemPagination.replaceChildren();
+              const addPageButton = (label, page, ariaLabel, isCurrent, isDisabled) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.innerHTML = label;
+                button.setAttribute('aria-label', ariaLabel);
+                button.disabled = isDisabled;
+                if (isCurrent) button.setAttribute('aria-current', 'page');
+                button.addEventListener('click', () => { currentPage = page; renderTipoMensagemPage(); });
+                tipoMensagemPagination.appendChild(button);
+              };
+
+              if (firstPage > 1) addPageButton('<i class="bi bi-chevron-double-left"></i>', 1, 'Primeira página', false, false);
+              addPageButton('<i class="bi bi-chevron-left"></i>', currentPage - 1, 'Página anterior', false, currentPage === 1);
+              for (let page = firstPage; page <= lastPage; page += 1) addPageButton(String(page), page, `Página ${page}`, page === currentPage, false);
+              addPageButton('<i class="bi bi-chevron-right"></i>', currentPage + 1, 'Próxima página', false, currentPage === pageCount);
+              if (lastPage < pageCount) addPageButton('<i class="bi bi-chevron-double-right"></i>', pageCount, 'Última página', false, false);
+            }
+
+            tipoMensagemSearch.addEventListener('input', () => { currentPage = 1; renderTipoMensagemPage(); });
+            renderTipoMensagemPage();
+
+            const formsExcluir = document.getElementsByClassName('form-excluir');
+            for (const formExcluir of formsExcluir) {
+              formExcluir.addEventListener('submit', (e) => {
+                e.preventDefault();
+                Swal.fire({
+                  title: 'Deseja realmente excluir?',
+                  icon: 'warning',
+                  backdrop: false,
+                  showCancelButton: true,
+                  confirmButtonText: 'Sim',
+                  cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    formExcluir.submit();
+                  }
+                });
+              });
+            }
+          </script>
+
+          <% if (mensagem) { %>
+            <script>
+              Swal.fire({
+                toast: true,
+                position: 'center',
+                icon: '<%= mensagem.tipo %>',
+                text: '<%= mensagem.valor %>',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                backdrop: false
+              });
+            </script>
+            <% } %>
+    </body>
+
+</html>

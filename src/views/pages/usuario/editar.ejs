@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head') %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<body class="bg-light">
+
+  <%- include('../../partials/header') %>
+
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+
+    <main class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="editarUsuarioTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-fill-gear"></i></span>
+            <div>
+              <h1 id="editarUsuarioTitle"><%= titulo %></h1>
+              <p>Atualize os dados e o tipo de usuário</p>
+            </div>
+          </header>
+
+          <form class="config-form" action="/usuario/editar/<%= usuarioParaEditar.id %>" method="post">
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+              <div>
+                <label for="nome">Nome</label>
+                <input class="form-control" type="text" name="nome" id="nome" value="<%= usuarioParaEditar.nome %>">
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+              <div>
+                <label for="email">Email</label>
+                <input class="form-control" type="email" name="email" id="email" value="<%= usuarioParaEditar.email %>">
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-badge-fill"></i></span>
+              <div>
+                <label for="tipo">Tipo</label>
+                <select name="tipo" id="tipo" class="form-select">
+                  <option <%= usuarioParaEditar.tipoUsuario.nome === 'USUARIO' ? 'selected' : '' %> value="USUARIO">Usuário</option>
+                  <option <%= usuarioParaEditar.tipoUsuario.nome === 'ADMIN' ? 'selected' : '' %> value="ADMIN">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-footer">
+              <button type="submit" class="btn config-save"><i class="bi bi-floppy-fill me-2" aria-hidden="true"></i>Salvar</button>
+              <a href="/usuario/listar" class="btn config-secondary">Voltar</a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <% if (mensagem) { %>
+
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+
+  <% } %>
+</body>
+
+</html>

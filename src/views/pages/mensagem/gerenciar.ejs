@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<%- include('../../partials/head', { titulo: 'Gerenciar Mensagens' }) %>
+
+    <style>
+        .btn-config {
+            display: flex;
+            width: 245px;
+            height: 55px;
+            margin: 15px auto;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(105deg, #794bdd, #ce51ee);
+            color: white;
+            font-family: Georgia, serif;
+            font-size: 17px;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.3s;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 3px rgba(0, 0, 0, 0.5);
+        }
+        .container-fluid.py-4 {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+
+    <body class="bg-light">
+        <%- include('../../partials/header') %>
+
+            <div class="d-flex">
+                <%- include('../../partials/sidebar') %>
+
+                    <main class="content w-100">
+                    <% if(usuario.tipo === 'ADMIN')  { %>
+                        <div class="container-fluid py-4">
+                            <a href="/tipoMensagem/cadastrarTipoMensagem" class="btn-config">
+                                Tipo de arquivo
+                            </a>
+                            <a href="/mensagem/listar" class="btn-config">
+                                Suas mensagens
+                            </a>
+                            <a href="/mensagem/cadastrar" class="btn-config">
+                                Guardar nova mensagem
+                            </a>
+                        </div>
+                    <% } else { %>
+                        <div class="container-fluid py-4">
+                            <a href="/mensagem/listar" class="btn-config">
+                                Suas mensagens
+                            </a>
+                            <a href="/mensagem/cadastrar" class="btn-config">
+                                Guardar nova mensagem
+                            </a>
+                        </div>
+                    <% } %>
+                    </main>
+            </div>
+
+            <%- include('../../partials/scripts') %>
+    </body>
+
+</html>

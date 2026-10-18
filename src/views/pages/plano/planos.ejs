@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<%- include('../../partials/head', { titulo: 'Planos Memorium' }) %>
+
+<style>
+        body {
+            background: #fff;
+        }
+
+        .titulo {
+            color: #9D4EDD;
+            font-size: 3rem;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .card-planos {
+            width: 100%;
+            min-height: 100%;
+            background: white;
+            border-radius: 0;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,.08);
+        }
+
+        .plan-comparison-wrap {
+            overflow: auto;
+            border: 1px solid #e9e5f7;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .plan-comparison-wrap .table {
+            margin: 0;
+        }
+
+        .btn-roxo {
+            background: #9D4EDD;
+            color: white;
+        }
+
+        .btn-roxo:hover {
+            background: #6b0d79;
+            color: white;
+        }
+
+        .check {
+            color: green;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .x {
+            color: red;
+            font-size: 20px;
+            font-weight: bold;
+        }
+</style>
+
+<body class="bg-light">
+
+    <%- include('../../partials/header') %>
+
+    <div class="d-flex">
+        <%- include('../../partials/sidebar') %>
+
+        <div class="content w-100">
+            <div class="container-fluid py-3">
+
+                <h1 class="titulo">
+                    Tabela de Planos
+                </h1>
+
+        <div class="card-planos">
+
+            <div class="row">
+
+                <div class="col-md-4 d-flex flex-column">
+
+                    <h3>
+                        Escolha um plano,
+                        cancele a qualquer hora.
+                    </h3>
+
+                    <% if (planos && planos.length > 0) { %>
+                        <% planos.forEach(plano => { %>
+
+                            <div class="border rounded p-3 mt-3">
+
+                                <h4><%= plano.nome %></h4>
+
+                                <small>
+                                    <%= plano.descricao %>
+                                </small>
+
+                                <div class="mt-2">
+                                    <strong>
+                                        R$ <%= plano.valor %>/mês
+                                    </strong>
+                                </div>
+
+                                <form class="form-assinar" action="/plano/assinar/<%=plano.id%>" method="post">
+                                    <input type="hidden" name="nomePlano" value="<%= plano.nome %>">
+                                    <button type="submit" class="btn btn-roxo w-100 btn-lg">Assinar um plano</button>
+                                </form>
+
+                            </div>
+
+                        <% }) %>
+                    <% } else { %>
+                        <div class="border rounded p-4 mt-3 text-center">
+                            <h4>Sem planos cadastrados</h4>
+                            <p class="mb-3">Ainda não há planos disponíveis.</p>
+                        </div>
+                        
+                    <% } %>
+
+                </div>
+
+                <div class="col-md-8">
+                    <div class="plan-comparison-wrap">
+                    <table class="table table-striped text-center">
+
+                        <thead>
+                            <tr>
+                            <th>Benefícios</th>
+                            <th>Comum</th>
+                            <th>Família</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td>10 mensagens agendadas</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>50 mensagens agendadas</td>
+                                <td class="x">✗</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>Até 5 guardiões</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>Até 10 guardiões</td>
+                                <td class="x">✗</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>Até 6 usuários</td>
+                                <td class="x">✗</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>Mural de homenagens</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+
+                            <tr>
+                                <td>Suporte prioritário</td>
+                                <td class="x">✗</td>
+                                <td class="check">✓</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('../../partials/scripts') %>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <% if (mensagem) { %>
+
+          <script>
+            Swal.fire({
+                            toast: true,
+                            position: 'center',
+              icon: '<%= mensagem.tipo %>',
+                            text: '<%= mensagem.valor %>',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            backdrop: false
+            });
+          </script>
+
+          <% } %>
+</body>
+</html>

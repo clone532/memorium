@@ -1,0 +1,153 @@
+<style>
+  .config-page {
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .85);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(70, 42, 105, .08);
+  }
+
+  .config-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin: 8px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    background: #f2efff;
+  }
+
+  .config-icon,
+  .field-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #e8e1ff;
+    color: #5d359d;
+  }
+
+  .config-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .config-header h1 {
+    margin: 0;
+    color: #27243b;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .config-header p {
+    margin: 3px 0 0;
+    color: #777487;
+    font-size: 12px;
+  }
+
+  .config-form {
+    padding: 5px 22px 0;
+  }
+
+  .config-field {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .field-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .config-field label {
+    display: block;
+    margin-bottom: 4px;
+    color: #39364c;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .config-field .form-control,
+  .config-field .form-select {
+    min-height: 36px;
+    border-color: #e3defb;
+    border-radius: 7px;
+    background-color: #fbfaff;
+    font-size: 13px;
+  }
+
+  .config-field .form-control:focus,
+  .config-field .form-select:focus {
+    border-color: #8d68d2;
+    box-shadow: 0 0 0 3px rgba(141, 104, 210, .13);
+  }
+
+  .config-help {
+    margin-top: 4px;
+    color: #777487;
+    font-size: 11px;
+  }
+
+  .config-alert {
+    margin: 0 22px 10px;
+    font-size: 13px;
+  }
+
+  .config-footer {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 8px 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: #f2efff;
+  }
+
+  .config-save,
+  .config-secondary {
+    min-width: 160px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  .config-save {
+    border: 0;
+    background: #6840b5;
+    color: #fff;
+  }
+
+  .config-save:hover {
+    background: #552e9d;
+    color: #fff;
+  }
+
+  .config-secondary {
+    border-color: #d8d2e9;
+    background: #fff;
+    color: #5d5570;
+  }
+
+  .config-secondary:hover {
+    border-color: #8d68d2;
+    background: #faf8ff;
+    color: #552e9d;
+  }
+
+  @media (max-width: 575px) {
+    .config-form { padding-right: 14px; padding-left: 14px; }
+    .config-alert { margin-right: 14px; margin-left: 14px; }
+    .config-header h1 { font-size: 18px; }
+    .config-footer { flex-direction: column; }
+    .config-save, .config-secondary { width: 100%; }
+  }
+</style>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo: destinatarioParaEditar ? 'Editar Destinatário' : 'Cadastrar Destinatário' }) %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<body class="bg-light">
+  <%- include('../../partials/header') %>
+
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+
+    <main class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="destinatarioFormTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
+            <div>
+              <h1 id="destinatarioFormTitle"><%= destinatarioParaEditar ? 'Editar Destinatário' : 'Cadastrar Destinatário' %></h1>
+              <p>Preencha os dados do destinatário</p>
+            </div>
+          </header>
+
+          <form class="config-form" action="<%= destinatarioParaEditar ? ('/destinatario/editar/' + destinatarioParaEditar.id) : '/destinatario/cadastrar' %>" method="post">
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+              <div>
+                <label for="destinatarioNome">Nome</label>
+                <input type="text" class="form-control" id="destinatarioNome" name="nome" placeholder="Digite o nome completo" required value="<%= destinatarioForm.nome %>">
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+              <div>
+                <label for="destinatarioEmail">Email</label>
+                <input type="email" class="form-control" id="destinatarioEmail" name="email" placeholder="email@example.com" required value="<%= destinatarioForm.email %>">
+              </div>
+            </div>
+
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-telephone-fill"></i></span>
+              <div>
+                <label for="destinatarioTelefone">Telefone</label>
+                <input type="text" class="form-control" id="destinatarioTelefone" name="numero" placeholder="(00) 1234-1234" required value="<%= destinatarioForm.numero %>">
+              </div>
+            </div>
+
+            <div class="config-footer">
+              <button type="submit" class="btn config-save">
+                <i class="bi bi-floppy-fill me-2" aria-hidden="true"></i>
+                <%= destinatarioParaEditar ? 'Salvar' : 'Cadastrar' %>
+              </button>
+              <a href="/destinatario/cadastrarListar" class="btn config-secondary"><%= destinatarioParaEditar ? 'Cancelar' : 'Voltar' %></a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <% if (mensagem) { %>
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+  <% } %>
+</body>
+</html>

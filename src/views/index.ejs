@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memorium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="/IMGS/gallery/favicon.ico">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      background: #eee1f4;
+    }
+    .header {
+      width: 100%;
+      height: 90px;
+      background: #7437bd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+    .logo-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-header img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+    .memorium-brand {
+      color: white;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .botao-login-topo {
+      text-decoration: none;
+      background: #59249b;
+      color: white;
+      padding: 13px 32px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .botao-login-topo:hover {
+      background: linear-gradient(105deg, #8250ed, #be47dc);
+      transform: translateY(-2px);
+    }
+    .principal {
+      min-height: calc(100vh - 90px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 25px;
+    }
+    .conteudo {
+      width: 100%;
+      max-width: 900px;
+      padding: 45px;
+    }
+    .titulo {
+      font-family: 'Playfair Display', serif;
+      font-size: 68px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      color: #7131bb;
+      margin-bottom: 8px;
+    }
+    .subtitulo {
+      font-family: 'Playfair Display', serif;
+      font-size: 31px;
+      font-weight: 500;
+      font-style: italic;
+      color: #7131bb;
+      margin-bottom: 25px;
+    }
+    .descricao {
+      max-width: 720px;
+      margin: 0 auto 40px;
+      color: #4d3c55;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+    .informacoes {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+    .informacao {
+      width: 230px;
+      min-height: 145px;
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(90, 40, 110, 0.12);
+    }
+    .informacao h3 {
+      font-family: 'Playfair Display', serif;
+      color: #7131bb;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .informacao p {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .botoes {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+    }
+    .botao {
+      width: 190px;
+      padding: 15px 25px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .criar-conta {
+      background: #7131bb;
+      color: white;
+      border: 2px solid #7131bb;
+    }
+    .criar-conta:hover {
+      background: #59249b;
+      border-color: #59249b;
+      transform: translateY(-3px);
+    }
+    .fazer-login {
+      background: white;
+      color: #7131bb;
+      border: 2px solid #7131bb;
+    }
+    .fazer-login:hover {
+      background: #7131bb;
+      color: white;
+      transform: translateY(-3px);
+    }
+    .rodape {
+      background: #000;
+      color: white;
+      text-align: center;
+      padding: 35px 20px;
+    }
+    .rodape h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: #cda7e8;
+      margin-bottom: 12px;
+    }
+    .rodape p {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 7px;
+    }
+    .contato {
+      color: #cda7e8 !important;
+      margin-top: 15px;
+    }
+    @media (max-width: 700px) {
+      .header {
+        height: 75px;
+        padding: 0 20px;
+      }
+
+      .logo-header img {
+        width: 130px;
+      }
+
+      .botao-login-topo {
+        padding: 10px 22px;
+        font-size: 14px;
+      }
+
+      .principal {
+        padding: 35px 15px;
+      }
+
+      .conteudo {
+        padding: 25px 10px;
+      }
+
+      .titulo {
+        font-size: 45px;
+        letter-spacing: 3px;
+      }
+
+      .subtitulo {
+        font-size: 24px;
+      }
+
+      .descricao {
+        font-size: 15px;
+      }
+
+      .informacoes {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .informacao {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .botoes {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .botao {
+        width: 230px;
+      }
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-header">
+      <img src="/IMGS/gallery/favicon.ico" alt="Ícone Memorium">
+      <span class="memorium-brand">MEMORIUM</span>
+    </div>
+    <a href="/usuario/logar" class="botao-login-topo">
+      Login
+    </a>
+  </header>
+
+  <!-- PÁGINA PRINCIPAL -->
+
+  <main class="principal">
+    <section class="conteudo">
+      <h1 class="titulo">
+        MEMORIUM
+      </h1>
+
+      <h2 class="subtitulo">
+        criando memórias
+      </h2>
+      <p class="descricao">
+        O Memorium é uma plataforma criada para
+        guardar e preservar momentos especiais.
+        Aqui você pode criar mensagens, guardar
+        fotos, vídeos e áudios, mantendo suas
+        lembranças importantes sempre presentes.
+      </p>
+
+      <!-- INFORMAÇÕES DO SITE -->
+      <div class="informacoes">
+        <div class="informacao">
+          <h3>
+            Suas memórias
+          </h3>
+          <p>
+            Guarde momentos importantes
+            em um só lugar e preserve
+            suas lembranças.
+          </p>
+        </div>
+
+        <div class="informacao">
+          <h3>
+            Mensagens
+          </h3>
+          <p>
+            Crie mensagens em texto,
+            fotos, vídeos ou áudios
+            para pessoas especiais.
+          </p>
+        </div>
+
+        <div class="informacao">
+          <h3>
+            Guardião
+          </h3>
+          <p>
+            Escolha uma pessoa de confiança
+            para cuidar das suas memórias.
+          </p>
+        </div>
+      </div>
+
+      <!-- BOTÕES -->
+      <div class="botoes">
+        <a href="/usuario/logar" class="botao criar-conta">
+          Criar conta
+        </a>
+
+        <a href="/usuario/logar" class="botao fazer-login"> 
+          Login
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="rodape">
+    <h3>
+      Memorium
+    </h3>
+    <p>
+      Preservando momentos, criando memórias.
+    </p>
+    <p>
+      © 2026 Memorium - Todos os direitos reservados.
+    </p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

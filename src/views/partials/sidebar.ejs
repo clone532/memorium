@@ -1,0 +1,168 @@
+<div class="sidebar bg-dark text-white p-3" id="sidebar" style="font-family: Georgia, serif;">
+  <h5><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i>Menu</h5>
+
+  <ul class="nav nav-pills flex-column">
+
+    <li class="nav-item">
+      <% if(usuario.tipo === 'ADMIN')  { %>
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#usuarioMenu">
+          <i class="bi bi-person-fill me-2" aria-hidden="true"></i>Meu Perfil
+        </a>
+
+        <div class="collapse show ms-3" id="usuarioMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/perfilUsuario/perfil/<%= usuario.id %>">
+                 Perfil
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/usuario/configuracaoPerfil">
+                 Configurações
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#adminMenu">
+          <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>Menu do Admin
+        </a>
+        <div class="collapse show ms-3" id="adminMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/usuario/listar">
+                 Usuários
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/assinatura/cadastrarAssinatura">
+                 Assinatura
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/destinatario/cadastrarListar">
+                 Destinatário
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/plano/cadastrarListarPlanos">
+                 Planos
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#guardiaoMenu">
+          <i class="bi bi-shield-fill me-2" aria-hidden="true"></i>Menu do Guardião
+        </a>
+        <div class="collapse show ms-3" id="guardiaoMenu">
+          <ul class="nav flex-column"><li class="nav-item">
+              <a class="nav-link text-white" href="#">
+                 Gerenciar
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/guardiao/cadastrar">
+                 Cadastrar
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#planosMenu">
+          <i class="bi bi-credit-card-fill me-2" aria-hidden="true"></i>Planos
+        </a>
+        <div class="collapse show ms-3" id="planosMenu">
+          <ul class="nav flex-column">
+          <li class="nav-item">
+              <a class="nav-link text-white" href="/plano/planos">
+                 Planos disponíveis
+              </a>
+            </li>
+            </ul> 
+        </div>
+
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#mensagemMenu">
+          <i class="bi bi-envelope-fill me-2" aria-hidden="true"></i>Mensagens
+        </a>
+        <div class="collapse show ms-3" id="mensagemMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/mensagem/gerenciar">
+                 Gerenciar
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      <% } else { %>
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#usuarioMenu">
+          <i class="bi bi-person-fill me-2" aria-hidden="true"></i>Meu Perfil
+        </a>
+
+        <div class="collapse show ms-3" id="usuarioMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/perfilUsuario/perfil/<%= usuario.id %>">
+                 Perfil
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/usuario/configuracaoPerfil">
+                 Configurações
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/destinatario/cadastrarListar">
+                 Destinatário
+              </a>
+            </li>
+          </ul>
+        </div>
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#guardiaoMenu">
+          <i class="bi bi-shield-fill me-2" aria-hidden="true"></i>Menu do Guardião
+        </a>
+        <div class="collapse show ms-3" id="guardiaoMenu">
+          <ul class="nav flex-column"><li class="nav-item">
+              <a class="nav-link text-white" href="#">
+                 Gerenciar
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/guardiao/cadastrar">
+                 Cadastrar
+              </a>
+            </li>
+          </ul>
+        </div>
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#planosMenu">
+          <i class="bi bi-credit-card-fill me-2" aria-hidden="true"></i>Planos
+        </a>
+        <div class="collapse show ms-3" id="planosMenu">
+          <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="/plano/planos">
+                 Planos disponíveis
+            </a>
+          </li>
+          </ul> 
+        </div>
+
+        <a class="nav-link text-white" data-bs-toggle="collapse" href="#mensagemMenu">
+          <i class="bi bi-envelope-fill me-2" aria-hidden="true"></i>Mensagens
+        </a>
+        <div class="collapse show ms-3" id="mensagemMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/mensagem/gerenciar">
+                 Gerenciar
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      <% } %>
+    </li>
+
+  </ul>
+</div>

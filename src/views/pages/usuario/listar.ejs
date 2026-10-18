@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head') %>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .users-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .9);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .78);
+    box-shadow: 0 8px 24px rgba(70, 42, 105, .07);
+  }
+
+  .users-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eeeaf8;
+  }
+
+  .users-toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .btn-user-create {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #6541bd;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-user-create:hover {
+    background: #52319e;
+    color: #fff;
+  }
+
+  .list-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .list-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+  }
+
+  .list-heading h1 {
+    margin: 0;
+    color: #27243b;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .list-heading p {
+    margin: 3px 0 0;
+    color: #777487;
+    font-size: 12px;
+  }
+
+  .user-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(300px, 45%);
+    padding: 0 11px;
+    border: 1px solid #e9e5f7;
+    border-radius: 20px;
+    background: #fbfaff;
+    color: #7956ba;
+  }
+
+  .user-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #332d48;
+    font-size: 12px;
+  }
+
+  .user-table-wrap {
+    flex: 1;
+    overflow: auto;
+    margin: 8px 12px 0;
+    padding: 0;
+    border: 1px solid #e9e5f7;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .user-table {
+    margin: 0;
+    color: #343146;
+    font-size: 13px;
+  }
+
+  .user-table thead th {
+    padding: 9px 12px;
+    border: 0;
+    background: #f0edff;
+    color: #48415f;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .user-table thead th:first-child { border-radius: 7px 0 0 7px; }
+  .user-table thead th:last-child { border-radius: 0 7px 7px 0; }
+
+  .user-table tbody td {
+    padding: 7px 12px;
+    border-color: #eeeaf7;
+    vertical-align: middle;
+  }
+
+  .user-table tbody tr:hover { background: #faf9ff; }
+  .user-table td:first-child { width: 48px; text-align: center; color: #716b83; }
+
+  .user-actions {
+    display: flex;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .user-actions .btn {
+    min-width: 76px;
+    padding: 4px 9px;
+    border: 0;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 11px;
+  }
+
+  .btn-user-edit { background: #6541bd; }
+  .btn-user-edit:hover { background: #52319e; color: #fff; }
+  .btn-user-delete { background: #e53d5c; }
+  .btn-user-delete:hover { background: #c72d49; color: #fff; }
+
+  .empty-users {
+    padding: 24px !important;
+    color: #777487;
+    text-align: center;
+  }
+
+  .users-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 48px;
+    margin: 8px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: #f5f3fc;
+  }
+
+  .page-summary {
+    margin: 0;
+    color: #666176;
+    font-size: 11px;
+  }
+
+  .user-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .user-pagination button {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #665d7b;
+    font-size: 11px;
+  }
+
+  .user-pagination button[aria-current="page"] {
+    background: #7047c5;
+    color: #fff;
+  }
+
+  .user-pagination button:disabled { opacity: .4; }
+
+  @media (max-width: 640px) {
+    .users-toolbar { align-items: stretch; flex-direction: column; gap: 12px; }
+    .users-toolbar-actions { align-items: stretch; flex-direction: column; }
+    .user-search { width: 100%; }
+    .users-footer { align-items: flex-start; flex-direction: column; }
+    .user-table { min-width: 650px; }
+  }
+</style>
+
+<body class="bg-light">
+  <%- include('../../partials/header') %>
+
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+
+    <main class="content">
+      <section class="users-page" aria-labelledby="usersTitle">
+        <header class="users-toolbar">
+          <div class="list-heading">
+            <span class="list-icon" aria-hidden="true"><i class="bi bi-card-list"></i></span>
+            <div>
+              <h1 id="usersTitle">Listar</h1>
+              <p>Gerencie os usuários do sistema</p>
+            </div>
+          </div>
+          <div class="users-toolbar-actions">
+            <a class="btn-user-create" href="/usuario/cadAdmin">
+              <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+              Cadastrar usuário
+            </a>
+            <label class="user-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input id="userSearch" type="search" placeholder="Buscar por nome, email ou tipo..." aria-label="Buscar usuários">
+            </label>
+          </div>
+        </header>
+
+        <div class="user-table-wrap">
+          <table class="table user-table" id="usersTable">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Email</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (usuarios && usuarios.length) { %>
+                <% usuarios.forEach((usuario, i) => { %>
+                  <tr class="user-row">
+                    <td><%= i + 1 %></td>
+                    <td><%= usuario.nome %></td>
+                    <td><%= usuario.email %></td>
+                    <td><%= usuario.tipoUsuario.nome %></td>
+                    <td>
+                      <div class="user-actions">
+                        <form action="/usuario/editar/<%= usuario.id %>" method="get">
+                          <button type="submit" class="btn btn-user-edit"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Editar</button>
+                        </form>
+                        <form class="form-excluir" action="/usuario/excluir/<%= usuario.id %>" method="post">
+                          <button type="submit" class="btn btn-user-delete"><i class="bi bi-trash-fill me-1" aria-hidden="true"></i>Excluir</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+              <tr id="emptyUsers" hidden>
+                <td class="empty-users" colspan="5">Nenhum usuário encontrado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="users-footer">
+          <p class="page-summary" id="pageSummary" aria-live="polite"></p>
+          <nav class="user-pagination" id="userPagination" aria-label="Paginação dos usuários"></nav>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    const userRows = Array.from(document.querySelectorAll('.user-row'));
+    const userSearch = document.getElementById('userSearch');
+    const pageSummary = document.getElementById('pageSummary');
+    const userPagination = document.getElementById('userPagination');
+    const emptyUsers = document.getElementById('emptyUsers');
+    const pageSize = 12;
+    const visiblePageCount = 5;
+    let currentPage = 1;
+
+    function renderUserPage() {
+      const query = userSearch.value.trim().toLocaleLowerCase('pt-BR');
+      const filteredRows = userRows.filter((row) => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+      const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const firstPage = Math.min(currentPage, Math.max(1, pageCount - visiblePageCount + 1));
+      const lastPage = Math.min(firstPage + visiblePageCount - 1, pageCount);
+      const firstVisible = (currentPage - 1) * pageSize;
+      const lastVisible = Math.min(firstVisible + pageSize, filteredRows.length);
+
+      userRows.forEach((row) => { row.hidden = true; });
+      filteredRows.slice(firstVisible, lastVisible).forEach((row) => { row.hidden = false; });
+      emptyUsers.hidden = filteredRows.length > 0;
+      pageSummary.textContent = filteredRows.length
+        ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filteredRows.length} registros`
+        : 'Mostrando 0 de 0 registros';
+
+      userPagination.replaceChildren();
+      const addPageButton = (label, page, ariaLabel, isCurrent, isDisabled) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = label;
+        button.setAttribute('aria-label', ariaLabel);
+        button.disabled = isDisabled;
+        if (isCurrent) button.setAttribute('aria-current', 'page');
+        button.addEventListener('click', () => {
+          currentPage = page;
+          renderUserPage();
+        });
+        userPagination.appendChild(button);
+      };
+
+      if (firstPage > 1) {
+        addPageButton('<i class="bi bi-chevron-double-left"></i>', 1, 'Primeira página', false, false);
+      }
+      addPageButton('<i class="bi bi-chevron-left"></i>', currentPage - 1, 'Página anterior', false, currentPage === 1);
+      for (let page = firstPage; page <= lastPage; page += 1) {
+        addPageButton(String(page), page, `Página ${page}`, page === currentPage, false);
+      }
+      addPageButton('<i class="bi bi-chevron-right"></i>', currentPage + 1, 'Próxima página', false, currentPage === pageCount);
+      if (lastPage < pageCount) {
+        addPageButton('<i class="bi bi-chevron-double-right"></i>', pageCount, 'Última página', false, false);
+      }
+    }
+
+    userSearch.addEventListener('input', () => {
+      currentPage = 1;
+      renderUserPage();
+    });
+    renderUserPage();
+
+    const formsExcluir = document.getElementsByClassName('form-excluir');
+    for (const formExcluir of formsExcluir) {
+      formExcluir.addEventListener('submit', (event) => {
+        event.preventDefault();
+        Swal.fire({
+          title: 'Deseja realmente excluir?',
+          icon: 'warning',
+          backdrop: false,
+          showCancelButton: true,
+          confirmButtonText: 'Sim',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) formExcluir.submit();
+        });
+      });
+    }
+  </script>
+
+  <% if (mensagem) { %>
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+  <% } %>
+</body>
+</html>
