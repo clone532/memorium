@@ -10,6 +10,18 @@
   .list-heading p { margin: 3px 0 0; color: #777487; font-size: 12px; }
   .config-header { flex-wrap: wrap; }
   .config-profile-link { margin-left: auto; }
+  .config-avatar {
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    background: var(--perfil-accent);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .config-avatar.bi-person-circle {
+    font-size: 120px;
+    line-height: 1;
+  }
 </style>
 
 <body class="bg-light">
@@ -21,22 +33,22 @@
     <main class="content">
       <section class="config-page">
         <header class="config-header">
-          <% if (usuario.imagem) { %>
-            <img src="/uploads/<%= usuario.imagem %>" class="rounded mb-3">
+          <% if (usuarioPerfil.imagem) { %>
+            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="config-avatar">
           <% } else { %>
-            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+            <i class="bi bi-person-circle config-avatar" aria-hidden="true"></i>
           <% } %>
           <div>
             <h1>Configurações do Perfil</h1>
             <p>Atualize suas informações pessoais</p>
           </div>
           <a class="btn config-secondary config-profile-link" href="/perfilUsuario/perfil/<%= usuarioPerfil.id %>">
-            <i class="bi bi-person-circle me-2" aria-hidden="true"></i>Voltar
+            Voltar
           </a>
         </header>
 
         
-        <form class="config-form" action="/usuario/configuracaoPerfil" method="post">
+        <form class="config-form" action="/usuario/configuracaoPerfil" method="post" enctype="multipart/form-data">
           <div class="config-field">
             <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
             <div>
@@ -62,9 +74,9 @@
           </div>
 
           <div class="config-field">
-            <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
-            <div>
-              <label for="imagem">Imagem de perfil</label>
+            <span class="field-icon" aria-hidden="true"><i class="bi bi-upload"></i></span>
+            <div class="form-group mb-3 col-lg-6 col-md-8 col-12">
+              <label for="imagem">Imagem</label>
               <input class="form-control" type="file" name="imagem" id="imagem" accept="image/*">
             </div>
           </div>

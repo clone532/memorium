@@ -41,7 +41,7 @@ export class Usuario {
     static async buscarTodos() {
         const { rows } = await connection.query(`
             select usuario.id, usuario.nome, usuario.email, usuario.senha,
-            usuario.numero, usuario.dataNasc, usuario.estaMorto, usuario.imagem,
+            usuario.numero, usuario.dataNasc, usuario.estaMorto,
             tipo_usuario.id as id_tipo, tipo_usuario.nome as nome_tipo,
             tipo_usuario.descricao
             from usuario inner join tipo_usuario on usuario.tipoUsuario = tipo_usuario.id
@@ -54,7 +54,6 @@ export class Usuario {
             numero: row.numero,
             dataNasc: row.dataNasc,
             estaMorto: row.estaMorto,
-            imagem: row.imagem,
             tipoUsuario: new TipoUsuario(row.id_tipo, row.nome_tipo, row.descricao)
         }));
     }
@@ -90,7 +89,8 @@ export class Usuario {
 
     static async buscarPorId(id: string) {
         const { rows } = await connection.query(
-            `SELECT u.*, t.id AS id_tipo, t.nome AS nome_tipo, t.descricao
+            `SELECT u.id, u.nome, u.email, u.senha, u.numero, u.dataNasc, u.estaMorto, u.imagem,
+            t.id AS id_tipo, t.nome AS nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
             WHERE u.id=$1`,
@@ -109,7 +109,8 @@ export class Usuario {
             numero: rows[0].numero,
             dataNasc: rows[0].dataNasc,
             estaMorto: rows[0].estaMorto,
-            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao)
+            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao),
+            imagem: rows[0].imagem
         });
     }
 
@@ -142,7 +143,7 @@ export class Usuario {
 
     static async buscarPorEmailESenha(email: string, senha: string) {
         const { rows } = await connection.query(
-            `SELECT u.id, u.nome, u.email, u.senha, u.numero,
+            `SELECT u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
             u.dataNasc, u.estaMorto as status_vida,
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
@@ -162,7 +163,8 @@ export class Usuario {
             numero: rows[0].numero,
             dataNasc: rows[0].dataNasc,
             estaMorto: rows[0].estaMorto,
-            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao)
+            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao),
+            imagem: rows[0].imagem
         });
     }
 }

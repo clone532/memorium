@@ -15,23 +15,10 @@
             --perfil-border: #eeeaf7;
         }
 
-        .reference {
-            color: #000000;
-        }
-
-        .reference:hover {
-            color: #6840b5;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            height: auto;
-            min-height: 100%;
-            overflow-y: auto;
-        }
+        .reference { color: #000000;}
+        .reference:hover {color: #6840b5;}
+        * {box-sizing: border-box;}
+        html {height: auto;min-height: 100%;overflow-y: auto;}
 
         .botao-personalizado {
             font-family: inherit;
@@ -63,7 +50,25 @@
         
         .padronizar-avatar {
             border-radius: 50%;
+            width: 120px;
+            height: 120px;
             background: var(--perfil-accent);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .padronizar-avatar-publi {
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            background: var(--perfil-accent);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .padronizar-avatar.bi-person-circle {
+            font-size: 120px;
+            line-height: 1;
         }
 
         .perfil-layout {
@@ -284,15 +289,15 @@
         }
 
         .mini-avatar {
-            width: 45px;
-            height: 45px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: var(--perfil-accent);
             color: #5d359d;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 25px;
+            font-size: 20px;
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -442,96 +447,79 @@
             <%- include('../../partials/sidebar') %>
                 <div class="perfil-container">
                     <div class="perfil-header">
-                        <!-- FOTO DO PERFIL -->
                         
                         <div class="d-flex justify-content-center">
                         <% if (usuarioPerfil.imagem) { %>
-                            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="padronizar-avatar" id="fotoPerfil">
+                            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="padronizar-avatar">
                         <% } else { %>
-                            
-                            <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" class="padronizar-avatar" viewBox="0 0 16 16">
-                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                            </svg>
-                            
+                            <i class="bi bi-person-circle padronizar-avatar" aria-hidden="true" id="fotoPerfil"></i>
                         <% } %>
                         </div>
                         <h1 class="perfil-name">
                             <%= usuario.nome %>
                         </h1>
-                        <a href="/usuario/configuracaoPerfil" class="reference">
-                        <button class="btn botao-personalizado" type="button" data-astro-cid-suf5bgbc=""><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"></path>
-                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"></path>
-                            </svg>
-                                configurações
+                        <a href="/usuario/configuracaoPerfil" class="reference"><i class="bi bi-gear"></i>
+                        <button class="btn botao-personalizado" type="button">
+                            configurações
                         </button>
                         </a>
 
                         <div class="perfil-divider"></div>
                         <div class="perfil-tabs">
-                            <button class="perfil-tab botao-personalizado active" onclick="mostrarAba('publicacoes', this)">
-                                Publicações
+                            <button class="perfil-tab botao-personalizado active" onclick="mostrarAba('biografia', this)">
+                                Biografia
                             </button>
                             <button class="perfil-tab botao-personalizado" onclick="mostrarAba('mural', this)">
                                 Mural
                             </button>
-
                         </div>
-
                     </div>
 
                     <div class="perfil-content">
-
-                        <div id="publicacoes" class="perfil-section active">
-
+                        <div id="biografia" class="perfil-section active">
                             <h2>
-                                Publicações
+                                Biografia
                             </h2>
 
                             <!-- CRIAR PUBLICAÇÃO -->
-                                
-                                    <form id="formPublicacao" class="criar-publicacao" onsubmit="return publicar(event)"
+                                    <form id="formBiografia" class="criar-biografia" onsubmit="return publicar(event)"
                                         enctype="multipart/form-data">
-                                        <% if (usuario.imagem) { %>
-                                            <img src="/uploads/<%= usuario.imagem %>" class="rounded mb-3">
-                                            <% } else { %>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                                </svg>
-                                            <% } %>
                                         <h3>
+                                        <% if (usuario.imagem) { %>
+                                            <img src="/uploads/<%= usuario.imagem %>" class="padronizar-avatar-publi">
+                                            <% } else { %>
+                                                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                            <% } %>
                                             Criar publicação
                                         </h3>
-                                        <textarea name="texto" id="textoPublicacao" class="campo-publicacao"
+                                        <textarea name="texto" id="textobiografia" class="campo-biografia"
                                             placeholder="Compartilhe uma lembrança ou escreva algo..."></textarea>
 
-                                        <div class="opcoes-publicacao">
+                                        <div class="opcoes-biografia">
                                             <label class="opcao-arquivo">
                                                 <i class="bi bi-image"></i>
                                                 Foto
-                                                <input type="file" id="inputFotoPublicacao" name="anexoUrl"
+                                                <input type="file" id="anexoUrl" name="anexoUrl"
                                                     accept="image/*" hidden>
                                             </label>
 
                                             <label class="opcao-arquivo">
                                                 <i class="bi bi-camera-video"></i>
                                                 Vídeo
-                                                <input type="file" id="inputVideoPublicacao" name="anexoUrl"
+                                                <input type="file" id="anexoUrl" name="anexoUrl"
                                                     accept="video/*" hidden>
                                             </label>
                                             <label class="opcao-arquivo">
                                                 <i class="bi bi-camera-audio"></i>
                                                 Áudio
-                                                <input type="file" id="inputAudioPublicacao" name="anexoUrl"
+                                                <input type="file" id="anexoUrl" name="anexoUrl"
                                                     accept="audio/*" hidden>
                                             </label>
                                         </div>
                                         <div id="arquivoNome" class="arquivo-nome">
                                         </div>
 
-                                        <div id="previewPublicacao" class="preview-publicacao">
+                                        <div id="previewBiografia" class="preview-biografia">
                                         </div>
                                         <button type="submit" class="botao-publicar botao-personalizado">
                                             <i class="bi bi-send"></i>
@@ -541,61 +529,37 @@
 
 
                                     <!-- LISTA DE PUBLICAÇÕES -->
-                                    <div id="listaPublicacoes">
-                                        <div class="publicacao">
-                                            <div class="publicacao-header">
+                                    <div id="listaBiografia">
+                                        <div class="biografia">
+                                            <div class="biografia-header">
                                                 <div class="mini-avatar">
                                                     <i class="bi bi-person"></i>
                                                 </div>
                                                 <div>
                                                     <strong>
-                                                        <%= usuario.nome %>
+                                                        ADMIN
                                                     </strong>
                                                     <small>
-                                                        Hoje
+                                                        Muito tempo atrás
                                                     </small>
                                                 </div>
                                             </div>
-
-
                                             <p>
-
                                                 Este é um espaço para compartilhar
                                                 momentos e lembranças especiais.
-
                                             </p>
-
-
-                                            <div class="publicacao-acoes">
-
-
+                                            <div class="biografia-acoes">
                                                 <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
-
                                                     <i class="bi bi-heart"></i>
-
                                                     Curtir
-
                                                 </button>
-
-
                                                 <button class="botao-personalizado botao-personalizado--acao">
-
                                                     <i class="bi bi-chat"></i>
-
                                                     Comentar
-
                                                 </button>
-
-
                                             </div>
-
-
                                         </div>
-
-
                                     </div>
-
-
                         </div>
 
 
@@ -606,441 +570,179 @@
 
                         <div id="mural" class="perfil-section">
 
-
                             <h2>
                                 Mural
                             </h2>
-
-
                             <div class="mural-card">
-
-
                                 <div class="mural-topo">
-
-
                                     <div class="mini-avatar">
-
                                         <i class="bi bi-person"></i>
-
                                     </div>
-
-
                                     <div>
-
                                         <strong>
-
                                             <%= usuario.nome %>
-
                                         </strong>
-
                                         <small>
-
                                             Seu mural
-
                                         </small>
-
                                     </div>
-
-
                                 </div>
-
-
                                 <div class="mural-conteudo">
-
                                     <p>
-
                                         Este é o seu mural.
                                         Aqui serão exibidas suas
                                         publicações e memórias.
-
                                     </p>
-
                                 </div>
-
-
                                 <div class="mural-acoes">
-
-
                                     <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
-
                                         <i class="bi bi-heart"></i>
-
                                         Curtir
-
                                     </button>
-
-
                                     <button class="botao-personalizado botao-personalizado--acao">
-
                                         <i class="bi bi-chat"></i>
-
                                         Comentar
-
                                     </button>
-
-
                                 </div>
-
-
                             </div>
-
-
                             <div class="mural-card">
-
-
                                 <div class="mural-topo">
-
-
                                     <div class="mini-avatar">
-
                                         <i class="bi bi-person"></i>
-
                                     </div>
-
-
                                     <div>
-
                                         <strong>
-
                                             <%= usuario.nome %>
-
                                         </strong>
-
                                         <small>
-
                                             Publicação
-
                                         </small>
-
                                     </div>
-
-
                                 </div>
-
-
                                 <p class="mural-texto">
-
                                     Aqui aparecerão os conteúdos
                                     publicados no mural.
-
                                 </p>
-
-
                                 <div class="mural-acoes">
-
-
                                     <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
-
                                         <i class="bi bi-heart"></i>
-
                                         Curtir
-
                                     </button>
-
-
                                     <button class="botao-personalizado botao-personalizado--acao">
-
                                         <i class="bi bi-chat"></i>
-
                                         Comentar
-
                                     </button>
-
-
                                 </div>
-
-
                             </div>
-
-
                         </div>
-
-
                     </div>
-
-
                 </div>
         </div>
-
         <%- include('../../partials/scripts') %>
 
             <script>
-
-
-                let arquivoSelecionado = null;
-
-
-                /* FOTO DE PERFIL */
-
-                document
-                    .querySelector(".botao-foto")
-                    .addEventListener("click", function () {
-
-                        const menu =
-                            document.getElementById("menuFoto");
-
-                        if (menu.style.display === "flex") {
-
-                            menu.style.display = "none";
-
-                        } else {
-
-                            menu.style.display = "flex";
-
-                        }
-
-                    });
-
-
-                function abrirFotos() {
-
-                    document
-                        .getElementById("inputFoto")
-                        .click();
-
-                }
-
-
-                document
-                    .getElementById("inputFoto")
-                    .addEventListener("change", function (event) {
-
-                        const arquivo =
-                            event.target.files[0];
-
-                        if (!arquivo) {
-                            return;
-                        }
-
-                        if (!arquivo.type.startsWith("image/")) {
-
-                            alert("Selecione uma imagem.");
-
-                            return;
-
-                        }
-
-                        const leitor =
-                            new FileReader();
-
-                        leitor.onload = function (e) {
-
-                            const foto =
-                                document.getElementById("fotoPerfil");
-
-                            const avatar =
-                                document.getElementById("avatarPadrao");
-
-                            foto.src =
-                                e.target.result;
-
-                            foto.style.display =
-                                "block";
-
-                            avatar.style.display =
-                                "none";
-
-                            document
-                                .getElementById("menuFoto")
-                                .style.display =
-                                "none";
-
-                        };
-
-                        leitor.readAsDataURL(arquivo);
-
-                    });
-
-
-                function removerFoto() {
-
-                    const foto =
-                        document.getElementById("fotoPerfil");
-
-                    const avatar =
-                        document.getElementById("avatarPadrao");
-
-                    foto.src = "";
-
-                    foto.style.display =
-                        "none";
-
-                    avatar.style.display =
-                        "flex";
-
-                    document
-                        .getElementById("inputFoto")
-                        .value = "";
-
-                    document
-                        .getElementById("menuFoto")
-                        .style.display =
-                        "none";
-
-                }
-
-
-
                 /* FOTO DA PUBLICAÇÃO */
 
                 document
                     .getElementById("inputFotoPublicacao")
                     .addEventListener("change", function (event) {
-
                         const arquivo =
                             event.target.files[0];
-
                         if (!arquivo) {
                             return;
                         }
-
                         arquivoSelecionado = arquivo;
-
                         document
                             .getElementById("inputVideoPublicacao")
                             .value = "";
-
                         mostrarPreview(arquivo);
-
                     });
 
-
-
                 /* VÍDEO DA PUBLICAÇÃO */
-
                 document
                     .getElementById("inputVideoPublicacao")
                     .addEventListener("change", function (event) {
-
                         const arquivo =
                             event.target.files[0];
-
                         if (!arquivo) {
                             return;
                         }
-
                         arquivoSelecionado = arquivo;
-
                         document
                             .getElementById("inputFotoPublicacao")
                             .value = "";
-
                         mostrarPreview(arquivo);
-
                     });
 
-
-
                 /* PREVIEW */
-
                 function mostrarPreview(arquivo) {
-
                     const preview =
                         document.getElementById(
                             "previewPublicacao"
                         );
-
                     const nome =
                         document.getElementById(
                             "arquivoNome"
                         );
-
                     const url =
                         URL.createObjectURL(arquivo);
-
-
                     nome.textContent =
                         "Arquivo selecionado: " +
                         arquivo.name;
-
-
                     preview.innerHTML = "";
-
-
                     if (
                         arquivo.type.startsWith("image/")
                     ) {
-
                         const imagem =
                             document.createElement("img");
-
                         imagem.src = url;
-
                         imagem.className =
                             "publicacao-media";
-
                         preview.appendChild(imagem);
-
                     }
-
-
                     if (
                         arquivo.type.startsWith("video/")
                     ) {
-
                         const video =
                             document.createElement("video");
-
                         video.src = url;
-
                         video.className =
                             "publicacao-media";
-
                         video.controls = true;
-
                         preview.appendChild(video);
-
                     }
-
-
                     preview.style.display =
                         "block";
-
                 }
 
 
 
                 /* PUBLICAR */
-
                 function publicar() {
-
-
-                    // If called as form submit, prevent default
                     const evt = arguments[0];
                     if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
-
                     const texto = document.getElementById('textoPublicacao').value.trim();
-
                     if (texto === '' && !arquivoSelecionado) {
                         alert('Escreva uma mensagem ou adicione uma foto/vídeo.');
                         return false;
                     }
-
                     const form = document.getElementById('formPublicacao');
                     const formData = new FormData(form);
-
-                    // Ensure the currently selected file (if any) is appended
                     if (arquivoSelecionado) {
                         formData.set('arquivo', arquivoSelecionado);
                     }
-
-                    // Send to server (no multer-specific formatting here; browser handles multipart)
                     fetch('/publicacoes', {
                         method: 'POST',
                         body: formData
                     }).catch(function (err) {
                         console.warn('Envio falhou (uso offline ou rota ausente):', err);
                     });
-
-                    // Immediate local render for feedback (same behavior as before)
                     const lista = document.getElementById('listaPublicacoes');
                     const publicacao = document.createElement('div');
                     publicacao.className = 'publicacao';
                     const data = new Date().toLocaleDateString('pt-BR');
                     let conteudo = '';
-
                     if (texto !== '') conteudo += `<p>${texto}</p>`;
-
                     if (arquivoSelecionado) {
                         const url = URL.createObjectURL(arquivoSelecionado);
                         if (arquivoSelecionado.type.startsWith('image/')) {

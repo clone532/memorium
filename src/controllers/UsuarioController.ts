@@ -276,7 +276,14 @@ export class UsuarioController {
 
         await Usuario.atualizarUsuario(usuarioEncontrado);
 
+        Object.assign(usuario, {
+            nome: usuarioEncontrado.nome,
+            email: usuarioEncontrado.email,
+            imagem: usuarioEncontrado.imagem
+        });
+
         return res.render('pages/usuario/configuracaoPerfil', {
+            usuario,
             usuarioPerfil: usuarioEncontrado,
             titulo: 'Configuração do Perfil',
             mensagem: {

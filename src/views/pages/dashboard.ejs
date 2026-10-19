@@ -78,7 +78,6 @@
 <body class="bg-light">
   <%- include('../partials/header') %>
   <div class="d-flex">
-    <%- include('../partials/sidebar') %>
     <main class="dashboard">
         <div class="conteudo">
             <h1 class="logo">
@@ -88,7 +87,7 @@
                 criando memorias
             </p>
             <a
-                href="/mural/cadastrar"
+                href="/perfilUsuario/perfil/<%= usuario.id %>"
                 class="btn-memorium">
 
                 Criar primeira lembrança

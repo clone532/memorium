@@ -18,7 +18,7 @@ usuarioRoutes.get('/perfilUsuario/perfil/:id', authMiddleware(['ADMIN', 'USUARIO
 usuarioRoutes.get('/usuario/configuracaoPerfil', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(UsuarioController.carregarConfig));
 usuarioRoutes.get('/usuario/editar/:id', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(UsuarioController.carregarEditar));
 usuarioRoutes.post('/usuario/configuracaoPerfil', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), upload.single('imagem'), asyncExecutor(UsuarioController.atualizarPerfil));
-usuarioRoutes.post('/usuario/editar/:id', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(UsuarioController.editar));
+usuarioRoutes.post('/usuario/editar/:id', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), upload.single('imagem'), asyncExecutor(UsuarioController.editar));
 
 // ROTAS DO ADMIN
 usuarioRoutes.get('/usuario/cadAdmin', authMiddleware(['ADMIN']), asyncExecutor(UsuarioController.carregarCadPorAdmin));

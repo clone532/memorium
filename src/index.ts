@@ -22,9 +22,9 @@ app.set('view engine', 'ejs');
 
 app.set('views', './src/views');
 app.use('/IMGS', express.static(path.resolve(__dirname, '..', 'IMGS')));
-app.use('/uploads', express.static('uploads'));
 
 app.use(express.urlencoded({ extended: false }));
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
 app.get('/', function (req, res) {
     res.render('index', { message: 'Hello' });
