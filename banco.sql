@@ -52,7 +52,6 @@ create table Mensagem (
 create table Biografia (
 	id SERIAL PRIMARY KEY,
 	anexoUrl VARCHAR(255) NOT NULL,
-	descricao VARCHAR(255) NOT NULL,
 	fkUsuario INT NOT NULL REFERENCES Usuario(id),
 	fkMensagem INT NOT NULL REFERENCES Mensagem(id)
 );

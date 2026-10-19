@@ -8,6 +8,8 @@
 <style>
   .list-heading h1 { margin: 0; color: #27243b; font-size: 20px; font-weight: 600; }
   .list-heading p { margin: 3px 0 0; color: #777487; font-size: 12px; }
+  .config-header { flex-wrap: wrap; }
+  .config-profile-link { margin-left: auto; }
 </style>
 
 <body class="bg-light">
@@ -19,13 +21,21 @@
     <main class="content">
       <section class="config-page">
         <header class="config-header">
-          <span class="config-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+          <% if (usuario.imagem) { %>
+            <img src="/uploads/<%= usuario.imagem %>" class="rounded mb-3">
+          <% } else { %>
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+          <% } %>
           <div>
             <h1>Configurações do Perfil</h1>
             <p>Atualize suas informações pessoais</p>
           </div>
+          <a class="btn config-secondary config-profile-link" href="/perfilUsuario/perfil/<%= usuarioPerfil.id %>">
+            <i class="bi bi-person-circle me-2" aria-hidden="true"></i>Voltar
+          </a>
         </header>
 
+        
         <form class="config-form" action="/usuario/configuracaoPerfil" method="post">
           <div class="config-field">
             <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
@@ -48,6 +58,14 @@
             <div>
               <label for="senha">Senha</label>
               <input class="form-control" type="password" name="senha" id="senha" value="<%= usuarioPerfil.senha %>">
+            </div>
+          </div>
+
+          <div class="config-field">
+            <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+            <div>
+              <label for="imagem">Imagem de perfil</label>
+              <input class="form-control" type="file" name="imagem" id="imagem" accept="image/*">
             </div>
           </div>
 

@@ -314,7 +314,7 @@ export class UsuarioController {
         usuarioEncontrado.email = email;
         usuarioEncontrado.tipoUsuario = tipoSelecionado;
 
-        await Usuario.atualizarUsuario(usuarioEncontrado);
+        await Usuario.atualizarComTipo(usuarioEncontrado);
 
         return res.render('pages/usuario/editar', {
             titulo: 'Editar Usuário',

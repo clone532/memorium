@@ -12,8 +12,10 @@
     </div>
 
     <div class="dropdown">
-      <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-        <i class="bi bi-person-circle me-2" aria-hidden="true"></i>
+      <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+        <% if (usuario.imagem) { %>
+          <img src="/uploads/<%= usuario.imagem %>" class="header-avatar">
+        <% } %>
         <%= usuario.nome %>
       </a>
       <ul class="dropdown-menu dropdown-menu-end">

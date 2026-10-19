@@ -1,16 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Perfil - Memorium</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <%- include('../../partials/head') %>
+    <%- include('../../partials/formataçãoFormulario') %>
 
     <style>
         :root {
@@ -24,46 +15,74 @@
             --perfil-border: #eeeaf7;
         }
 
+        .reference {
+            color: #000000;
+        }
+
+        .reference:hover {
+            color: #6840b5;
+        }
+
         * {
             box-sizing: border-box;
         }
 
+        html {
+            height: auto;
+            min-height: 100%;
+            overflow-y: auto;
+        }
+
+        .botao-personalizado {
+            font-family: inherit;
+            font-weight: 600;
+            line-height: 1.2;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .botao-personalizado:focus-visible {
+            outline: 3px solid rgba(104, 64, 181, 0.35);
+            outline-offset: 2px;
+        }
+
+        .botao-personalizado:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         body {
             margin: 0;
+            height: auto;
+            min-height: 100vh;
+            overflow: visible;
             font-family: Arial, sans-serif;
             background: var(--perfil-bg);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+        
+        .padronizar-avatar {
+            border-radius: 50%;
+            background: var(--perfil-accent);
         }
 
         .perfil-layout {
             display: flex;
-            flex: 1;
             min-height: 0;
         }
 
-        .perfil-layout>.sidebar {
-            flex: 0 0 250px;
-            width: 250px;
-            min-height: calc(100vh - 56px);
+        body > .perfil-layout {
+            flex: 0 0 auto;
+            overflow: visible;
+        }
+
+        .perfil-layout > .sidebar {
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            min-height: 0;
             overflow-y: auto;
-            transition: margin-left 0.3s ease;
-        }
-
-        .perfil-layout>.sidebar.hidden {
-            margin-left: -250px;
-        }
-
-        .perfil-layout>.sidebar .nav-link {
-            border-radius: 6px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        .perfil-layout>.sidebar .nav-link:hover,
-        .perfil-layout>.sidebar .nav-link:focus-visible {
-            background-color: #51208f;
-            color: #fff;
         }
 
         .perfil-container {
@@ -77,37 +96,6 @@
         .perfil-header {
             text-align: center;
             margin-bottom: 40px;
-        }
-
-        .perfil-avatar {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 15px;
-        }
-
-        .perfil-avatar img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .avatar-padrao {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--perfil-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .avatar-padrao i {
-            color: #5d359d;
-            font-size: 65px;
         }
 
         .botao-foto {
@@ -125,37 +113,6 @@
             justify-content: center;
             cursor: pointer;
             font-size: 18px;
-        }
-
-        .botao-foto:hover {
-            background: var(--perfil-primary-hover);
-        }
-
-        .menu-foto {
-            margin-top: 15px;
-            display: none;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .menu-foto button {
-            border: none;
-            border-radius: 20px;
-            padding: 8px 18px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .editar-foto {
-            background: var(--perfil-primary);
-            color: white;
-        }
-
-        .remover-foto {
-            border: 1px solid #d8d2e9;
-            background: #fff;
-            color: #5d5570;
         }
 
         .perfil-name {
@@ -378,14 +335,17 @@
             gap: 20px;
         }
 
-        .publicacao-acoes button {
+        .botao-personalizado--acao {
             border: none;
             background: none;
             color: #666176;
+            padding: 6px 10px;
+            border-radius: 8px;
             cursor: pointer;
         }
 
-        .publicacao-acoes button:hover {
+        .botao-personalizado--acao:hover {
+            background: var(--perfil-accent-soft);
             color: var(--perfil-primary);
         }
 
@@ -435,17 +395,6 @@
             border-top: 1px solid var(--perfil-border);
         }
 
-        .mural-acoes button {
-            border: none;
-            background: none;
-            color: #666176;
-            cursor: pointer;
-        }
-
-        .mural-acoes button:hover {
-            color: var(--perfil-primary);
-        }
-
         .mural-texto {
             color: #39364c;
             line-height: 1.6;
@@ -487,225 +436,125 @@
         }
     </style>
 
-</head>
-
 <body>
     <%- include('../../partials/header') %>
         <div class="perfil-layout">
             <%- include('../../partials/sidebar') %>
                 <div class="perfil-container">
-
                     <div class="perfil-header">
-
-
                         <!-- FOTO DO PERFIL -->
-
-                        <div class="perfil-avatar">
-
-
-                            <div id="avatarPadrao" class="avatar-padrao">
-
-                                <i class="bi bi-person-circle"></i>
-
-                            </div>
-
-
-                            <img id="fotoPerfil" src="" alt="Foto de perfil">
-
-
-                            <label for="inputFoto" class="botao-foto" title="Editar foto">
-
-                                <i class="bi bi-camera"></i>
-
-                            </label>
-
-
-                            <input type="file" id="inputFoto" accept="image/*" style="display: none;">
-
-
+                        
+                        <div class="d-flex justify-content-center">
+                        <% if (usuarioPerfil.imagem) { %>
+                            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="padronizar-avatar" id="fotoPerfil">
+                        <% } else { %>
+                            
+                            <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" class="padronizar-avatar" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                            </svg>
+                            
+                        <% } %>
                         </div>
-
-
-                        <div id="menuFoto" class="menu-foto">
-
-
-                            <button class="editar-foto" onclick="abrirFotos()">
-
-                                <i class="bi bi-camera"></i>
-
-                                Alterar foto
-
-                            </button>
-
-
-                            <button class="remover-foto" onclick="removerFoto()">
-
-                                <i class="bi bi-trash"></i>
-
-                                Remover foto
-
-                            </button>
-
-
-                        </div>
-
-
                         <h1 class="perfil-name">
-
                             <%= usuario.nome %>
-
                         </h1>
-
+                        <a href="/usuario/configuracaoPerfil" class="reference">
+                        <button class="btn botao-personalizado" type="button" data-astro-cid-suf5bgbc=""><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"></path>
+                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"></path>
+                            </svg>
+                                configurações
+                        </button>
+                        </a>
 
                         <div class="perfil-divider"></div>
-
-
                         <div class="perfil-tabs">
-
-
-                            <button class="perfil-tab active" onclick="mostrarAba('publicacoes', this)">
-
+                            <button class="perfil-tab botao-personalizado active" onclick="mostrarAba('publicacoes', this)">
                                 Publicações
-
                             </button>
-
-
-                            <button class="perfil-tab" onclick="mostrarAba('mural', this)">
-
+                            <button class="perfil-tab botao-personalizado" onclick="mostrarAba('mural', this)">
                                 Mural
-
                             </button>
-
 
                         </div>
-
 
                     </div>
 
-
-
                     <div class="perfil-content">
 
-
-                        <!-- ============================= -->
-                        <!-- PUBLICAÇÕES -->
-                        <!-- ============================= -->
-
                         <div id="publicacoes" class="perfil-section active">
-
 
                             <h2>
                                 Publicações
                             </h2>
 
-
                             <!-- CRIAR PUBLICAÇÃO -->
-
-                                <% if (usuarioPerfil.imagem) { %>
-                                <img src="/'BANCO DE ARQUIVOS'/<%=usuarioPerfil.imagem%>" class="rounded mb-3">
-                                <% } %>
-
+                                
                                     <form id="formPublicacao" class="criar-publicacao" onsubmit="return publicar(event)"
                                         enctype="multipart/form-data">
-
+                                        <% if (usuario.imagem) { %>
+                                            <img src="/uploads/<%= usuario.imagem %>" class="rounded mb-3">
+                                            <% } else { %>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                                </svg>
+                                            <% } %>
                                         <h3>
-
                                             Criar publicação
-
                                         </h3>
-
-
                                         <textarea name="texto" id="textoPublicacao" class="campo-publicacao"
                                             placeholder="Compartilhe uma lembrança ou escreva algo..."></textarea>
 
-
                                         <div class="opcoes-publicacao">
-
-
                                             <label class="opcao-arquivo">
-
                                                 <i class="bi bi-image"></i>
-
                                                 Foto
-
-                                                <input type="file" id="inputFotoPublicacao" name="arquivo"
+                                                <input type="file" id="inputFotoPublicacao" name="anexoUrl"
                                                     accept="image/*" hidden>
-
                                             </label>
-
 
                                             <label class="opcao-arquivo">
-
                                                 <i class="bi bi-camera-video"></i>
-
                                                 Vídeo
-
-                                                <input type="file" id="inputVideoPublicacao" name="arquivo"
+                                                <input type="file" id="inputVideoPublicacao" name="anexoUrl"
                                                     accept="video/*" hidden>
-
                                             </label>
-
-
+                                            <label class="opcao-arquivo">
+                                                <i class="bi bi-camera-audio"></i>
+                                                Áudio
+                                                <input type="file" id="inputAudioPublicacao" name="anexoUrl"
+                                                    accept="audio/*" hidden>
+                                            </label>
                                         </div>
-
-
                                         <div id="arquivoNome" class="arquivo-nome">
-
                                         </div>
-
 
                                         <div id="previewPublicacao" class="preview-publicacao">
-
                                         </div>
-
-
-                                        <button type="submit" class="botao-publicar">
-
+                                        <button type="submit" class="botao-publicar botao-personalizado">
                                             <i class="bi bi-send"></i>
-
                                             Publicar
-
                                         </button>
-
-
                                     </form>
 
 
                                     <!-- LISTA DE PUBLICAÇÕES -->
-
                                     <div id="listaPublicacoes">
-
-
                                         <div class="publicacao">
-
-
                                             <div class="publicacao-header">
-
-
                                                 <div class="mini-avatar">
-
                                                     <i class="bi bi-person"></i>
-
                                                 </div>
-
-
                                                 <div>
-
                                                     <strong>
-
                                                         <%= usuario.nome %>
-
                                                     </strong>
-
                                                     <small>
-
                                                         Hoje
-
                                                     </small>
-
                                                 </div>
-
-
                                             </div>
 
 
@@ -720,7 +569,7 @@
                                             <div class="publicacao-acoes">
 
 
-                                                <button onclick="curtir(this)">
+                                                <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
 
                                                     <i class="bi bi-heart"></i>
 
@@ -729,7 +578,7 @@
                                                 </button>
 
 
-                                                <button>
+                                                <button class="botao-personalizado botao-personalizado--acao">
 
                                                     <i class="bi bi-chat"></i>
 
@@ -812,7 +661,7 @@
                                 <div class="mural-acoes">
 
 
-                                    <button onclick="curtir(this)">
+                                    <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
 
                                         <i class="bi bi-heart"></i>
 
@@ -821,7 +670,7 @@
                                     </button>
 
 
-                                    <button>
+                                    <button class="botao-personalizado botao-personalizado--acao">
 
                                         <i class="bi bi-chat"></i>
 
@@ -880,7 +729,7 @@
                                 <div class="mural-acoes">
 
 
-                                    <button onclick="curtir(this)">
+                                    <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
 
                                         <i class="bi bi-heart"></i>
 
@@ -889,7 +738,7 @@
                                     </button>
 
 
-                                    <button>
+                                    <button class="botao-personalizado botao-personalizado--acao">
 
                                         <i class="bi bi-chat"></i>
 
@@ -1218,11 +1067,11 @@
             </div>
             ${conteudo}
             <div class="publicacao-acoes">
-                <button onclick="curtir(this)">
+                <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
                     <i class="bi bi-heart"></i>
                     Curtir
                 </button>
-                <button>
+                <button class="botao-personalizado botao-personalizado--acao">
                     <i class="bi bi-chat"></i>
                     Comentar
                 </button>

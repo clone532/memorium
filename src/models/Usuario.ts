@@ -60,6 +60,18 @@ export class Usuario {
     }
 
     static async atualizarUsuario(usuario: Usuario) {
+        await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, imagem=$4 WHERE id=$5;`,
+            [
+                usuario.nome,
+                usuario.email,
+                usuario.senha,
+                usuario.imagem,
+                usuario.id
+            ]
+        );
+    }
+
+    static async atualizarComTipo(usuario: Usuario) {
         await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, tipoUsuario=$4, imagem=$5 WHERE id=$6;`,
             [
                 usuario.nome,
