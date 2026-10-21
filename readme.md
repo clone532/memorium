@@ -69,6 +69,31 @@ src/
 └── views/          # Templates EJS
 ```
 
+## Informações úteis ou importantes
+Login do usuário administrador para teste:
+
+email fictício:
+```
+admin@gmail.com
+```
+senha:
+```
+123
+```
+
+Login do usuário comum para teste:
+
+email fictício:
+```
+usuario@gmail.com
+```
+senha: 
+```
+123
+```
+
+`O CÓDIGO NO ARQUIVO banco.sql TAMBÉM POSSUI o "insert into" de 200 usuários aleatórios, gerados com inteligencia artificial, pra simular usuários finais no sistema que você consegue ver por meio da página de listar usuários.`
+
 ```
  * template feito pelo Willian e modificado pelo grupo 8 de TCC da ETEC de Santa Fé do Sul, com ensino médio integrado em desenolvimento de sistemas
 ```
