@@ -1,188 +1,79 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-    <%- include('../../partials/head', { titulo: 'Planos' }) %>
+<%- include('../../partials/head', { titulo: 'Cadastrar Guardião' }) %>
+<%- include('../../partials/formataçãoFormulario') %>
 
-<style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        overflow: hidden;
-    }
+<body class="bg-light">
+  <%- include('../../partials/header') %>
 
-    body {
-        display: flex;
-        flex-direction: column;
-        background-color: #fff;
-    }
-
-    .d-flex {
-        flex-grow: 1;
-        overflow: hidden;
-    }
-
-    .main {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0;
-    }
-
-    .card-guardiao {
-        width: 100%;
-        min-height: 100%;
-        margin: 0;
-        background: white;
-        border-radius: 0;
-        padding: 35px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    .icone {
-        width: 65px;
-        height: 65px;
-        margin: 0 auto 15px;
-        border-radius: 50%;
-        background-color: #eee1f4;
-        color: #6b0d79;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-    }
-
-    .titulo {
-        color: #6b0d79;
-        font-weight: 600;
-        text-align: center;
-    }
-
-    .subtitulo {
-        color: #666;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .form-label {
-        font-weight: 500;
-        color: #333;
-    }
-
-    .form-control {
-        border-radius: 10px;
-        padding: 12px;
-        border: 1px solid #ccc;
-    }
-
-    .form-control:focus {
-        border-color: #6b0d79;
-        box-shadow: 0 0 0 0.2rem rgba(107, 13, 121, 0.12);
-    }
-
-    .btn-purple {
-        background-color: #9D4EDD;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 11px 25px;
-    }
-
-    .btn-purple:hover {
-        background-color: #6b0d79;
-        color: white;
-    }
-
-    .btn-cancelar {
-        border-radius: 10px;
-        padding: 11px 25px;
-    }
-</style>
-
-<body>
-
-    <%- include('../../partials/header') %>
-
-<div class="d-flex">
+  <div class="d-flex">
     <%- include('../../partials/sidebar') %>
 
-<main class="main">
+    <main class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="guardiaoFormTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+            <div>
+              <h1 id="guardiaoFormTitle">Cadastrar Guardião</h1>
+              <p>Preencha os dados para cadastrar uma pessoa de confiança</p>
+            </div>
+          </header>
 
-    <div class="card-guardiao">
-
-        <div class="icone">
-            <i class="bi bi-shield-check"></i>
-        </div>
-
-        <h2 class="titulo">Cadastrar Guardião</h2>
-
-        <p class="subtitulo">
-            Cadastre uma pessoa de confiança para fazer parte do seu Memorium.
-        </p>
-
-        <form action="/guardiao/cadastrar" method="POST">
-
-            <div class="mb-3">
-                <label for="nome" class="form-label">
-                    Nome completo
-                </label>
-
-                <input
-                    type="text"
-                    class="form-control"
-                    id="nome"
-                    name="nome"
-                    placeholder="Digite o nome completo"
-                    required>
+          <form class="config-form" action="/guardiao/cadastrar" method="post">
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+              <div>
+                <label for="guardiaoNome">Nome completo</label>
+                <input class="form-control" type="text" id="guardiaoNome" name="nome" placeholder="Digite o nome completo" required>
+              </div>
             </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">
-                    E-mail
-                </label>
-
-                <input
-                    type="email"
-                    class="form-control"
-                    id="email"
-                    name="email"
-                    placeholder="Digite o e-mail"
-                    required>
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+              <div>
+                <label for="guardiaoEmail">E-mail</label>
+                <input class="form-control" type="email" id="guardiaoEmail" name="email" placeholder="email@example.com" required>
+              </div>
             </div>
 
-            <div class="mb-4">
-                <label for="numero" class="form-label">
-                    Número de telefone
-                </label>
-
-                <input
-                    type="tel"
-                    class="form-control"
-                    id="numero"
-                    name="numero"
-                    placeholder="Digite o número de telefone"
-                    required>
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-telephone-fill"></i></span>
+              <div>
+                <label for="guardiaoNumero">Número de telefone</label>
+                <input class="form-control" type="tel" id="guardiaoNumero" name="numero" placeholder="(00) 00000-0000" required>
+              </div>
             </div>
 
-            <div class="d-flex justify-content-between">
-
-                <a href="index.html" class="btn btn-secondary btn-cancelar">
-                    Cancelar
-                </a>
-
-                <button type="submit" class="btn btn-purple">
-                    <i class="bi bi-check-lg me-1"></i>
-                    Cadastrar
-                </button>
-
+            <div class="config-footer">
+              <button type="submit" class="btn config-save">
+                <i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>
+                Cadastrar
+              </button>
+              <a href="/usuario/listar" class="btn config-secondary">Voltar</a>
             </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
 
-        </form>
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    </div>
-
-</main>
-</div>
-
-<%- include('../../partials/scripts') %>
-
+  <% if (mensagem) { %>
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+  <% } %>
 </body>
 </html>
