@@ -13,10 +13,30 @@ import { comentarioRoutes } from './routes/ComentarioRoutes';
 import { muralRoutes } from './routes/MuralRoutes';
 import { guardiaoRoutes } from './routes/GuardiaoRoutes';
 import { mensagemRoutes } from './routes/MensagemRoutes';
+import { transporter } from './infra/mail/NodeMailer';
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3333;
+
+app.get('/test-email', async (req, res) => {
+  try {
+    const info = await transporter.sendMail({
+        from: `"Memorium" <${process.env.EMAIL_USER}>`,
+        to: "emanuellyviana581@gmail.com",
+        subject: "Teste",
+        text: "Teste de email",
+        html: "<b>CHEGOU O EMAIL</b>",
+    });
+    console.log("Mensagem enviada:", info.messageId);
+
+    console.log("Message sent: %s", info.messageId);
+    res.send("E-mail enviado com sucesso!");
+  } catch (err) {
+    console.error("Error while sending mail:", err);
+    res.status(500).send("Falha ao enviar e-mail");
+  }
+});
 
 app.set('view engine', 'ejs');
 
@@ -63,8 +83,14 @@ app.use(tipoMensagemRoutes);
 app.use(usuarioRoutes);
 
 connection.connect()
-    .then(() => { 
-        console.log('Conectado ao banco de dados com sucesso!')
+    .then(async () => { 
+        try {
+            await transporter.verify();
+            console.log('Servidor pronto para receber mensagens!')
+        } catch (err) {
+            console.error("VERIFICAÇÃO FALHOU!:", err);
+        }
+
         app.listen(PORT, () => {
             console.log(`Servidor rodando no endereço http://localhost:${PORT}`);
         });
