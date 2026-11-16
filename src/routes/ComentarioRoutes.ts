@@ -7,5 +7,6 @@ const comentarioRoutes = Router();
 
 comentarioRoutes.get('/perfilUsuario/comentarios', authMiddleware(['USUARIO', 'ADMIN', 'GUARDIAO']), asyncExecutor(ComentarioController.carregarComentarios));
 comentarioRoutes.post('/perfilUsuario/comentarios', authMiddleware(['USUARIO', 'ADMIN', 'GUARDIAO']), asyncExecutor(ComentarioController.criarComentario));
+comentarioRoutes.post('/perfilUsuario/perfil/:id/comentarios', authMiddleware(['USUARIO', 'ADMIN', 'GUARDIAO']), asyncExecutor(ComentarioController.criarComentario));
 
 export { comentarioRoutes };

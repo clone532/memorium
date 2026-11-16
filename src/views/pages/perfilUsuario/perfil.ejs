@@ -232,6 +232,7 @@
             }
 
             .opcao-arquivo {
+                position: relative;
                 border: none;
                 background: var(--perfil-accent-soft);
                 color: var(--perfil-primary);
@@ -244,8 +245,25 @@
                 font-weight: 600;
             }
 
+            .opcao-arquivo input[type="file"] {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
             .opcao-arquivo:hover {
                 background: var(--perfil-accent);
+            }
+
+            .opcao-arquivo:focus-within {
+                outline: 3px solid rgba(104, 64, 181, 0.25);
+                outline-offset: 3px;
             }
 
             .arquivo-nome {
@@ -254,16 +272,20 @@
                 margin-top: 10px;
             }
 
-            .preview-publicacao {
+            .preview-biografia {
                 margin-top: 15px;
                 display: none;
             }
 
-            .preview-publicacao img,
-            .preview-publicacao video {
+            .preview-biografia img,
+            .preview-biografia video {
                 max-width: 100%;
                 max-height: 400px;
                 border-radius: 12px;
+            }
+
+            .preview-biografia audio {
+                width: 100%;
             }
 
             .botao-publicar {
@@ -344,6 +366,12 @@
                 background: #f5f3fc;
             }
 
+            .publicacao-audio {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+
             .publicacao-acoes {
                 border-top: 1px solid var(--perfil-border);
                 padding-top: 12px;
@@ -416,6 +444,31 @@
                 line-height: 1.6;
             }
 
+            .mural-comentario-form label {
+                display: block;
+                color: var(--perfil-ink);
+                font-weight: 600;
+            }
+
+            .mural-comentario-form textarea {
+                display: block;
+                width: 100%;
+                min-height: 110px;
+                margin-top: 10px;
+                padding: 12px 14px;
+                border: 1px solid var(--perfil-border);
+                border-radius: 12px;
+                background: #fff;
+                color: var(--perfil-ink);
+                font: inherit;
+                resize: vertical;
+            }
+
+            .mural-comentario-form textarea:focus {
+                border-color: var(--perfil-primary);
+                outline: 3px solid rgba(104, 64, 181, 0.15);
+            }
+
             @keyframes aparecer {
 
                 from {
@@ -468,98 +521,119 @@
                                             <% } %>
                                 </div>
                                 <h1 class="perfil-name">
-                                    <%= usuario.nome %>
+                                    <%= usuarioPerfil.nome %>
                                 </h1>
-                                <a href="/usuario/configuracaoPerfil" class="reference"><i class="bi bi-gear"></i>
-                                    <button class="btn botao-personalizado" type="button">
-                                        configurações
-                                    </button>
-                                </a>
+                                <% if (ehProprioPerfil) { %>
+                                    <a href="/usuario/configuracaoPerfil" class="reference">
+                                        <i class="bi bi-gear"></i>
+                                        <button class="btn botao-personalizado" type="button">
+                                            configurações
+                                        </button>
+                                    </a>
+                                <% } else if (usuario.tipo === 'ADMIN') { %>
+                                    <a href="/usuario/editar/<%= usuarioPerfil.id %>" class="reference">
+                                        <button class="btn botao-personalizado" type="button">Editar perfil</button>
+                                    </a>
+                                <% } %>
 
                                 <div class="perfil-divider"></div>
                                 <div class="perfil-tabs">
-                                    <button class="perfil-tab botao-personalizado active"
+                                    <button class="perfil-tab botao-personalizado <%= abaInicial === 'biografia' ? 'active' : '' %>"
                                         onclick="mostrarAba('biografia', this)">
                                         Biografia
                                     </button>
-                                    <button class="perfil-tab botao-personalizado" onclick="mostrarAba('mural', this)">
+                                    <button class="perfil-tab botao-personalizado <%= abaInicial === 'mural' ? 'active' : '' %>"
+                                        onclick="mostrarAba('mural', this)">
                                         Mural
                                     </button>
                                 </div>
                             </div>
 
                             <div class="perfil-content">
-                                <div id="biografia" class="perfil-section active">
+                                <div id="biografia" class="perfil-section <%= abaInicial === 'biografia' ? 'active' : '' %>">
                                     <h2>
                                         Biografia
                                     </h2>
 
-                                    <!-- CRIAR PUBLICAÇÃO -->
-                                    <form id="formBiografia" class="criar-biografia" onsubmit="return publicar(event)"
-                                        enctype="multipart/form-data">
-                                        <h3>
-                                            <% if (usuario.imagem) { %>
-                                                <img src="/uploads/<%= usuario.imagem %>"
-                                                    class="padronizar-avatar-publi">
+                                    <% if (ehProprioPerfil) { %>
+                                        <form id="formBiografia" class="criar-biografia"
+                                            action="/perfilUsuario/perfil/<%= usuarioPerfil.id %>/biografia"
+                                            method="post" enctype="multipart/form-data">
+                                            <h3>
+                                                <% if (usuario.imagem) { %>
+                                                    <img src="/uploads/<%= usuario.imagem %>"
+                                                        class="padronizar-avatar-publi" alt="">
                                                 <% } else { %>
                                                     <i class="bi bi-person-circle" aria-hidden="true"></i>
-                                                    <% } %>
-                                                        Criar publicação
-                                        </h3>
-                                        <textarea name="texto" id="textobiografia" class="campo-biografia"
-                                            placeholder="Compartilhe uma lembrança ou escreva algo..."></textarea>
+                                                <% } %>
+                                                Criar publicação
+                                            </h3>
+                                            <textarea name="conteudo" id="textoBiografia" class="campo-biografia"
+                                                maxlength="5000"
+                                                placeholder="Compartilhe uma lembrança ou escreva algo..."></textarea>
 
-                                        <div class="opcoes-biografia">
-                                            <label class="opcao-arquivo">
-                                                <i class="bi bi-image"></i>
-                                                arquivo
-                                                <input type="file" id="anexoUrl" name="anexoUrl" accept="image/*,video/*,audio/*">
-                                            </label>
-                                        </div>
-                                        <div id="arquivoNome" class="arquivo-nome">
-                                        </div>
+                                            <div class="opcoes-biografia">
+                                                <label class="opcao-arquivo" for="anexoUrl">
+                                                    <i class="bi bi-image" aria-hidden="true"></i>
+                                                    Escolher arquivo
+                                                    <input type="file" id="anexoUrl" name="anexoUrl"
+                                                        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg">
+                                                </label>
+                                            </div>
+                                            <div id="arquivoNome" class="arquivo-nome" aria-live="polite">
+                                                Imagens, vídeos ou áudios (máximo 10 MB).
+                                            </div>
+                                            <div id="previewBiografia" class="preview-biografia"></div>
+                                            <% if (mensagemBiografia) { %>
+                                                <div class="alert alert-danger mt-3" role="alert">
+                                                    <%= mensagemBiografia.valor %>
+                                                </div>
+                                            <% } %>
+                                            <button type="submit" class="botao-publicar botao-personalizado">
+                                                <i class="bi bi-send"></i>
+                                                Publicar
+                                            </button>
+                                        </form>
+                                    <% } %>
 
-                                        <div id="previewBiografia" class="preview-biografia">
-                                        </div>
-                                        <button type="submit" class="botao-publicar botao-personalizado">
-                                            <i class="bi bi-send"></i>
-                                            Publicar
-                                        </button>
-                                    </form>
-
-
-                                    <!-- LISTA DE PUBLICAÇÕES -->
                                     <div id="listaBiografia">
-                                        <div class="biografia">
-                                            <div class="biografia-header">
-                                                <div class="mini-avatar">
-                                                    <i class="bi bi-person"></i>
+                                        <% if (biografias.length === 0) { %>
+                                            <p class="mural-texto">Ainda não há publicações nesta biografia.</p>
+                                        <% } %>
+                                        <% biografias.forEach((publicacao) => { %>
+                                            <article class="publicacao">
+                                                <div class="publicacao-header">
+                                                    <div class="mini-avatar">
+                                                        <% if (usuarioPerfil.imagem) { %>
+                                                            <img src="/uploads/<%= usuarioPerfil.imagem %>" alt="">
+                                                        <% } else { %>
+                                                            <i class="bi bi-person"></i>
+                                                        <% } %>
+                                                    </div>
+                                                    <div>
+                                                        <strong><%= usuarioPerfil.nome %></strong>
+                                                        <small><%= new Date(publicacao.data_hora).toLocaleString('pt-BR') %></small>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <strong>
-                                                        ADMIN
-                                                    </strong>
-                                                    <small>
-                                                        Muito tempo atrás
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <p>
-                                                Este é um espaço para compartilhar
-                                                momentos e lembranças especiais.
-                                            </p>
-                                            <div class="biografia-acoes">
-                                                <button class="botao-personalizado botao-personalizado--acao"
-                                                    onclick="curtir(this)">
-                                                    <i class="bi bi-heart"></i>
-                                                    Curtir
-                                                </button>
-                                                <button class="botao-personalizado botao-personalizado--acao">
-                                                    <i class="bi bi-chat"></i>
-                                                    Comentar
-                                                </button>
-                                            </div>
-                                        </div>
+                                                <% if (publicacao.conteudo) { %>
+                                                    <p><%= publicacao.conteudo %></p>
+                                                <% } %>
+                                                <% if (publicacao.anexo_url && publicacao.tipo_anexo && publicacao.tipo_anexo.startsWith('image/')) { %>
+                                                    <img class="publicacao-media" src="/uploads/<%= publicacao.anexo_url %>"
+                                                        alt="Arquivo anexado à publicação">
+                                                <% } else if (publicacao.anexo_url && publicacao.tipo_anexo && publicacao.tipo_anexo.startsWith('video/')) { %>
+                                                    <video class="publicacao-media" controls preload="metadata">
+                                                        <source src="/uploads/<%= publicacao.anexo_url %>" type="<%= publicacao.tipo_anexo %>">
+                                                        Seu navegador não consegue reproduzir este vídeo.
+                                                    </video>
+                                                <% } else if (publicacao.anexo_url && publicacao.tipo_anexo && publicacao.tipo_anexo.startsWith('audio/')) { %>
+                                                    <audio class="publicacao-audio" controls preload="metadata">
+                                                        <source src="/uploads/<%= publicacao.anexo_url %>" type="<%= publicacao.tipo_anexo %>">
+                                                        Seu navegador não consegue reproduzir este áudio.
+                                                    </audio>
+                                                <% } %>
+                                            </article>
+                                        <% }) %>
                                     </div>
                                 </div>
 
@@ -569,74 +643,51 @@
                                 <!-- MURAL -->
                                 <!-- ============================= -->
 
-                                <div id="mural" class="perfil-section">
-
+                                <div id="mural" class="perfil-section <%= abaInicial === 'mural' ? 'active' : '' %>">
                                     <h2>
                                         Mural
                                     </h2>
-                                    <div class="mural-card">
-                                        <div class="mural-topo">
-                                            <div class="mini-avatar">
-                                                <i class="bi bi-person"></i>
+                                    <% if (mensagem) { %>
+                                        <div class="alert alert-danger" role="alert">
+                                            <%= mensagem.valor %>
+                                        </div>
+                                    <% } %>
+
+                                    <form method="post" action="/perfilUsuario/perfil/<%= usuarioPerfil.id %>/comentarios"
+                                        class="mural-card mural-comentario-form">
+                                        <label for="comentarioMural">Deixe um comentário para <%= usuarioPerfil.nome %></label>
+                                        <textarea id="comentarioMural" name="conteudo" class="mural-texto"
+                                            maxlength="500" rows="4" placeholder="Escreva sua mensagem..."
+                                            required></textarea>
+                                        <button type="submit" class="botao-publicar botao-personalizado">
+                                            <i class="bi bi-send"></i>
+                                            Comentar
+                                        </button>
+                                    </form>
+
+                                    <% if (comentarios.length === 0) { %>
+                                        <p class="mural-texto">Ainda não há comentários neste mural.</p>
+                                    <% } %>
+
+                                    <% comentarios.forEach((comentario) => { %>
+                                        <article class="mural-card">
+                                            <div class="mural-topo">
+                                                <% if (comentario.autor_imagem) { %>
+                                                    <img src="/uploads/<%= comentario.autor_imagem %>"
+                                                        class="padronizar-avatar-publi" alt="">
+                                                <% } else { %>
+                                                    <div class="mini-avatar">
+                                                        <i class="bi bi-person"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div>
+                                                    <strong><%= comentario.autor_nome %></strong>
+                                                    <small><%= new Date(comentario.datahora).toLocaleString('pt-BR') %></small>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <strong>
-                                                    <%= usuario.nome %>
-                                                </strong>
-                                                <small>
-                                                    Seu mural
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <div class="mural-conteudo">
-                                            <p>
-                                                Este é o seu mural.
-                                                Aqui serão exibidas suas
-                                                publicações e memórias.
-                                            </p>
-                                        </div>
-                                        <div class="mural-acoes">
-                                            <button class="botao-personalizado botao-personalizado--acao"
-                                                onclick="curtir(this)">
-                                                <i class="bi bi-heart"></i>
-                                                Curtir
-                                            </button>
-                                            <button class="botao-personalizado botao-personalizado--acao">
-                                                <i class="bi bi-chat"></i>
-                                                Comentar
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="mural-card">
-                                        <div class="mural-topo">
-                                            <div class="mini-avatar">
-                                                <i class="bi bi-person"></i>
-                                            </div>
-                                            <div>
-                                                <strong>
-                                                    <%= usuario.nome %>
-                                                </strong>
-                                                <small>
-                                                    Publicação
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <p class="mural-texto">
-                                            Aqui aparecerão os conteúdos
-                                            publicados no mural.
-                                        </p>
-                                        <div class="mural-acoes">
-                                            <button class="botao-personalizado botao-personalizado--acao"
-                                                onclick="curtir(this)">
-                                                <i class="bi bi-heart"></i>
-                                                Curtir
-                                            </button>
-                                            <button class="botao-personalizado botao-personalizado--acao">
-                                                <i class="bi bi-chat"></i>
-                                                Comentar
-                                            </button>
-                                        </div>
-                                    </div>
+                                            <p class="mural-texto"><%= comentario.conteudo %></p>
+                                        </article>
+                                    <% }) %>
                                 </div>
                             </div>
                         </div>
@@ -644,160 +695,65 @@
                 <%- include('../../partials/scripts') %>
 
                     <script>
-                        /* FOTO DA PUBLICAÇÃO */
+                        const formularioBiografia = document.getElementById("formBiografia");
+                        const entradaArquivo = document.getElementById("anexoUrl");
+                        const nomeArquivo = document.getElementById("arquivoNome");
+                        const previewBiografia = document.getElementById("previewBiografia");
+                        let urlPreviewAtual = null;
 
-                        document
-                            .getElementById("inputFotoPublicacao")
-                            .addEventListener("change", function (event) {
-                                const arquivo =
-                                    event.target.files[0];
+                        if (entradaArquivo && nomeArquivo && previewBiografia) {
+                            entradaArquivo.addEventListener("change", function () {
+                                const arquivo = entradaArquivo.files[0];
+                                if (urlPreviewAtual) {
+                                    URL.revokeObjectURL(urlPreviewAtual);
+                                    urlPreviewAtual = null;
+                                }
+                                previewBiografia.replaceChildren();
+                                previewBiografia.style.display = "none";
+
                                 if (!arquivo) {
+                                    nomeArquivo.textContent = "Imagens, vídeos ou áudios (máximo 10 MB).";
                                     return;
                                 }
-                                arquivoSelecionado = arquivo;
-                                document
-                                    .getElementById("inputVideoPublicacao")
-                                    .value = "";
-                                mostrarPreview(arquivo);
-                            });
 
-                        /* VÍDEO DA PUBLICAÇÃO */
-                        document
-                            .getElementById("inputVideoPublicacao")
-                            .addEventListener("change", function (event) {
-                                const arquivo =
-                                    event.target.files[0];
-                                if (!arquivo) {
+                                if (arquivo.size > 10 * 1024 * 1024) {
+                                    entradaArquivo.value = "";
+                                    nomeArquivo.textContent = "O arquivo deve ter no máximo 10 MB.";
                                     return;
                                 }
-                                arquivoSelecionado = arquivo;
-                                document
-                                    .getElementById("inputFotoPublicacao")
-                                    .value = "";
-                                mostrarPreview(arquivo);
-                            });
 
-                        /* PREVIEW */
-                        function mostrarPreview(arquivo) {
-                            const preview =
-                                document.getElementById(
-                                    "previewPublicacao"
-                                );
-                            const nome =
-                                document.getElementById(
-                                    "arquivoNome"
-                                );
-                            const url =
-                                URL.createObjectURL(arquivo);
-                            nome.textContent =
-                                "Arquivo selecionado: " +
-                                arquivo.name;
-                            preview.innerHTML = "";
-                            if (
-                                arquivo.type.startsWith("image/")
-                            ) {
-                                const imagem =
-                                    document.createElement("img");
-                                imagem.src = url;
-                                imagem.className =
-                                    "publicacao-media";
-                                preview.appendChild(imagem);
-                            }
-                            if (
-                                arquivo.type.startsWith("video/")
-                            ) {
-                                const video =
-                                    document.createElement("video");
-                                video.src = url;
-                                video.className =
-                                    "publicacao-media";
-                                video.controls = true;
-                                preview.appendChild(video);
-                            }
-                            preview.style.display =
-                                "block";
+                                nomeArquivo.textContent = "Arquivo selecionado: " + arquivo.name;
+                                urlPreviewAtual = URL.createObjectURL(arquivo);
+
+                                let preview;
+                                if (arquivo.type.startsWith("image/")) {
+                                    preview = document.createElement("img");
+                                    preview.alt = "Pré-visualização do arquivo";
+                                } else if (arquivo.type.startsWith("video/")) {
+                                    preview = document.createElement("video");
+                                    preview.controls = true;
+                                } else if (arquivo.type.startsWith("audio/")) {
+                                    preview = document.createElement("audio");
+                                    preview.controls = true;
+                                }
+
+                                if (preview) {
+                                    preview.src = urlPreviewAtual;
+                                    previewBiografia.appendChild(preview);
+                                    previewBiografia.style.display = "block";
+                                }
+                            });
                         }
 
-
-
-                        /* PUBLICAR */
-                        function publicar() {
-                            const evt = arguments[0];
-                            if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
-                            const texto = document.getElementById('textoPublicacao').value.trim();
-                            if (texto === '' && !arquivoSelecionado) {
-                                alert('Escreva uma mensagem ou adicione uma foto/vídeo.');
-                                return false;
-                            }
-                            const form = document.getElementById('formPublicacao');
-                            const formData = new FormData(form);
-                            if (arquivoSelecionado) {
-                                formData.set('arquivo', arquivoSelecionado);
-                            }
-                            fetch('/publicacoes', {
-                                method: 'POST',
-                                body: formData
-                            }).catch(function (err) {
-                                console.warn('Envio falhou (uso offline ou rota ausente):', err);
+                        if (formularioBiografia) {
+                            formularioBiografia.addEventListener("submit", function (event) {
+                                const texto = document.getElementById("textoBiografia").value.trim();
+                                if (!texto && !(entradaArquivo && entradaArquivo.files.length)) {
+                                    event.preventDefault();
+                                    alert("Escreva uma mensagem ou escolha um arquivo.");
+                                }
                             });
-                            const lista = document.getElementById('listaPublicacoes');
-                            const publicacao = document.createElement('div');
-                            publicacao.className = 'publicacao';
-                            const data = new Date().toLocaleDateString('pt-BR');
-                            let conteudo = '';
-                            if (texto !== '') conteudo += `<p>${texto}</p>`;
-                            if (arquivoSelecionado) {
-                                const url = URL.createObjectURL(arquivoSelecionado);
-                                if (arquivoSelecionado.type.startsWith('image/')) {
-                                    conteudo += `<img src="${url}" class="publicacao-media">`;
-                                }
-                                if (arquivoSelecionado.type.startsWith('video/')) {
-                                    conteudo += `<video src="${url}" class="publicacao-media" controls></video>`;
-                                }
-                            }
-
-                            publicacao.innerHTML = `
-            <div class="publicacao-header">
-                <div class="mini-avatar">
-                    <i class="bi bi-person"></i>
-                </div>
-                <div>
-                    <strong>
-                        <%= usuario.nome %>
-                    </strong>
-                    <small>
-                        ${data}
-                    </small>
-                </div>
-            </div>
-            ${conteudo}
-            <div class="publicacao-acoes">
-                <button class="botao-personalizado botao-personalizado--acao" onclick="curtir(this)">
-                    <i class="bi bi-heart"></i>
-                    Curtir
-                </button>
-                <button class="botao-personalizado botao-personalizado--acao">
-                    <i class="bi bi-chat"></i>
-                    Comentar
-                </button>
-            </div>
-        `;
-
-                            lista.prepend(publicacao);
-
-                            // Reset form and preview
-                            form.reset();
-                            document.getElementById('arquivoNome').textContent = '';
-                            const preview = document.getElementById('previewPublicacao');
-                            preview.innerHTML = '';
-                            preview.style.display = 'none';
-                            arquivoSelecionado = null;
-
-                            return false;
-
                         }
-
-
 
                         /* ABAS */
 

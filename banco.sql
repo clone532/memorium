@@ -51,19 +51,22 @@ create table Mensagem (
 
 create table Biografia (
 	id SERIAL PRIMARY KEY,
-	anexoUrl VARCHAR(255) NOT NULL,
+	conteudo TEXT NOT NULL DEFAULT '',
+	anexoUrl VARCHAR(255),
+	tipoAnexo VARCHAR(100),
+	dataHora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	fkUsuario INT NOT NULL REFERENCES Usuario(id),
-	fkMensagem INT NOT NULL REFERENCES Mensagem(id)
+	fkMensagem INT REFERENCES Mensagem(id)
 );
 
 create table Mural (
 	id SERIAL PRIMARY KEY,
-	fkUsuario INT NOT NULL REFERENCES Usuario(id)
+	fkUsuario INT NOT NULL UNIQUE REFERENCES Usuario(id)
 );
 
 create table Comentario (
 	id SERIAL PRIMARY KEY,
-	dataHora DATE NOT NULL,
+	dataHora TIMESTAMP NOT NULL,
 	conteudo VARCHAR(500) NOT NULL,
 	fkMural INT NOT NULL REFERENCES Mural(id),
 	fkUsuario INT NOT NULL REFERENCES Usuario(id)

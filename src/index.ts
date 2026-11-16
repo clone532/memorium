@@ -13,9 +13,16 @@ import { comentarioRoutes } from './routes/ComentarioRoutes';
 import { muralRoutes } from './routes/MuralRoutes';
 import { guardiaoRoutes } from './routes/GuardiaoRoutes';
 import { mensagemRoutes } from './routes/MensagemRoutes';
+import { biografiaRoutes } from './routes/BiografiaRoutes';
 import { transporter } from './infra/mail/NodeMailer';
 
 dotenv.config();
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (!sessionSecret) {
+    throw new Error('Defina SESSION_SECRET no arquivo .env.');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3333;
 
@@ -26,16 +33,29 @@ app.use('/IMGS', express.static(path.resolve(__dirname, '..', 'IMGS')));
 
 app.use(express.urlencoded({ extended: false }));
 
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
-}
+app.use('/uploads', (req, res, next): void => {
+    const permittedExtensions = new Set([
+        '.jpg', '.jpeg', '.png', '.webp', '.gif',
+        '.mp4', '.webm', '.mp3', '.wav', '.ogg'
+    ]);
+    if (!permittedExtensions.has(path.extname(req.path).toLowerCase())) {
+        res.sendStatus(404);
+        return;
+    }
+
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+}, express.static(path.resolve(process.cwd(), 'uploads'), {
+    dotfiles: 'deny',
+    index: false
+}));
 
 app.get('/', function (req, res) {
     res.render('index', { message: 'Hello' });
 });
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'memorium-secret-change-me',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -54,6 +74,7 @@ app.use((req, res, next) => {
 
 // NÃO ESQUECER DO APP.USE!!! IMPORTANTÍSSIMO PARA QUE AS ROTAS SEJAM RECONHECIDAS PELO EXPRESS
 app.use(assinaturaRoutes);
+app.use(biografiaRoutes);
 app.use(comentarioRoutes);
 app.use(dashboardRoutes);
 app.use(destinatarioRoutes);

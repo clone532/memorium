@@ -1,50 +1,55 @@
 import { connection } from "../infra/Connection";
-import { Mensagem } from "./Mensagem";
-import { Usuario } from "./Usuario";
 
 export class Biografia {
     id?: number;
-    anexoUrl: string;
-    fkUsuario?: Usuario;
-    fkMensagem?: Mensagem;
+    conteudo: string;
+    anexoUrl: string | null;
+    tipoAnexo: string | null;
+    fkUsuario: number;
 
-    constructor({id, anexoUrl, fkUsuario, fkMensagem}: {id?: number, anexoUrl: string, fkUsuario?: Usuario, fkMensagem?: Mensagem}) {
+    constructor({
+        id,
+        conteudo,
+        anexoUrl,
+        tipoAnexo,
+        fkUsuario
+    }: {
+        id?: number;
+        conteudo: string;
+        anexoUrl: string | null;
+        tipoAnexo: string | null;
+        fkUsuario: number;
+    }) {
         this.id = id;
+        this.conteudo = conteudo;
         this.anexoUrl = anexoUrl;
+        this.tipoAnexo = tipoAnexo;
         this.fkUsuario = fkUsuario;
-        this.fkMensagem = fkMensagem;
     }
 
     static async criar(biografia: Biografia) {
-        await connection.query(`INSERT INTO Biografia(anexoUrl, fkUsuario, fkMensagem) VALUES ($1, $2, $3);`,
+        await connection.query(
+            `INSERT INTO Biografia(conteudo, anexoUrl, tipoAnexo, fkUsuario)
+             VALUES ($1, $2, $3, $4)`,
             [
+                biografia.conteudo,
                 biografia.anexoUrl,
-                biografia.fkUsuario?.id,
-                biografia.fkMensagem?.id
+                biografia.tipoAnexo,
+                biografia.fkUsuario
             ]
         );
     }
 
-    static async atualizar(biografia: Biografia) {
-        await connection.query(`UPDATE Biografia SET anexoUrl = $1 WHERE id = $2;`,
-            [
-                biografia.anexoUrl,
-                biografia.id
-            ]
+    static async buscarPorUsuario(idUsuario: number) {
+        const { rows } = await connection.query(
+            `SELECT id, conteudo, anexoUrl AS anexo_url,
+                    tipoAnexo AS tipo_anexo, dataHora AS data_hora
+             FROM Biografia
+             WHERE fkUsuario = $1
+             ORDER BY dataHora DESC, id DESC`,
+            [idUsuario]
         );
-    }
 
-    static async deletar(id: string) {
-        await connection.query(`DELETE FROM Biografia WHERE id = $1;`, [id]);
-    }
-
-    static async buscarPorUsuario(idUsuario: string) {
-        const { rows } = await connection.query(`
-            SELECT Biografia.anexoUrl, Usuario.id
-            FROM Biografia
-            INNER JOIN Usuario usuario ON biografia.fkUsuario = usuario.id
-            WHERE biografia.fkUsuario = $1;
-        `, [idUsuario]);
         return rows;
     }
 }

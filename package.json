@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "dev": "tsnd --transpile-only --respawn --ignore-watch node_modules --watch src/ src/index.ts",
-    "migrate:passwords": "node scripts/migrate-passwords.js"
+    "migrate:passwords": "node scripts/migrate-passwords.js",
+    "migrate:biografia": "node scripts/migrate-biografia.js"
   },
   "keywords": [],
   "author": "",

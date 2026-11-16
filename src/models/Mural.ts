@@ -1,47 +1,36 @@
 import { connection } from "../infra/Connection";
-import { Usuario } from "./Usuario";
 
 export class Mural {
-    id?: number;
-    dataHora: Date;
-    conteudo: string;
-    comentador: Usuario;
-    dono_perfil: Usuario;
+    id: number;
+    fkUsuario: number;
 
-    constructor({ id, dataHora, conteudo, comentador, dono_perfil }: { id?: number, dataHora: Date, conteudo: string, comentador: Usuario, dono_perfil: Usuario }) {
+    constructor({ id, fkUsuario }: { id: number, fkUsuario: number }) {
         this.id = id;
-        this.dataHora = dataHora;
-        this.conteudo = conteudo;
-        this.comentador = comentador;
-        this.dono_perfil = dono_perfil;
+        this.fkUsuario = fkUsuario;
     }
 
-    static async comentarMural(mural: Mural) {
-        await connection.query(`
-            INSERT INTO Mural(dataHora, conteudo, comentador, dono_perfil)
-            VALUES ($1, $2, $3, $4);
-            `,
-        [
-            mural.dataHora,
-            mural.conteudo,
-            mural.comentador.id,
-            mural.dono_perfil.id
-        ]
-    );
+    static async buscarPorUsuario(fkUsuario: number) {
+        const { rows } = await connection.query(
+            `SELECT id, fkUsuario FROM Mural WHERE fkUsuario = $1`,
+            [fkUsuario]
+        );
+
+        if (!rows[0]) {
+            return null;
+        }
+
+        return new Mural({ id: rows[0].id, fkUsuario: rows[0].fkusuario });
     }
 
-    static async deletarComentar(mural: Mural) {
-        await connection.query(`
-            DELETE FROM Mural
-            WHERE id = $1;
-        `, [mural.id]);
-    }
+    static async buscarOuCriarPorUsuario(fkUsuario: number) {
+        const { rows } = await connection.query(
+            `INSERT INTO Mural(fkUsuario)
+             VALUES ($1)
+             ON CONFLICT (fkUsuario) DO UPDATE SET fkUsuario = EXCLUDED.fkUsuario
+             RETURNING id, fkUsuario`,
+            [fkUsuario]
+        );
 
-    static async editarComentar(mural: Mural) {
-        await connection.query(`
-            UPDATE Mural
-            SET conteudo = $1
-            WHERE id = $2;
-        `, [mural.conteudo, mural.id]);
+        return new Mural({ id: rows[0].id, fkUsuario: rows[0].fkusuario });
     }
 }

@@ -1,41 +1,44 @@
 import { Request, Response } from "express";
 import { Comentario } from "../models/Comentario";
+import { Mural } from "../models/Mural";
+import { Usuario } from "../models/Usuario";
 
 export class ComentarioController {
-    
     static async carregarComentarios(req: Request, res: Response) {
-        
-        res.render('pages/perfilUsuario/comentarios', {
-            mensagem: null,
-        });
+        const usuario = (req.session as any).usuario;
+        return res.redirect(`/perfilUsuario/perfil/${usuario.id}#mural`);
     }
 
     static async criarComentario(req: Request, res: Response) {
-        const { conteudo } = req.body;
+        const usuarioSessao = (req.session as any).usuario;
+        const idPerfil = req.params.id || String(usuarioSessao.id);
+        const voltarAoMural = `/perfilUsuario/perfil/${encodeURIComponent(idPerfil)}?aba=mural&erro=comentario#mural`;
+        const conteudo = typeof req.body.conteudo === "string" ? req.body.conteudo.trim() : "";
 
-        if (!conteudo) {
-            return res.render('pages/perfilUsuario/comentarios', {
-                mensagem: {
-                    tipo: 'error',
-                    valor: 'Não é possível criar um comentário vazio',
-                    titulo: 'Erro ao criar comentário'
-                }
-            });
+        if (!conteudo || conteudo.length > 500) {
+            return res.redirect(voltarAoMural);
         }
 
-        const usuarioSessao = (req.session as any).usuario;
+        const idPerfilNumerico = Number(idPerfil);
+        if (!Number.isSafeInteger(idPerfilNumerico) || idPerfilNumerico <= 0) {
+            return res.status(404).send("Perfil não encontrado.");
+        }
 
+        const usuarioPerfil = await Usuario.buscarPorId(String(idPerfilNumerico));
+        if (!usuarioPerfil?.id) {
+            return res.status(404).send("Perfil não encontrado.");
+        }
+
+        const mural = await Mural.buscarOuCriarPorUsuario(usuarioPerfil.id);
         const comentario = new Comentario({
             dataHora: new Date(),
             conteudo,
-            fkMural: { id: 1 } as any,
-            fkUsuario: { id: usuarioSessao?.id } as any
+            fkMural: mural.id,
+            fkUsuario: Number(usuarioSessao.id)
         });
 
         await Comentario.criarComentario(comentario);
 
-        res.render('pages/perfilUsuario/comentarios', {
-            mensagem: null
-        });
+        return res.redirect(`/perfilUsuario/perfil/${encodeURIComponent(idPerfil)}?aba=mural#mural`);
     }
 }

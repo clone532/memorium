@@ -3,6 +3,9 @@ import { Request, Response } from "express";
 import { Usuario } from "../models/Usuario";
 import { TipoUsuario } from "../models/TipoUsuario";
 import { TipoUsuarioEnum } from "../enums/TipoUsuario";
+import { Comentario } from "../models/Comentario";
+import { Mural } from "../models/Mural";
+import { Biografia } from "../models/Biografia";
 import fs from "fs";
 import path from "path";
 
@@ -90,17 +93,48 @@ export class UsuarioController {
     
     static async carregarPerfil(req: Request, res: Response) {
         const { usuario } = req.session as any;
+        const idPerfil = Number(req.params.id);
 
-        const usuarioEncontrado = await Usuario.buscarPorId(usuario.id);
-
-        if (!usuarioEncontrado) {
-            return res.redirect('/usuario/logar');
+        if (!Number.isSafeInteger(idPerfil) || idPerfil <= 0) {
+            return res.status(404).send('Usuário não encontrado.');
         }
 
-        res.render('pages/perfilUsuario/perfil', {
+        const usuarioEncontrado = await Usuario.buscarPorId(String(idPerfil));
+
+        if (!usuarioEncontrado) {
+            return res.status(404).send('Usuário não encontrado.');
+        }
+
+        const mural = usuarioEncontrado.id
+            ? await Mural.buscarPorUsuario(usuarioEncontrado.id)
+            : null;
+        const comentarios = mural?.id
+            ? await Comentario.buscarPorMural(mural.id)
+            : [];
+        const biografias = await Biografia.buscarPorUsuario(usuarioEncontrado.id!);
+
+        return res.render('pages/perfilUsuario/perfil', {
+            usuario,
             usuarioPerfil: usuarioEncontrado,
+            comentarios,
+            biografias,
+            ehProprioPerfil: Number(usuario.id) === Number(usuarioEncontrado.id),
+            abaInicial: req.query.aba === 'mural' ? 'mural' : 'biografia',
+            mensagemBiografia: req.query.erro === 'publicacao'
+                ? {
+                    tipo: 'error',
+                    valor: 'Escreva um texto de até 5.000 caracteres ou selecione um arquivo.',
+                    titulo: 'Publicação inválida'
+                }
+                : null,
+            mensagem: req.query.erro === 'comentario'
+                ? {
+                    tipo: 'error',
+                    valor: 'O comentário deve conter de 1 a 500 caracteres.',
+                    titulo: 'Comentário inválido'
+                }
+                : null,
             titulo: 'Perfil do Usuário',
-            mensagem: null
         });
     }
 
@@ -239,15 +273,41 @@ export class UsuarioController {
             });
         }
 
-        (req.session as any).usuario = {
-            nome: usuario.nome,
-            email: usuario.email,
-            id: usuario.id,
-            tipo: usuario.tipoUsuario.nome,
-            imagem: usuario.imagem
-        }
+        req.session.regenerate((error) => {
+            if (error) {
+                console.error('Erro ao renovar a sessão após o login:', error);
+                return res.status(500).render('login', {
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'Não foi possível iniciar sua sessão. Tente novamente.',
+                        titulo: 'Erro'
+                    }
+                });
+            }
 
-        return res.redirect('/dashboard');
+            (req.session as any).usuario = {
+                nome: usuario.nome,
+                email: usuario.email,
+                id: usuario.id,
+                tipo: usuario.tipoUsuario.nome,
+                imagem: usuario.imagem
+            };
+
+            req.session.save((saveError) => {
+                if (saveError) {
+                    console.error('Erro ao salvar a sessão após o login:', saveError);
+                    return res.status(500).render('login', {
+                        mensagem: {
+                            tipo: 'error',
+                            valor: 'Não foi possível iniciar sua sessão. Tente novamente.',
+                            titulo: 'Erro'
+                        }
+                    });
+                }
+
+                return res.redirect('/dashboard');
+            });
+        });
     }
 
     static async deslogar(req: Request, res: Response) {
