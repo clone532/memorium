@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import { Usuario } from "../models/Usuario";
 import { TipoUsuario } from "../models/TipoUsuario";
@@ -6,6 +7,19 @@ import fs from "fs";
 import path from "path";
 
 export class UsuarioController {
+
+    static podeEditarUsuario(req: Request, idUsuarioDestino: string | number) {
+        const sessionUser = (req.session as any)?.usuario;
+
+        if (!sessionUser) {
+            return false;
+        }
+
+        const usuarioLogadoId = Number(sessionUser.id);
+        const usuarioDestinoId = Number(idUsuarioDestino);
+
+        return sessionUser.tipo === 'ADMIN' || usuarioLogadoId === usuarioDestinoId;
+    }
 
 // FUNÇÕES DE CARREGAR !!!!!!!
 
@@ -48,6 +62,10 @@ export class UsuarioController {
     static async carregarEditar(req: Request, res: Response) {
         const { id } = req.params;
         const { usuario } = req.session as any;
+
+        if (!UsuarioController.podeEditarUsuario(req, id)) {
+            return res.redirect('/dashboard');
+        }
 
         const usuarioEncontrado = await Usuario.buscarPorId(id);
 
@@ -271,7 +289,7 @@ export class UsuarioController {
 
         usuarioEncontrado.nome = nome;
         usuarioEncontrado.email = email;
-        usuarioEncontrado.senha = senha;
+        usuarioEncontrado.senha = await bcrypt.hash(senha, 10);
         usuarioEncontrado.imagem = imagem || usuarioEncontrado.imagem;
 
         await Usuario.atualizarUsuario(usuarioEncontrado);
@@ -297,6 +315,11 @@ export class UsuarioController {
     static async editar(req: Request, res: Response) {
         const { id } = req.params;
         const { nome, email, tipo } = req.body;
+        const usuarioLogado = (req.session as any)?.usuario;
+
+        if (!UsuarioController.podeEditarUsuario(req, id)) {
+            return res.redirect('/dashboard');
+        }
 
         const usuarioEncontrado = await Usuario.buscarPorId(id);
 
@@ -304,7 +327,10 @@ export class UsuarioController {
             throw new Error('Usuário não encontrado');
         }
 
-        const tipoSelecionado = await TipoUsuario.buscarPorNome(tipo);
+        const tipoSelecionado = usuarioLogado?.tipo === 'ADMIN'
+            ? await TipoUsuario.buscarPorNome(tipo)
+            : usuarioEncontrado.tipoUsuario;
+
         if (!tipoSelecionado) {
             return res.render('pages/usuario/editar', {
                 titulo: 'Editar Usuário',
@@ -330,7 +356,8 @@ export class UsuarioController {
                 valor: 'Dados salvos com sucesso!',
                 titulo: 'Dados do usuário'
             },
-            usuarioParaEditar: usuarioEncontrado
+            usuarioParaEditar: usuarioEncontrado,
+            usuario: usuarioLogado
         });
 
     }

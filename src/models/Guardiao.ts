@@ -98,7 +98,7 @@ export class Guardiao {
 
     static async buscarApenasNaSessao(guardiao: Guardiao, usuarioGuardiao: UsuarioGuardiao) {
         const { rows } = await connection.query(`SELECT
-            usuario_guardiao.id, usuario_guardiao.chave, guardiao.nome
+            usuario_guardiao.id, usuario_guardiao.chave, guardiao.nome, guardiao.email, guardiao.numero
             FROM usuario_guardiao
             JOIN guardiao ON usuario_guardiao.idGuardiao = guardiao.id
             WHERE usuario_guardiao.idUsuario = $1
@@ -110,11 +110,7 @@ export class Guardiao {
                 id: row.id,
                 nome: row.nome,
                 email: row.email,
-                numero: row.numero,
-                usuarioGuardiao: new UsuarioGuardiao(rows[0].chave) /*
-                meu ojetivo aqui é poder incluir a chave do Guardião na lista, mas a
-                chave pertence a uma tabela diferente.
-                */
+                numero: row.numero
             }));
     }
 

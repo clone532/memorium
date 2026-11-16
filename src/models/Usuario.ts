@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { connection } from "../infra/Connection";
 import { TipoUsuario } from "./TipoUsuario";
 
@@ -26,11 +27,13 @@ export class Usuario {
     }
     
     static async cadastrarUsuario(usuario: Usuario) {
+        const senhaHash = await bcrypt.hash(usuario.senha, 10);
+
         await connection.query(`INSERT INTO Usuario(nome, email, senha, dataNasc, tipoUsuario, imagem) VALUES ($1, $2, $3, $4, $5, $6);`,
             [
                 usuario.nome,
                 usuario.email,
-                usuario.senha,
+                senhaHash,
                 usuario.dataNasc,
                 usuario.tipoUsuario.id,
                 usuario.imagem
@@ -40,7 +43,7 @@ export class Usuario {
 
     static async buscarTodos() {
         const { rows } = await connection.query(`
-            select usuario.id, usuario.nome, usuario.email, usuario.senha,
+            select usuario.id, usuario.nome, usuario.email,
             usuario.numero, usuario.dataNasc, usuario.estaMorto,
             tipo_usuario.id as id_tipo, tipo_usuario.nome as nome_tipo,
             tipo_usuario.descricao
@@ -50,7 +53,7 @@ export class Usuario {
             id: row.id,
             nome: row.nome,
             email: row.email,
-            senha: row.senha,
+            senha: "",
             numero: row.numero,
             dataNasc: row.dataNasc,
             estaMorto: row.estaMorto,
@@ -59,11 +62,13 @@ export class Usuario {
     }
 
     static async atualizarUsuario(usuario: Usuario) {
+        const senhaFinal = usuario.senha && usuario.senha.startsWith("$2") ? usuario.senha : await bcrypt.hash(usuario.senha, 10);
+
         await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, imagem=$4 WHERE id=$5;`,
             [
                 usuario.nome,
                 usuario.email,
-                usuario.senha,
+                senhaFinal,
                 usuario.imagem,
                 usuario.id
             ]
@@ -71,13 +76,15 @@ export class Usuario {
     }
 
     static async atualizarComTipo(usuario: Usuario) {
+        const senhaFinal = usuario.senha && usuario.senha.startsWith("$2") ? usuario.senha : await bcrypt.hash(usuario.senha, 10);
+
         await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, tipoUsuario=$4, imagem=$5 WHERE id=$6;`,
             [
                 usuario.nome,
                 usuario.email,
-                usuario.senha,
-                usuario.imagem,
+                senhaFinal,
                 usuario.tipoUsuario.id,
+                usuario.imagem,
                 usuario.id
             ]
         );
@@ -117,8 +124,8 @@ export class Usuario {
     static async buscarPorEmail(email: string) {
         const { rows } = await connection.query(
             `SELECT
-            u.id, u.nome, u.email, u.senha, u.numero,
-            u.dataNasc, u.estaMorto as status_vida,
+            u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
+            u.dataNasc, u.estaMorto,
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
@@ -137,21 +144,28 @@ export class Usuario {
             numero: rows[0].numero,
             dataNasc: rows[0].dataNasc,
             estaMorto: rows[0].estaMorto,
-            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao)
+            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao),
+            imagem: rows[0].imagem
         });
     }
 
     static async buscarPorEmailESenha(email: string, senha: string) {
         const { rows } = await connection.query(
             `SELECT u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
-            u.dataNasc, u.estaMorto as status_vida,
+            u.dataNasc, u.estaMorto,
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
-            WHERE u.email=$1 AND u.senha=$2`,
-            [email, senha]
+            WHERE u.email=$1`,
+            [email]
         );
+
         if (!rows[0]) {
+            return null;
+        }
+
+        const senhaValida = await bcrypt.compare(senha, rows[0].senha);
+        if (!senhaValida) {
             return null;
         }
 

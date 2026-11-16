@@ -19,56 +19,38 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3333;
 
-app.get('/test-email', async (req, res) => {
-  try {
-    const info = await transporter.sendMail({
-        from: `"Memorium" <${process.env.EMAIL_USER}>`,
-        to: "emanuellyviana581@gmail.com",
-        subject: "Teste",
-        text: "Teste de email",
-        html: "<b>CHEGOU O EMAIL</b>",
-    });
-    console.log("Mensagem enviada:", info.messageId);
-
-    console.log("Message sent: %s", info.messageId);
-    res.send("E-mail enviado com sucesso!");
-  } catch (err) {
-    console.error("Error while sending mail:", err);
-    res.status(500).send("Falha ao enviar e-mail");
-  }
-});
-
 app.set('view engine', 'ejs');
 
 app.set('views', './src/views');
 app.use('/IMGS', express.static(path.resolve(__dirname, '..', 'IMGS')));
 
 app.use(express.urlencoded({ extended: false }));
-app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+}
 
 app.get('/', function (req, res) {
     res.render('index', { message: 'Hello' });
 });
 
 app.use(session({
-    secret: 'chave123', //chave usada para assinar o cookie
-    resave: false, //evita salvar a sessão se nada mudou
-    saveUninitialized: true, //salva as sessões não inicializadas
-    cookie: { maxAge: 1 * 1000 * 60 * 60 } //uma hora de tempo de expiração
+    secret: process.env.SESSION_SECRET || 'memorium-secret-change-me',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1 * 1000 * 60 * 60,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+    }
 }));
 
 app.use((req, res, next) => {
   const session = req.session as any;
-  res.locals.usuario = session.usuario || null;
+  res.locals.usuario = session?.usuario || null;
   next();
 });
-
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'nova-versao', //chave usada para assinar o cookie
-    resave: false, //evita salvar a sessão se nada mudou
-    saveUninitialized: true, //salva as sessões não inicializadas
-    cookie: { maxAge: 1 * 1000 * 60 * 60 } //uma hora de tempo de expiração
-}));
 
 // NÃO ESQUECER DO APP.USE!!! IMPORTANTÍSSIMO PARA QUE AS ROTAS SEJAM RECONHECIDAS PELO EXPRESS
 app.use(assinaturaRoutes);

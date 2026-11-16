@@ -23,11 +23,13 @@ export class ComentarioController {
             });
         }
 
+        const usuarioSessao = (req.session as any).usuario;
+
         const comentario = new Comentario({
             dataHora: new Date(),
             conteudo,
-            comentador: (req.session as any).usuario,
-            dono_perfil: (req.session as any).usuario
+            fkMural: { id: 1 } as any,
+            fkUsuario: { id: usuarioSessao?.id } as any
         });
 
         await Comentario.criarComentario(comentario);
