@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { UsuarioGuardiao } from "../models/UsuarioGuardiao";
-import { Usuario } from "../models/Usuario";
-import { Guardiao } from "../models/Guardiao";
 
 export class UsuarioGuardiaoController {
     static async carregarGerenciar(req: Request, res: Response) {
@@ -19,10 +17,18 @@ export class UsuarioGuardiaoController {
     }
 
     static async conectar(req: Request, res: Response) {
-        const { idUsuario, idGuardiao, chave } = req.body;
+        const idUsuario = Number(req.body.idUsuario);
+        const idGuardiao = Number(req.body.idGuardiao);
+        const chave = typeof req.body.chave === "string" ? req.body.chave : "";
 
-        if (!idUsuario || !idGuardiao || !chave) {
-            return res.render('', {
+        if (
+            !Number.isSafeInteger(idUsuario)
+            || idUsuario <= 0
+            || !Number.isSafeInteger(idGuardiao)
+            || idGuardiao <= 0
+            || !chave.trim()
+        ) {
+            return res.status(400).render('pages/guardiao/conexao', {
                 mensagem: {
                     tipo: 'error',
                     valor: 'Preencha corretamente os dados!',
@@ -38,9 +44,49 @@ export class UsuarioGuardiaoController {
             votoConfirma: false
         });
 
-        await UsuarioGuardiao.criarConexao(usuarioGuardiao); 
+        if (await UsuarioGuardiao.buscar(idUsuario, idGuardiao)) {
+            return res.status(409).render('pages/guardiao/conexao', {
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Este guardião já está vinculado a este usuário.',
+                    titulo: 'Vínculo já existe'
+                }
+            });
+        }
 
-        res.render('pages/guardiao/listar', {
+        try {
+            await UsuarioGuardiao.criarConexao(usuarioGuardiao);
+        } catch (error) {
+            if (
+                error && typeof error === "object"
+                && "code" in error && error.code === "23505"
+            ) {
+                return res.status(409).render('pages/guardiao/conexao', {
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'Este guardião já está vinculado a este usuário.',
+                        titulo: 'Vínculo já existe'
+                    }
+                });
+            }
+
+            if (
+                error && typeof error === "object"
+                && "code" in error && error.code === "23503"
+            ) {
+                return res.status(400).render('pages/guardiao/conexao', {
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'O usuário ou guardião informado não existe.',
+                        titulo: 'Vínculo inválido'
+                    }
+                });
+            }
+
+            throw error;
+        }
+
+        return res.render('pages/guardiao/listar', {
             mensagem: {
                 tipo: 'success',
                 valor: 'Conexão criada com sucesso!',
@@ -50,7 +96,11 @@ export class UsuarioGuardiaoController {
     }
 
     static async desconectar(req: Request, res: Response) {
-        const { id } = req.body;
+        const id = Number(req.body.id);
+        if (!Number.isSafeInteger(id) || id <= 0) {
+            return res.status(400).send("Identificador de vínculo inválido.");
+        }
+
         await UsuarioGuardiao.cancelarConexao(id);
         res.redirect('/guardiao/listar');
     }

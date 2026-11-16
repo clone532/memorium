@@ -4,22 +4,22 @@ import { Destinatario } from "../models/Destinatario";
 export class DestinatarioController {
 
     static async carregarCadastrarListar(req: Request, res: Response) {
-        const { destinatario } = req.session as any;
+        const { usuario } = req.session as any;
 
-        const destinatarios = await Destinatario.buscarTodos();
+        const destinatarios = await Destinatario.buscarTodos(usuario.id);
 
         res.render('pages/destinatario/cadastrarListar', {
-            destinatario,
+            usuario,
             destinatarios,
             mensagem: null
         });
     }
 
     static carregarCadastrar(req: Request, res: Response) {
-        const { destinatario } = req.session as any;
+        const { usuario } = req.session as any;
 
         return res.render('pages/destinatario/cadastrar', {
-            destinatario,
+            usuario,
             destinatarioParaEditar: null,
             destinatarioForm: { nome: '', email: '', numero: '' },
             mensagem: null
@@ -28,11 +28,11 @@ export class DestinatarioController {
 
     static async cadastrar(req: Request, res: Response) {
         const { nome, email, numero } = req.body;
-        const { destinatario } = req.session as any;
+        const { usuario } = req.session as any;
 
         if (!nome || !email || !numero ) {
-            return res.render('pages/destinatario/cadastrar', {
-                destinatario,
+            return res.status(400).render('pages/destinatario/cadastrar', {
+                usuario,
                 destinatarioParaEditar: null,
                 destinatarioForm: { nome, email, numero },
                 mensagem: {
@@ -66,12 +66,12 @@ export class DestinatarioController {
             numero
         });
 
-        await Destinatario.cadastrarDestinatario(novoDestinatario);
+        await Destinatario.cadastrarDestinatario(novoDestinatario, usuario.id);
         
-        const destinatarios = await Destinatario.buscarTodos();
+        const destinatarios = await Destinatario.buscarTodos(usuario.id);
 
         res.render('pages/destinatario/cadastrarListar', {
-            destinatario,
+            usuario,
             destinatarios,
             mensagem: {
                 tipo: 'success',
@@ -83,19 +83,19 @@ export class DestinatarioController {
 
     static async excluir(req: Request, res: Response) {
         const { id } = req.params;
-        const { destinatario } = req.session as any;
+        const { usuario } = req.session as any;
 
-        await Destinatario.deletarDestinatario(id);
+        const removido = await Destinatario.deletarDestinatario(id, usuario.id);
         
-        const destinatarios = await Destinatario.buscarTodos();
+        const destinatarios = await Destinatario.buscarTodos(usuario.id);
 
-        res.render('pages/destinatario/cadastrarListar', {
-            destinatario,
+        return res.status(removido ? 200 : 404).render('pages/destinatario/cadastrarListar', {
+            usuario,
             destinatarios,
             mensagem: {
-                tipo: 'success',
-                valor: 'Destinatário excluído com sucesso',
-                titulo: 'Sucesso'
+                tipo: removido ? 'success' : 'error',
+                valor: removido ? 'Destinatário excluído com sucesso' : 'Destinatário não encontrado.',
+                titulo: removido ? 'Sucesso' : 'Não encontrado'
             }
         });
     }
@@ -106,16 +106,16 @@ export class DestinatarioController {
 
     static async carregarCadastrarListarComEdicao(req: Request, res: Response) {
         const { id } = req.params;
-        const { destinatario } = req.session as any;
+        const { usuario } = req.session as any;
 
-        const destinatarioEncontrado = await Destinatario.buscarPorId(id);
+        const destinatarioEncontrado = await Destinatario.buscarPorId(id, usuario.id);
 
         if (!destinatarioEncontrado) {
             return res.redirect('/destinatario/cadastrarListar');
         }
 
         return res.render('pages/destinatario/cadastrar', {
-            destinatario,
+            usuario,
             destinatarioParaEditar: destinatarioEncontrado,
             destinatarioForm: destinatarioEncontrado,
             mensagem: null
@@ -125,8 +125,8 @@ export class DestinatarioController {
     static async editar(req: Request, res: Response) {
         const { id } = req.params;
         const { nome, email, numero } = req.body;
-        const { destinatario } = req.session as any;
-        const destinatarioEncontrado = await Destinatario.buscarPorId(id);
+        const { usuario } = req.session as any;
+        const destinatarioEncontrado = await Destinatario.buscarPorId(id, usuario.id);
 
         if (!destinatarioEncontrado) {
             return res.redirect('/destinatario/cadastrarListar');
@@ -136,17 +136,17 @@ export class DestinatarioController {
         destinatarioEncontrado.email = email;
         destinatarioEncontrado.numero = numero;
 
-        await Destinatario.atualizarDestinatario(destinatarioEncontrado);
+        const atualizado = await Destinatario.atualizarDestinatario(destinatarioEncontrado, usuario.id);
 
-        const destinatarios = await Destinatario.buscarTodos();
+        const destinatarios = await Destinatario.buscarTodos(usuario.id);
 
-        return res.render('pages/destinatario/cadastrarListar', {
-            destinatario,
+        return res.status(atualizado ? 200 : 404).render('pages/destinatario/cadastrarListar', {
+            usuario,
             destinatarios,
             mensagem: {
-                tipo: 'success',
-                valor: 'Destinatário atualizado com sucesso!',
-                titulo: 'Sucesso'
+                tipo: atualizado ? 'success' : 'error',
+                valor: atualizado ? 'Destinatário atualizado com sucesso!' : 'Destinatário não encontrado.',
+                titulo: atualizado ? 'Sucesso' : 'Não encontrado'
             }
         });
     }

@@ -25,7 +25,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
               <div>
                 <label for="guardiaoNome">Nome completo</label>
-                <input class="form-control" type="text" id="guardiaoNome" name="nome" placeholder="Digite o nome completo" required>
+                <input class="form-control" type="text" id="guardiaoNome" name="nome" maxlength="255" value="<%= guardiaoForm.nome %>" placeholder="Digite o nome completo" required>
               </div>
             </div>
 
@@ -33,7 +33,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
               <div>
                 <label for="guardiaoEmail">E-mail</label>
-                <input class="form-control" type="email" id="guardiaoEmail" name="email" placeholder="email@example.com" required>
+                <input class="form-control" type="email" id="guardiaoEmail" name="email" maxlength="255" value="<%= guardiaoForm.email %>" placeholder="email@example.com" required>
               </div>
             </div>
 
@@ -41,7 +41,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-telephone-fill"></i></span>
               <div>
                 <label for="guardiaoNumero">Número de telefone</label>
-                <input class="form-control" type="tel" id="guardiaoNumero" name="numero" placeholder="(00) 00000-0000" required>
+                <input class="form-control" type="tel" id="guardiaoNumero" name="numero" maxlength="20" value="<%= guardiaoForm.numero %>" placeholder="(00) 00000-0000" required>
               </div>
             </div>
 

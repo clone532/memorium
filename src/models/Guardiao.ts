@@ -71,7 +71,9 @@ export class Guardiao {
 
     static async buscarPorEmailENumero(email: string, numero: string) {
         const { rows } = await connection.query(
-            `SELECT * FROM guardiao WHERE email=$1 AND numero=$2`,
+            `SELECT * FROM guardiao
+             WHERE LOWER(BTRIM(email)) = LOWER(BTRIM($1))
+               AND BTRIM(numero) = BTRIM($2)`,
             [email, numero]
         );
         if (!rows[0]) {

@@ -9,6 +9,36 @@ import { Biografia } from "../models/Biografia";
 import fs from "fs";
 import path from "path";
 
+function isPostgresError(error: unknown, code: string, constraint?: string) {
+    if (!error || typeof error !== "object") {
+        return false;
+    }
+
+    const postgresError = error as { code?: string; constraint?: string };
+    return postgresError.code === code
+        && (!constraint || postgresError.constraint === constraint);
+}
+
+function isDuplicateEmailError(error: unknown) {
+    return isPostgresError(error, "23505", "usuario_email_unico");
+}
+
+async function removerAvatar(filename?: string) {
+    if (!filename) {
+        return;
+    }
+
+    try {
+        await fs.promises.unlink(path.resolve(process.cwd(), "uploads", filename));
+    } catch (error) {
+        if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+            return;
+        }
+
+        console.error("Não foi possível remover o arquivo de avatar:", error);
+    }
+}
+
 export class UsuarioController {
 
     static podeEditarUsuario(req: Request, idUsuarioDestino: string | number) {
@@ -142,9 +172,10 @@ export class UsuarioController {
 
     static async cadastrarUsuario(req: Request, res: Response) {
         const { nome, email, senha, dataNasc } = req.body;
+        const emailNormalizado = typeof email === "string" ? Usuario.normalizarEmail(email) : "";
 
-        if (!nome || !email || !senha || !dataNasc) {
-            return res.render('login', {
+        if (!nome || !emailNormalizado || !senha || !dataNasc) {
+            return res.status(400).render('login', {
                 mensagem: {
                     tipo: 'error',
                     valor: 'Preencha corretamente os dados!',
@@ -153,10 +184,10 @@ export class UsuarioController {
             });
         }
 
-        const usuarioEncontrado = await Usuario.buscarPorEmail(email);
+        const usuarioEncontrado = await Usuario.buscarPorEmail(emailNormalizado);
 
         if (usuarioEncontrado) {
-            return res.render('login', {
+            return res.status(409).render('login', {
                 mensagem: {
                     tipo: 'error',
                     valor: 'E-mail já existe',
@@ -178,7 +209,7 @@ export class UsuarioController {
 
         const usuario: Usuario = new Usuario({
             nome,
-            email,
+            email: emailNormalizado,
             senha,
             dataNasc,
             estaMorto: false,
@@ -186,9 +217,23 @@ export class UsuarioController {
             tipoUsuario: tipoPadrao
         });
 
-        await Usuario.cadastrarUsuario(usuario);
+        try {
+            await Usuario.cadastrarUsuario(usuario);
+        } catch (error) {
+            if (isDuplicateEmailError(error)) {
+                return res.status(409).render('login', {
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'E-mail já cadastrado. Use outro endereço.',
+                        titulo: 'E-mail já existe'
+                    }
+                });
+            }
 
-        res.render('login', {
+            throw error;
+        }
+
+        return res.render('login', {
             mensagem: {
                 tipo: 'success',
                 valor: 'Usuário cadastrado com sucesso',
@@ -199,6 +244,7 @@ export class UsuarioController {
 
     static async cadUsuarioPorAdmin(req: Request, res: Response) {
         const { nome, email, senha, dataNasc, tipo } = req.body;
+        const emailNormalizado = typeof email === "string" ? Usuario.normalizarEmail(email) : "";
 
         const tipoUsuario = await TipoUsuario.buscarPorNome(tipo);
         if (!tipoUsuario) {
@@ -211,10 +257,21 @@ export class UsuarioController {
             });
         }
 
-        const usuarioEncontrado = await Usuario.buscarPorEmail(email);
+        if (!nome || !emailNormalizado || !senha || !dataNasc) {
+            return res.status(400).render('pages/usuario/cadAdmin', {
+                titulo: 'Cadastrar Usuário',
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Preencha todos os campos corretamente.',
+                    titulo: 'Dados inválidos'
+                }
+            });
+        }
+
+        const usuarioEncontrado = await Usuario.buscarPorEmail(emailNormalizado);
 
         if (usuarioEncontrado) {
-            return res.render('pages/usuario/cadastrar', {
+            return res.status(409).render('pages/usuario/cadAdmin', {
                 titulo: 'Cadastrar Usuário',
                 mensagem: {
                     tipo: 'error',
@@ -226,7 +283,7 @@ export class UsuarioController {
 
         const novoUsuario = new Usuario({
             nome,
-            email,
+            email: emailNormalizado,
             senha,
             dataNasc,
             estaMorto: false,
@@ -234,7 +291,22 @@ export class UsuarioController {
             tipoUsuario
         });
 
-        await Usuario.cadastrarUsuario(novoUsuario);
+        try {
+            await Usuario.cadastrarUsuario(novoUsuario);
+        } catch (error) {
+            if (isDuplicateEmailError(error)) {
+                return res.status(409).render('pages/usuario/cadAdmin', {
+                    titulo: 'Cadastrar Usuário',
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'E-mail já cadastrado. Use outro endereço.',
+                        titulo: 'E-mail já existe'
+                    }
+                });
+            }
+
+            throw error;
+        }
 
         return res.render('pages/usuario/cadAdmin', {
             titulo: 'Cadastrar Usuário',
@@ -251,8 +323,8 @@ export class UsuarioController {
     static async logar(req: Request, res: Response) {
         const { email, senha } = req.body;
 
-        if (!email || !senha) {
-            return res.render('login', {
+        if (typeof email !== "string" || !email.trim() || typeof senha !== "string" || !senha) {
+            return res.status(400).render('login', {
                 mensagem: {
                     tipo: 'error',
                     valor: 'Preencha todos os campos corretamente',
@@ -264,7 +336,7 @@ export class UsuarioController {
         const usuario = await Usuario.buscarPorEmailESenha(email, senha);
 
         if (!usuario) {
-            return res.render('login', {
+            return res.status(401).render('login', {
                 mensagem: {
                     tipo: 'error',
                     valor: 'E-mail ou senha incorretos',
@@ -322,59 +394,105 @@ export class UsuarioController {
         const { usuario } = req.session as any;
         const { nome, email, senha } = req.body;
         const imagem = req.file?.filename;
+        const emailNormalizado = typeof email === "string" ? Usuario.normalizarEmail(email) : "";
+        let imagemSalva = false;
 
-        const usuarioEncontrado = await Usuario.buscarPorId(usuario.id);
+        try {
+            const usuarioEncontrado = await Usuario.buscarPorId(usuario.id);
 
-        if (!usuarioEncontrado) {
-            return res.redirect('/usuario/logar');
-        }
+            if (!usuarioEncontrado) {
+                return res.redirect('/usuario/logar');
+            }
 
-        if (!nome || !email || !senha) {
+            if (!nome || !emailNormalizado) {
+                return res.status(400).render('pages/usuario/configuracaoPerfil', {
+                    usuario,
+                    usuarioPerfil: usuarioEncontrado,
+                    titulo: 'Configuração do Perfil',
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'Preencha nome e e-mail corretamente.',
+                        titulo: 'Dados inválidos'
+                    }
+                });
+            }
+
+            const emailMudou = emailNormalizado !== Usuario.normalizarEmail(usuarioEncontrado.email);
+            const emailExistente = emailMudou
+                ? await Usuario.buscarPorEmail(emailNormalizado, usuarioEncontrado.id)
+                : null;
+            if (emailExistente) {
+                return res.status(409).render('pages/usuario/configuracaoPerfil', {
+                    usuario,
+                    usuarioPerfil: usuarioEncontrado,
+                    titulo: 'Configuração do Perfil',
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'Esse e-mail já está sendo usado por outra conta.',
+                        titulo: 'E-mail já existe'
+                    }
+                });
+            }
+
+            const imagemAntiga = usuarioEncontrado.imagem;
+            usuarioEncontrado.nome = nome;
+            usuarioEncontrado.email = emailNormalizado;
+            if (typeof senha === 'string' && senha.length > 0) {
+                usuarioEncontrado.senha = await bcrypt.hash(senha, 10);
+            }
+            usuarioEncontrado.imagem = imagem || usuarioEncontrado.imagem;
+
+            try {
+                await Usuario.atualizarUsuario(usuarioEncontrado);
+            } catch (error) {
+                if (isDuplicateEmailError(error)) {
+                    return res.status(409).render('pages/usuario/configuracaoPerfil', {
+                        usuario,
+                        usuarioPerfil: usuarioEncontrado,
+                        titulo: 'Configuração do Perfil',
+                        mensagem: {
+                            tipo: 'error',
+                            valor: 'Esse e-mail já está sendo usado por outra conta.',
+                            titulo: 'E-mail já existe'
+                        }
+                    });
+                }
+
+                throw error;
+            }
+
+            imagemSalva = Boolean(imagem);
+            Object.assign(usuario, {
+                nome: usuarioEncontrado.nome,
+                email: usuarioEncontrado.email,
+                imagem: usuarioEncontrado.imagem
+            });
+
+            if (imagem && imagemAntiga && imagemAntiga !== imagem) {
+                await removerAvatar(imagemAntiga);
+            }
+
             return res.render('pages/usuario/configuracaoPerfil', {
                 usuario,
                 usuarioPerfil: usuarioEncontrado,
                 titulo: 'Configuração do Perfil',
                 mensagem: {
-                    tipo: 'error',
-                    valor: 'Preencha todos os campos corretamente',
-                    titulo: 'Dados inválidos'
+                    tipo: 'success',
+                    valor: 'Perfil atualizado com sucesso!',
+                    titulo: 'Sucesso'
                 }
             });
-        }
-
-        if (imagem && usuarioEncontrado.imagem) {
-            const imagemAntiga = path.join('uploads', usuarioEncontrado.imagem);
-            fs.unlink(imagemAntiga, () => {});
-        }
-
-        usuarioEncontrado.nome = nome;
-        usuarioEncontrado.email = email;
-        usuarioEncontrado.senha = await bcrypt.hash(senha, 10);
-        usuarioEncontrado.imagem = imagem || usuarioEncontrado.imagem;
-
-        await Usuario.atualizarUsuario(usuarioEncontrado);
-
-        Object.assign(usuario, {
-            nome: usuarioEncontrado.nome,
-            email: usuarioEncontrado.email,
-            imagem: usuarioEncontrado.imagem
-        });
-
-        return res.render('pages/usuario/configuracaoPerfil', {
-            usuario,
-            usuarioPerfil: usuarioEncontrado,
-            titulo: 'Configuração do Perfil',
-            mensagem: {
-                tipo: 'success',
-                valor: 'Perfil atualizado com sucesso!',
-                titulo: 'Sucesso'
+        } finally {
+            if (imagem && !imagemSalva) {
+                await removerAvatar(imagem);
             }
-        });
+        }
     }
 
     static async editar(req: Request, res: Response) {
         const { id } = req.params;
         const { nome, email, tipo } = req.body;
+        const emailNormalizado = typeof email === "string" ? Usuario.normalizarEmail(email) : "";
         const usuarioLogado = (req.session as any)?.usuario;
 
         if (!UsuarioController.podeEditarUsuario(req, id)) {
@@ -385,6 +503,36 @@ export class UsuarioController {
 
         if(!usuarioEncontrado) {
             throw new Error('Usuário não encontrado');
+        }
+
+        if (!nome || !emailNormalizado) {
+            return res.status(400).render('pages/usuario/editar', {
+                titulo: 'Editar Usuário',
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Preencha nome e e-mail corretamente.',
+                    titulo: 'Dados inválidos'
+                },
+                usuarioParaEditar: usuarioEncontrado,
+                usuario: usuarioLogado
+            });
+        }
+
+        const emailMudou = emailNormalizado !== Usuario.normalizarEmail(usuarioEncontrado.email);
+        const emailExistente = emailMudou
+            ? await Usuario.buscarPorEmail(emailNormalizado, Number(id))
+            : null;
+        if (emailExistente) {
+            return res.status(409).render('pages/usuario/editar', {
+                titulo: 'Editar Usuário',
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Esse e-mail já está sendo usado por outra conta.',
+                    titulo: 'E-mail já existe'
+                },
+                usuarioParaEditar: usuarioEncontrado,
+                usuario: usuarioLogado
+            });
         }
 
         const tipoSelecionado = usuarioLogado?.tipo === 'ADMIN'
@@ -404,10 +552,27 @@ export class UsuarioController {
         }
 
         usuarioEncontrado.nome = nome;
-        usuarioEncontrado.email = email;
+        usuarioEncontrado.email = emailNormalizado;
         usuarioEncontrado.tipoUsuario = tipoSelecionado;
 
-        await Usuario.atualizarComTipo(usuarioEncontrado);
+        try {
+            await Usuario.atualizarComTipo(usuarioEncontrado);
+        } catch (error) {
+            if (isDuplicateEmailError(error)) {
+                return res.status(409).render('pages/usuario/editar', {
+                    titulo: 'Editar Usuário',
+                    mensagem: {
+                        tipo: 'error',
+                        valor: 'Esse e-mail já está sendo usado por outra conta.',
+                        titulo: 'E-mail já existe'
+                    },
+                    usuarioParaEditar: usuarioEncontrado,
+                    usuario: usuarioLogado
+                });
+            }
+
+            throw error;
+        }
 
         return res.render('pages/usuario/editar', {
             titulo: 'Editar Usuário',
@@ -426,7 +591,26 @@ export class UsuarioController {
 
     static async excluir(req: Request, res: Response) {
         const { id } = req.params;
-        await Usuario.deletarPorId(id);
-        res.redirect('../listar');
+        try {
+            await Usuario.deletarPorId(id);
+            return res.redirect('/usuario/listar');
+        } catch (error) {
+            if (!isPostgresError(error, "23503")) {
+                throw error;
+            }
+
+            const usuario = (req.session as any).usuario;
+            const usuarios = await Usuario.buscarTodos();
+            return res.status(409).render('pages/usuario/listar', {
+                usuario,
+                usuarios,
+                titulo: 'Listar Usuários',
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Não foi possível excluir este usuário porque ele ainda possui dados relacionados. Nenhum dado foi apagado.',
+                    titulo: 'Usuário possui registros vinculados'
+                }
+            });
+        }
     }
 } 

@@ -25,6 +25,10 @@ export class Usuario {
         this.tipoUsuario = tipoUsuario;
 
     }
+
+    static normalizarEmail(email: string) {
+        return email.trim().toLowerCase();
+    }
     
     static async cadastrarUsuario(usuario: Usuario) {
         const senhaHash = await bcrypt.hash(usuario.senha, 10);
@@ -32,7 +36,7 @@ export class Usuario {
         await connection.query(`INSERT INTO Usuario(nome, email, senha, dataNasc, tipoUsuario, imagem) VALUES ($1, $2, $3, $4, $5, $6);`,
             [
                 usuario.nome,
-                usuario.email,
+                Usuario.normalizarEmail(usuario.email),
                 senhaHash,
                 usuario.dataNasc,
                 usuario.tipoUsuario.id,
@@ -67,7 +71,7 @@ export class Usuario {
         await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, imagem=$4 WHERE id=$5;`,
             [
                 usuario.nome,
-                usuario.email,
+                Usuario.normalizarEmail(usuario.email),
                 senhaFinal,
                 usuario.imagem,
                 usuario.id
@@ -81,7 +85,7 @@ export class Usuario {
         await connection.query(`UPDATE Usuario SET nome=$1, email=$2, senha=$3, tipoUsuario=$4, imagem=$5 WHERE id=$6;`,
             [
                 usuario.nome,
-                usuario.email,
+                Usuario.normalizarEmail(usuario.email),
                 senhaFinal,
                 usuario.tipoUsuario.id,
                 usuario.imagem,
@@ -121,7 +125,7 @@ export class Usuario {
         });
     }
 
-    static async buscarPorEmail(email: string) {
+    static async buscarPorEmail(email: string, ignorarUsuarioId?: number) {
         const { rows } = await connection.query(
             `SELECT
             u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
@@ -129,8 +133,11 @@ export class Usuario {
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
-            WHERE u.email=$1`,
-            [email]
+            WHERE LOWER(BTRIM(u.email))=$1
+              AND ($2::INTEGER IS NULL OR u.id <> $2)
+            ORDER BY u.id
+            LIMIT 1`,
+            [Usuario.normalizarEmail(email), ignorarUsuarioId ?? null]
         );
         if (!rows[0]) {
             return null;
@@ -156,29 +163,38 @@ export class Usuario {
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
-            WHERE u.email=$1`,
-            [email]
+            WHERE LOWER(BTRIM(u.email))=$1
+            ORDER BY u.id
+            `,
+            [Usuario.normalizarEmail(email)]
         );
 
-        if (!rows[0]) {
+        if (rows.length === 0) {
             return null;
         }
 
-        const senhaValida = await bcrypt.compare(senha, rows[0].senha);
-        if (!senhaValida) {
+        const usuariosComSenhaValida: typeof rows = [];
+        for (const row of rows) {
+            if (await bcrypt.compare(senha, row.senha)) {
+                usuariosComSenhaValida.push(row);
+            }
+        }
+
+        if (usuariosComSenhaValida.length !== 1) {
             return null;
         }
 
+        const usuarioAutenticado = usuariosComSenhaValida[0];
         return new Usuario({
-            id: rows[0].id,
-            nome: rows[0].nome,
-            email: rows[0].email,
-            senha: rows[0].senha,
-            numero: rows[0].numero,
-            dataNasc: rows[0].dataNasc,
-            estaMorto: rows[0].estaMorto,
-            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao),
-            imagem: rows[0].imagem
+            id: usuarioAutenticado.id,
+            nome: usuarioAutenticado.nome,
+            email: usuarioAutenticado.email,
+            senha: usuarioAutenticado.senha,
+            numero: usuarioAutenticado.numero,
+            dataNasc: usuarioAutenticado.dataNasc,
+            estaMorto: usuarioAutenticado.estaMorto,
+            tipoUsuario: new TipoUsuario(usuarioAutenticado.id_tipo, usuarioAutenticado.nome_tipo, usuarioAutenticado.descricao),
+            imagem: usuarioAutenticado.imagem
         });
     }
 }

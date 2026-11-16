@@ -3,13 +3,14 @@ import { UsuarioController } from '../controllers/UsuarioController';
 import { authMiddleware } from '../middlewares/AuthMiddleware';
 import { asyncExecutor } from '../../utils/AsyncExecutor';
 import { uploadImagem } from '../middlewares/UploadMiddleware';
+import { loginRateLimit } from '../middlewares/LoginRateLimitMiddleware';
 
 const usuarioRoutes = Router();
 
 // ORDEM: GET -> POST
 // ROTA USUÁRIO NÃO LOGADO
 usuarioRoutes.get('/usuario/logar', asyncExecutor(UsuarioController.carregarLogin));
-usuarioRoutes.post('/usuario/logar', asyncExecutor(UsuarioController.logar));
+usuarioRoutes.post('/usuario/logar', loginRateLimit, asyncExecutor(UsuarioController.logar));
 usuarioRoutes.post('/usuario/deslogar', asyncExecutor(UsuarioController.deslogar));
 usuarioRoutes.post('/usuario/cadastrar', asyncExecutor(UsuarioController.cadastrarUsuario));
 

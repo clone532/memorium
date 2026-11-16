@@ -35,6 +35,13 @@ create table Usuario (
 	tipoUsuario INT NOT NULL REFERENCES tipo_usuario(id)
 );
 
+ALTER TABLE Destinatario
+	ADD COLUMN fkUsuario INT NOT NULL REFERENCES Usuario(id);
+ALTER TABLE Destinatario
+	ADD CONSTRAINT destinatario_id_usuario_unico UNIQUE (id, fkUsuario);
+
+CREATE UNIQUE INDEX usuario_email_unico ON Usuario (LOWER(BTRIM(email)));
+
 create table Plano (
 	id SERIAL PRIMARY KEY,
 	nome VARCHAR(50) NOT NULL,
@@ -45,9 +52,65 @@ create table Plano (
 create table Mensagem (
 	id SERIAL PRIMARY KEY,
 	titulo VARCHAR(255) NOT NULL,
-	anexoUrl VARCHAR(255) NOT NULL,
-	idTipoMensagem INT NOT NULL REFERENCES tipoMensagem(id)
+	conteudo TEXT NOT NULL DEFAULT '',
+	anexoUrl VARCHAR(255),
+	idTipoMensagem INT REFERENCES tipoMensagem(id),
+	fkUsuario INT NOT NULL REFERENCES Usuario(id),
+	data_envio TIMESTAMPTZ,
+	status VARCHAR(32) NOT NULL DEFAULT 'rascunho'
+		CHECK (status IN ('rascunho', 'agendada', 'aguardando_confirmacao',
+			'pronta_para_envio', 'enviando', 'parcialmente_enviada', 'enviada',
+			'falha', 'cancelada', 'legada')),
+	criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	enviado_em TIMESTAMPTZ,
+	tentativas_envio INT NOT NULL DEFAULT 0 CHECK (tentativas_envio >= 0),
+	proxima_tentativa_em TIMESTAMPTZ,
+	ultimo_erro TEXT,
+	UNIQUE (id, fkUsuario)
 );
+
+CREATE INDEX mensagem_envio_agendado_idx
+	ON Mensagem (data_envio)
+	WHERE status = 'agendada';
+
+CREATE TABLE Anexo_Mensagem (
+	id SERIAL PRIMARY KEY,
+	fkMensagem INT NOT NULL REFERENCES Mensagem(id) ON DELETE CASCADE,
+	nome_original VARCHAR(255) NOT NULL,
+	caminho_privado VARCHAR(512) NOT NULL,
+	tipo_mime VARCHAR(100) NOT NULL,
+	tamanho_bytes BIGINT NOT NULL CHECK (tamanho_bytes > 0 AND tamanho_bytes <= 15728640),
+	criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE FUNCTION validar_limite_total_anexos_mensagem()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+	total_existente BIGINT;
+BEGIN
+	PERFORM 1 FROM Mensagem WHERE id = NEW.fkMensagem FOR UPDATE;
+
+	SELECT COALESCE(SUM(tamanho_bytes), 0)
+	INTO total_existente
+	FROM Anexo_Mensagem
+	WHERE fkMensagem = NEW.fkMensagem
+	  AND id IS DISTINCT FROM NEW.id;
+
+	IF total_existente + NEW.tamanho_bytes > 15728640 THEN
+		RAISE EXCEPTION 'O conjunto de anexos da mensagem não pode exceder 15 MB.'
+			USING ERRCODE = '23514';
+	END IF;
+
+	RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER anexo_mensagem_limite_total
+BEFORE INSERT OR UPDATE OF fkMensagem, tamanho_bytes ON Anexo_Mensagem
+FOR EACH ROW
+EXECUTE FUNCTION validar_limite_total_anexos_mensagem();
 
 create table Biografia (
 	id SERIAL PRIMARY KEY,
@@ -75,17 +138,72 @@ create table Comentario (
 create table Usuario_Guardiao (
 	id SERIAL PRIMARY KEY,
 	chave VARCHAR(255),
-	idUsuario INT,
-	idGuardiao INT,
+	idUsuario INT NOT NULL,
+	idGuardiao INT NOT NULL,
 	votoConfirma BOOLEAN DEFAULT FALSE,
+	estado_vinculo VARCHAR(20) NOT NULL DEFAULT 'pendente'
+		CHECK (estado_vinculo IN ('pendente', 'confirmado', 'revogado')),
+	token_vinculo_hash CHAR(64),
+	token_vinculo_expira_em TIMESTAMPTZ,
+	convite_enviado_em TIMESTAMPTZ,
+	vinculo_confirmado_em TIMESTAMPTZ,
 	CONSTRAINT fkUsuario FOREIGN KEY(idUsuario) REFERENCES Usuario(id),
-	CONSTRAINT fkGuardiao FOREIGN KEY(idGuardiao) REFERENCES Guardiao(id)
+	CONSTRAINT fkGuardiao FOREIGN KEY(idGuardiao) REFERENCES Guardiao(id),
+	CONSTRAINT usuario_guardiao_unico UNIQUE (idUsuario, idGuardiao)
 );
+
+CREATE UNIQUE INDEX usuario_guardiao_token_vinculo_unico
+	ON Usuario_Guardiao (token_vinculo_hash)
+	WHERE token_vinculo_hash IS NOT NULL;
+
+CREATE TABLE Solicitacao_Falecimento (
+	id SERIAL PRIMARY KEY,
+	fkUsuario INT NOT NULL REFERENCES Usuario(id),
+	status VARCHAR(32) NOT NULL DEFAULT 'aguardando_confirmacoes'
+		CHECK (status IN ('aguardando_confirmacoes', 'confirmada', 'cancelada', 'expirada')),
+	confirmacoes_necessarias SMALLINT NOT NULL DEFAULT 3
+		CHECK (confirmacoes_necessarias >= 3),
+	solicitado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	confirmado_em TIMESTAMPTZ,
+	iniciado_por_vinculo INT REFERENCES Usuario_Guardiao(id)
+);
+
+CREATE UNIQUE INDEX solicitacao_falecimento_pendente_unica
+	ON Solicitacao_Falecimento (fkUsuario)
+	WHERE status = 'aguardando_confirmacoes';
+
+CREATE TABLE Confirmacao_Falecimento (
+	id SERIAL PRIMARY KEY,
+	fkSolicitacao INT NOT NULL REFERENCES Solicitacao_Falecimento(id) ON DELETE CASCADE,
+	fkUsuarioGuardiao INT NOT NULL REFERENCES Usuario_Guardiao(id),
+	token_hash CHAR(64) NOT NULL UNIQUE,
+	expira_em TIMESTAMPTZ NOT NULL,
+	confirmado_em TIMESTAMPTZ,
+	criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT confirmacao_falecimento_guardiao_unica
+		UNIQUE (fkSolicitacao, fkUsuarioGuardiao)
+);
+
+CREATE INDEX confirmacao_falecimento_pendente_idx
+	ON Confirmacao_Falecimento (expira_em)
+	WHERE confirmado_em IS NULL;
 
 create table Destinatario_Mensagem (
 	id SERIAL PRIMARY KEY,
 	fkDestinatario INT NOT NULL REFERENCES Destinatario(id),
-	fkMensagem INT NOT NULL REFERENCES Mensagem(id)
+	fkMensagem INT NOT NULL REFERENCES Mensagem(id),
+	fkUsuario INT NOT NULL REFERENCES Usuario(id),
+	status_envio VARCHAR(24) NOT NULL DEFAULT 'pendente'
+		CHECK (status_envio IN ('pendente', 'enviando', 'enviado', 'falha', 'cancelado', 'legada')),
+	tentativas INT NOT NULL DEFAULT 0 CHECK (tentativas >= 0),
+	proxima_tentativa_em TIMESTAMPTZ,
+	enviado_em TIMESTAMPTZ,
+	ultimo_erro TEXT,
+	CONSTRAINT destinatario_mensagem_unico UNIQUE (fkMensagem, fkDestinatario),
+	CONSTRAINT destinatario_mensagem_mensagem_usuario_fk
+		FOREIGN KEY (fkMensagem, fkUsuario) REFERENCES Mensagem(id, fkUsuario),
+	CONSTRAINT destinatario_mensagem_destinatario_usuario_fk
+		FOREIGN KEY (fkDestinatario, fkUsuario) REFERENCES Destinatario(id, fkUsuario)
 );
 
 create table Assinatura (

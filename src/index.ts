@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 import dotenv from 'dotenv';
 import { connection } from './infra/Connection';
 import { usuarioRoutes } from './routes/UsuarioRoutes';
@@ -25,6 +26,12 @@ if (!sessionSecret) {
 
 const app = express();
 const PORT = process.env.PORT || 3333;
+const PgSessionStore = connectPgSimple(session);
+const sessionStore = new PgSessionStore({
+    pool: connection,
+    tableName: 'session',
+    createTableIfMissing: true
+});
 
 app.set('view engine', 'ejs');
 
@@ -55,6 +62,7 @@ app.get('/', function (req, res) {
 });
 
 app.use(session({
+    store: sessionStore,
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
@@ -89,7 +97,7 @@ connection.connect()
     .then(async () => { 
         try {
             await transporter.verify();
-            console.log('Servidor pronto para receber mensagens!')
+            console.log('Conexão SMTP verificada; nenhum e-mail foi enviado durante esta verificação.')
         } catch (err) {
             console.error("VERIFICAÇÃO FALHOU!:", err);
         }
