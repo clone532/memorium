@@ -23,6 +23,34 @@ type ConviteFalecimento = {
 };
 
 export class SolicitacaoFalecimento {
+    static async listarUsuariosParaGuardiao(email: string) {
+        const { rows } = await connection.query(
+            `SELECT DISTINCT u.id, u.nome
+             FROM usuario_guardiao ug
+             JOIN guardiao g ON g.id = ug.idguardiao
+             JOIN usuario u ON u.id = ug.idusuario
+             WHERE LOWER(BTRIM(g.email)) = LOWER(BTRIM($1))
+               AND ug.estado_vinculo = 'confirmado'
+             ORDER BY u.nome`,
+            [email]
+        );
+        return rows as Array<{ id: number; nome: string }>;
+    }
+
+    static async buscarVinculoConfirmado(email: string, idUsuario: number): Promise<number | null> {
+        const { rows } = await connection.query(
+            `SELECT ug.id
+             FROM usuario_guardiao ug
+             JOIN guardiao g ON g.id = ug.idguardiao
+             WHERE ug.idusuario = $1
+               AND LOWER(BTRIM(g.email)) = LOWER(BTRIM($2))
+               AND ug.estado_vinculo = 'confirmado'
+             LIMIT 1`,
+            [idUsuario, email]
+        );
+        return rows[0]?.id ?? null;
+    }
+
     static async iniciar(idUsuario: number, idVinculoIniciador: number): Promise<ResultadoSolicitacao> {
         const client = await connection.connect();
 

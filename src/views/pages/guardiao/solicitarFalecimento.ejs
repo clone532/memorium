@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo }) %>
+<body class="bg-light">
+  <main class="container py-5">
+    <div class="card mx-auto shadow-sm" style="max-width: 36rem;">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-3"><%= titulo %></h1>
+        <% if (mensagem) { %><p role="status"><%= mensagem %></p><% } %>
+        <% if (usuarios.length) { %>
+          <form method="post" action="/guardiao/falecimento">
+            <label class="form-label" for="idUsuario">Pessoa vinculada</label>
+            <select class="form-select mb-3" id="idUsuario" name="idUsuario" required>
+              <option value="">Selecione</option>
+              <% usuarios.forEach((pessoa) => { %>
+                <option value="<%= pessoa.id %>"><%= pessoa.nome %></option>
+              <% }); %>
+            </select>
+            <p>A solicitação enviará links individuais aos três guardiões confirmados. Você também precisará confirmar.</p>
+            <button type="submit" class="btn btn-primary">Solicitar confirmação</button>
+          </form>
+        <% } else { %>
+          <p>Não há pessoas com vínculo de guardião confirmado associado a esta conta.</p>
+        <% } %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

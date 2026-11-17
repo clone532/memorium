@@ -175,6 +175,76 @@ export class GuardiaoController {
         });
     }
 
+    static async carregarSolicitacaoFalecimento(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const usuarios = await SolicitacaoFalecimento.listarUsuariosParaGuardiao(usuario.email);
+        return res.render('pages/guardiao/solicitarFalecimento', {
+            titulo: 'Solicitar confirmação de falecimento',
+            usuarios,
+            mensagem: null
+        });
+    }
+
+    static async iniciarSolicitacaoFalecimento(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idUsuario = Number(req.body.idUsuario);
+        const usuarios = await SolicitacaoFalecimento.listarUsuariosParaGuardiao(usuario.email);
+        const render = (mensagem: string, status = 200) =>
+            res.status(status).render('pages/guardiao/solicitarFalecimento', {
+                titulo: 'Solicitar confirmação de falecimento',
+                usuarios,
+                mensagem
+            });
+
+        if (!Number.isSafeInteger(idUsuario) || idUsuario <= 0) {
+            return render('Selecione uma pessoa válida.', 400);
+        }
+
+        const idVinculo = await SolicitacaoFalecimento.buscarVinculoConfirmado(usuario.email, idUsuario);
+        if (!idVinculo) {
+            return render('Você não tem um vínculo confirmado com esta pessoa.', 403);
+        }
+
+        const resultado = await SolicitacaoFalecimento.iniciar(idUsuario, idVinculo);
+        if (resultado.estado !== 'aguardando_confirmacoes') {
+            const mensagens = {
+                usuario_invalido: 'Usuário não encontrado.',
+                guardiao_nao_vinculado: 'Vínculo de guardião inválido.',
+                falecimento_ja_confirmado: 'O falecimento já foi confirmado.',
+                guardioes_insuficientes: 'São necessários três guardiões confirmados para iniciar a solicitação.'
+            };
+            return render(mensagens[resultado.estado], 400);
+        }
+
+        const baseUrl = process.env.APP_BASE_URL
+            || (process.env.NODE_ENV === 'production' ? '' : `http://localhost:${process.env.PORT || 3333}`);
+        if (!baseUrl || !process.env.EMAIL_USER) {
+            return render('A configuração de e-mail ou APP_BASE_URL está incompleta.', 500);
+        }
+
+        const falhas: string[] = [];
+        for (const convite of resultado.convites) {
+            try {
+                const url = new URL('/guardiao/falecimento/confirmar', baseUrl);
+                url.searchParams.set('token', convite.token);
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: convite.email,
+                    subject: 'Confirmação de falecimento solicitada',
+                    text: `Olá, ${convite.nome}.\n\nUm guardião solicitou a confirmação do falecimento de uma pessoa que você acompanha no Memorium. Sua confirmação individual é necessária para o quórum de três guardiões.\n\nConfirme neste link, válido por sete dias:\n${url.toString()}\n\nSe você não reconhece esta solicitação, ignore este e-mail.`
+                });
+            } catch (error) {
+                console.error(`Falha ao enviar convite de confirmação para ${convite.email}:`, error);
+                falhas.push(convite.email);
+            }
+        }
+
+        if (falhas.length) {
+            return render(`A solicitação foi criada, mas não foi possível enviar todos os convites (${falhas.length}). Tente novamente para reenviá-los.`, 502);
+        }
+        return render('Solicitação iniciada. Os três guardiões, incluindo você, receberam links individuais para confirmar.', 200);
+    }
+
     static async confirmarFalecimento(req: Request, res: Response) {
         const token = typeof req.body.token === 'string' ? req.body.token : '';
         const tokenHash = /^[a-f0-9]{64}$/i.test(token)

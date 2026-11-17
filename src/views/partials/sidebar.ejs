@@ -55,6 +55,13 @@
                  Gerenciar
               </a>
             </li>
+            <% if (usuario.tipo === 'GUARDIAO') { %>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="/guardiao/falecimento">
+                  Solicitar confirmação
+                </a>
+              </li>
+            <% } %>
             <li class="nav-item">
               <a class="nav-link text-black" href="/guardiao/cadastrar">
                  Cadastrar
