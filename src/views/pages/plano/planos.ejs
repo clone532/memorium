@@ -8,7 +8,9 @@
         }
 
         .titulo {
-            color: #9D4EDD;
+            background: linear-gradient(105deg, #8250ed, #ff23da);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             font-size: 3rem;
             text-align: center;
             margin: 40px 0;
@@ -70,17 +72,16 @@
                 <h1 class="titulo">
                     Tabela de Planos
                 </h1>
+                <h3 class="text-center mb-4">
+                    Escolha um plano,
+                    cancele a qualquer hora.
+                </h3>
 
         <div class="card-planos">
 
             <div class="row">
 
                 <div class="col-md-4 d-flex flex-column">
-
-                    <h3>
-                        Escolha um plano,
-                        cancele a qualquer hora.
-                    </h3>
 
                     <% if (planos && planos.length > 0) { %>
                         <% planos.forEach(plano => { %>

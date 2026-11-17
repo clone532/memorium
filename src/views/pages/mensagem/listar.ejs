@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo: 'Minhas mensagens' }) %>
+<body>
+  <%- include('../../partials/header') %>
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+    <main class="content">
+      <h1>Minhas mensagens</h1>
+      <p><a href="/mensagem/cadastrar">Criar nova mensagem</a></p>
+
+      <% if (mensagens.length === 0) { %>
+        <p>Você ainda não cadastrou mensagens.</p>
+      <% } else { %>
+        <% mensagens.forEach((mensagem) => { %>
+          <article>
+            <hr>
+            <h2><%= mensagem.titulo %></h2>
+            <% if (mensagem.conteudo) { %>
+              <p><%= mensagem.conteudo %></p>
+            <% } %>
+            <p>Status: <%= mensagem.status %></p>
+            <p>Envio:
+              <% if (mensagem.data_envio) { %>
+                <%= new Date(mensagem.data_envio).toLocaleString('pt-BR') %>
+              <% } else { %>
+                após confirmação dos guardiões
+              <% } %>
+            </p>
+
+            <h3>Destinatários</h3>
+            <% if (mensagem.destinatarios.length) { %>
+              <ul>
+                <% mensagem.destinatarios.forEach((destinatario) => { %>
+                  <li><%= destinatario.nome %> — <%= destinatario.email %> (<%= destinatario.status %>)</li>
+                <% }); %>
+              </ul>
+            <% } else { %>
+              <p>Nenhum destinatário.</p>
+            <% } %>
+
+            <% if (mensagem.anexos.length) { %>
+              <h3>Arquivos</h3>
+              <ul>
+                <% mensagem.anexos.forEach((anexo) => { %>
+                  <li><%= anexo.nome %> — <%= (Number(anexo.tamanho) / 1024).toFixed(1) %> KB</li>
+                <% }); %>
+              </ul>
+            <% } %>
+          </article>
+        <% }); %>
+      <% } %>
+    </main>
+  </div>
+  <%- include('../../partials/scripts') %>
+</body>
+</html>

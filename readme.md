@@ -74,6 +74,8 @@ Ele cancela sem alterações se as contas excedentes tiverem dados vinculados. R
 
 `migrate:message-system` prepara mensagens, anexos privados, destinatários por usuário e confirmações de falecimento. Contatos de destinatários anteriores ficam sem proprietário e não são atribuídos nem apagados. Faça backup antes de aplicar a migração.
 
+O servidor inicia automaticamente o worker de entrega. Ele verifica mensagens vencidas a cada 15 segundos, envia um e-mail por destinatário com os anexos privados e tenta novamente falhas até oito vezes. O SMTP deve estar configurado em `EMAIL_USER` e `EMAIL_PASS`.
+
 ### 5. Inicie o servidor
 ```sh
 npm run dev

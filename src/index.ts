@@ -16,6 +16,7 @@ import { guardiaoRoutes } from './routes/GuardiaoRoutes';
 import { mensagemRoutes } from './routes/MensagemRoutes';
 import { biografiaRoutes } from './routes/BiografiaRoutes';
 import { transporter } from './infra/mail/NodeMailer';
+import { iniciarWorkerMensagens } from './infra/mail/MensagemDeliveryWorker';
 
 dotenv.config();
 const sessionSecret = process.env.SESSION_SECRET;
@@ -102,6 +103,7 @@ connection.connect()
             console.error("VERIFICAÇÃO FALHOU!:", err);
         }
 
+        iniciarWorkerMensagens();
         app.listen(PORT, () => {
             console.log(`Servidor rodando no endereço http://localhost:${PORT}`);
         });

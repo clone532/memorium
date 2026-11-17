@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<%- include('../../partials/head', { titulo: 'Criar Mensagens' }) %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<style>
+    .config-page {
+        min-height: 0;
+    }
+
+    .config-form {
+        padding-top: 2px;
+        padding-bottom: 8px;
+    }
+
+    .config-form h5 {
+        margin: 4px 0;
+        font-size: 1rem;
+    }
+
+    .config-form p {
+        margin: 2px 0 6px;
+    }
+
+    .config-field {
+        margin-bottom: 6px;
+    }
+
+    .data-envio-field,
+    .data-envio-field .form-control {
+        cursor: pointer;
+    }
+
+    .message-drop-zone {
+        padding: 10px 14px;
+        border: 2px dashed #b9a7df;
+        border-radius: 12px;
+        background: #fbfaff;
+        color: #5d359d;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .message-drop-zone.drag-over {
+        border-color: #6840b5;
+        background: #f2efff;
+    }
+
+    .message-files {
+        margin: 4px 0 0;
+        padding-left: 20px;
+        font-size: 13px;
+    }
+
+    .message-upload-help {
+        margin: 3px 0 0;
+        color: #777487;
+        font-size: 12px;
+    }
+
+    .config-form .config-footer {
+        margin-top: 6px;
+        margin-bottom: 6px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+</style>
+    <body>
+        <%- include('../../partials/header') %>
+
+        <div class="d-flex">
+            <%- include('../../partials/sidebar') %>
+
+            <main class="content">
+                <div class="container-fluid py-2">
+                    <section class="config-page" aria-labelledby="mensagemFormTitle">
+                        <header class="config-header">
+                            <span class="config-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+                            <div>
+                                <h1 id="mensagemFormTitle">Dados da Mensagens</h1>
+                            </div>
+                        </header>
+
+                        <form class="config-form" action="/mensagem/cadastrar" method="post" enctype="multipart/form-data">
+                            <% if (mensagem) { %>
+                                <div class="alert <%= mensagem.tipo === 'success' ? 'alert-success' : 'alert-danger' %>" role="status"><%= mensagem.valor %></div>
+                            <% } %>
+                            <h5>Destinatário</h5>
+                            <% if (destinatarios && destinatarios.length > 0) { %>
+                                <div class="config-field">
+                                    <span class="field-icon" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
+                                    <div>
+                                        <label for="destinatarios">Destinatários</label>
+                                        <select class="form-select" id="destinatarios" name="destinatarios" multiple required>
+                                            <% destinatarios.forEach((destinatario) => { %>
+                                                <option value="<%= destinatario.id %>"><%= destinatario.nome %> — <%= destinatario.email %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <p>Nenhum destinatário cadastrado? <a href="/destinatario/cadastrar">cadastrar um destinatário.</a></p>
+                            <% } %>
+                            <div>
+                                <h5>Título</h5>
+                            </div>
+                            <div class="config-field">
+                                <span class="field-icon" aria-hidden="true"><i class="bi bi-chat-left-text-fill"></i></span>
+                                <div>
+                                    <label for="mensagemTitulo"></label>
+                                    <input class="form-control" type="text" id="mensagemTitulo" name="titulo" maxlength="255" value="<%= mensagemForm.titulo %>" placeholder="Digite o título da mensagem" required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5>Conteúdo</h5>
+                                <p>Texto/descrição e/ou arquivo...</p>
+                            </div>
+                            <div class="config-field">
+                                <span class="field-icon" aria-hidden="true"><i class="bi bi-chat-left-text-fill"></i></span>
+                                <div>
+                                    <label for="mensagemConteudo"></label>
+                                    <textarea class="form-control" id="mensagemConteudo" name="conteudo" maxlength="1000" placeholder="Digite o conteúdo da mensagem"><%= mensagemForm.conteudo %></textarea>
+                                </div>
+                            </div>
+                            <div class="message-drop-zone" id="messageDropZone" role="button" tabindex="0" aria-label="Selecionar ou arrastar arquivos">
+                                <input class="visually-hidden" type="file" id="mensagemArquivos" name="arquivos" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg,text/plain,text/csv" multiple>
+                                <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
+                                <strong>Selecionar ou arrastar arquivos</strong>
+                                <p class="message-upload-help">Até 10 MB por arquivo e 15 MB no total. Você pode selecionar vários com Ctrl ou Shift.</p>
+                                <ul class="message-files" id="messageFiles" aria-live="polite"></ul>
+                                <p class="message-upload-help" id="messageUploadError" role="alert" tabindex="-1"></p>
+                            </div>
+                            <br>
+                            <div>
+                                <h5>Data de envio</h5>
+                                <p>mensagens sem data ficam trancadas</p>
+                            </div>
+                            <div class="config-field data-envio-field" id="dataEnvioField">
+                                <span class="field-icon" aria-hidden="true"><i class="bi bi-calendar-event-fill"></i></span>
+                                <div>
+                                    <label class="visually-hidden" for="dataDeEnvio">Data e hora do envio</label>
+                                    <input class="form-control" type="datetime-local" id="dataDeEnvio" name="dataDeEnvio" value="<%= mensagemForm.dataDeEnvio %>">
+                                </div>
+                            </div>
+
+                            <div class="config-footer">
+                                <button type="submit" class="btn config-save">
+                                    <i class="bi bi-envelope-plus-fill me-2" aria-hidden="true"></i>
+                                    Criar Mensagem
+                                </button>
+                                <a href="/mensagem/gerenciar" class="btn config-secondary">Voltar</a>
+                                <a href="/mensagem/listar" class="btn config-secondary">Mensagens</a>
+                            </div>
+                        </form>
+                </div>
+            </main>
+        </div>
+
+        <%- include('../../partials/scripts') %>
+        <script>
+            const dataEnvioField = document.getElementById('dataEnvioField');
+            const dataEnvioInput = document.getElementById('dataDeEnvio');
+            const uploadArea = document.getElementById('messageDropZone');
+            const fileInput = document.getElementById('mensagemArquivos');
+            const fileList = document.getElementById('messageFiles');
+            const uploadError = document.getElementById('messageUploadError');
+            const messageForm = document.querySelector('.config-form');
+            const maxFileSize = 10 * 1024 * 1024;
+            const maxTotalSize = 15 * 1024 * 1024;
+
+            dataEnvioField.addEventListener('click', () => {
+                if (typeof dataEnvioInput.showPicker === 'function') {
+                    dataEnvioInput.showPicker();
+                } else {
+                    dataEnvioInput.focus();
+                }
+            });
+
+            function renderSelectedFiles() {
+                fileList.replaceChildren();
+                uploadError.textContent = '';
+                const files = Array.from(fileInput.files);
+                const totalSize = files.reduce((total, file) => total + file.size, 0);
+
+                files.forEach((file) => {
+                    const item = document.createElement('li');
+                    item.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+                    fileList.appendChild(item);
+                });
+
+                if (files.some((file) => file.size > maxFileSize)) {
+                    uploadError.textContent = 'Cada arquivo deve ter no máximo 10 MB.';
+                } else if (totalSize > maxTotalSize) {
+                    uploadError.textContent = 'O tamanho total dos arquivos não pode exceder 15 MB.';
+                }
+            }
+
+            uploadArea.addEventListener('click', (event) => {
+                if (event.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+            uploadArea.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    fileInput.click();
+                }
+            });
+            fileInput.addEventListener('change', renderSelectedFiles);
+            ['dragenter', 'dragover'].forEach((eventName) => {
+                uploadArea.addEventListener(eventName, (event) => {
+                    event.preventDefault();
+                    uploadArea.classList.add('drag-over');
+                });
+            });
+            ['dragleave', 'drop'].forEach((eventName) => {
+                uploadArea.addEventListener(eventName, (event) => {
+                    event.preventDefault();
+                    uploadArea.classList.remove('drag-over');
+                });
+            });
+            uploadArea.addEventListener('drop', (event) => {
+                const transfer = new DataTransfer();
+                Array.from(event.dataTransfer.files).forEach((file) => transfer.items.add(file));
+                fileInput.files = transfer.files;
+                renderSelectedFiles();
+            });
+            messageForm.addEventListener('submit', (event) => {
+                renderSelectedFiles();
+                if (uploadError.textContent) {
+                    event.preventDefault();
+                    uploadError.focus();
+                }
+            });
+        </script>
+    </body>
+</html>

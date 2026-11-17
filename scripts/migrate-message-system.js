@@ -116,6 +116,11 @@ async function migrateMessageSystem() {
             ON mensagem (data_envio)
             WHERE status = 'agendada'
         `);
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS mensagem_fila_envio_idx
+            ON mensagem (status, data_envio)
+            WHERE status IN ('pronta_para_envio', 'parcialmente_enviada', 'falha')
+        `);
 
         await client.query(`
             CREATE TABLE IF NOT EXISTS anexo_mensagem (
@@ -214,6 +219,11 @@ async function migrateMessageSystem() {
         await client.query(`
             CREATE UNIQUE INDEX IF NOT EXISTS destinatario_mensagem_par_unico
             ON destinatario_mensagem (fkmensagem, fkdestinatario)
+        `);
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS destinatario_mensagem_fila_idx
+            ON destinatario_mensagem (fkmensagem, proxima_tentativa_em)
+            WHERE status_envio IN ('pendente', 'falha', 'enviando')
         `);
         await ensureConstraint(
             client,

@@ -73,6 +73,10 @@ CREATE INDEX mensagem_envio_agendado_idx
 	ON Mensagem (data_envio)
 	WHERE status = 'agendada';
 
+CREATE INDEX mensagem_fila_envio_idx
+	ON Mensagem (status, data_envio)
+	WHERE status IN ('pronta_para_envio', 'parcialmente_enviada', 'falha');
+
 CREATE TABLE Anexo_Mensagem (
 	id SERIAL PRIMARY KEY,
 	fkMensagem INT NOT NULL REFERENCES Mensagem(id) ON DELETE CASCADE,
@@ -205,6 +209,10 @@ create table Destinatario_Mensagem (
 	CONSTRAINT destinatario_mensagem_destinatario_usuario_fk
 		FOREIGN KEY (fkDestinatario, fkUsuario) REFERENCES Destinatario(id, fkUsuario)
 );
+
+CREATE INDEX destinatario_mensagem_fila_idx
+	ON Destinatario_Mensagem (fkMensagem, proxima_tentativa_em)
+	WHERE status_envio IN ('pendente', 'falha', 'enviando');
 
 create table Assinatura (
 	id SERIAL PRIMARY KEY,

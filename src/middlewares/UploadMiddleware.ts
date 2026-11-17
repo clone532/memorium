@@ -2,9 +2,11 @@ import { randomUUID } from "crypto";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import { TextDecoder } from "util";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 
 const uploadsDirectory = path.resolve(process.cwd(), "uploads");
+const privateMessageDirectory = path.resolve(process.cwd(), "private-uploads", "messages");
 const imageMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const publicationMimeTypes = new Set([
     ...imageMimeTypes,
@@ -16,6 +18,11 @@ const publicationMimeTypes = new Set([
 ]);
 const imageUploadError = "Tipo de arquivo não permitido. Envie apenas uma imagem JPEG, PNG, WebP ou GIF.";
 const publicationUploadError = "Formato não permitido. Envie uma imagem, vídeo MP4/WebM ou áudio MP3/WAV/OGG.";
+const messageMimeTypes = new Set([
+    ...publicationMimeTypes,
+    "text/plain",
+    "text/csv"
+]);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -48,6 +55,29 @@ function createUpload(mimeTypes: Set<string>, fileSize: number) {
 
 const avatarUpload = createUpload(imageMimeTypes, 2 * 1024 * 1024);
 const publicationUpload = createUpload(publicationMimeTypes, 10 * 1024 * 1024);
+
+const messageUpload = multer({
+    storage: multer.diskStorage({
+        destination: function (_req, _file, cb) {
+            fs.mkdir(privateMessageDirectory, { recursive: true }, (error) => {
+                if (error) {
+                    return cb(error, privateMessageDirectory);
+                }
+                cb(null, privateMessageDirectory);
+            });
+        },
+        filename: function (_req, _file, cb) {
+            cb(null, randomUUID());
+        }
+    }),
+    limits: { fileSize: 10 * 1024 * 1024, files: 20 },
+    fileFilter: function (_req, file, cb) {
+        if (!messageMimeTypes.has(file.mimetype)) {
+            return cb(new Error("FORMATO_MENSAGEM_NAO_PERMITIDO"));
+        }
+        cb(null, true);
+    }
+});
 
 type DetectedFormat = { extension: string, mimeType: string };
 type FormatDetector = (buffer: Buffer) => DetectedFormat | null;
@@ -104,6 +134,22 @@ function detectPublicationFormat(buffer: Buffer): DetectedFormat | null {
     return null;
 }
 
+function detectMessageFormat(buffer: Buffer, mimeType: string): DetectedFormat | null {
+    if (mimeType === "text/plain" || mimeType === "text/csv") {
+        if (buffer.includes(0)) {
+            return null;
+        }
+        try {
+            new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+        } catch {
+            return null;
+        }
+        return { extension: mimeType === "text/csv" ? "csv" : "txt", mimeType };
+    }
+    const detected = detectPublicationFormat(buffer);
+    return detected?.mimeType === mimeType ? detected : null;
+}
+
 async function removeUploadedFile(filePath: string) {
     try {
         await fs.promises.unlink(filePath);
@@ -147,6 +193,58 @@ async function validateAndRenameUpload(
         return res.status(500).send("Não foi possível processar o arquivo.");
     }
 }
+
+export const uploadAnexosMensagem = function (req: Request, res: Response, next: NextFunction) {
+    messageUpload.array("arquivos", 20)(req, res, async (error) => {
+        const files = (req.files as Express.Multer.File[] | undefined) || [];
+        const removeFiles = async () => {
+            await Promise.all(files.map((file) => removeUploadedFile(file.path)));
+        };
+
+        if (error) {
+            if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+                return res.status(413).send("Cada arquivo deve ter no máximo 10 MB.");
+            }
+            if (error instanceof Error && error.message === "FORMATO_MENSAGEM_NAO_PERMITIDO") {
+                return res.status(400).send("Formato não permitido. Use imagens, vídeos, áudios ou arquivos TXT/CSV.");
+            }
+            if (error instanceof multer.MulterError) {
+                return res.status(400).send("Envie no máximo 20 arquivos por mensagem.");
+            }
+            console.error("Falha ao receber anexos da mensagem:", error);
+            return res.status(500).send("Não foi possível receber os arquivos.");
+        }
+
+        const totalSize = files.reduce((total, file) => total + file.size, 0);
+        if (totalSize > 15 * 1024 * 1024) {
+            await removeFiles();
+            return res.status(413).send("O tamanho total dos arquivos não pode exceder 15 MB.");
+        }
+
+        try {
+            for (const file of files) {
+                const content = await fs.promises.readFile(file.path);
+                const detected = detectMessageFormat(content, file.mimetype);
+                if (!detected) {
+                    await removeFiles();
+                    return res.status(400).send(`O formato do arquivo "${file.originalname}" é inválido.`);
+                }
+
+                const filename = `${file.filename}.${detected.extension}`;
+                const finalPath = path.join(privateMessageDirectory, filename);
+                await fs.promises.rename(file.path, finalPath);
+                file.filename = filename;
+                file.path = finalPath;
+                file.mimetype = detected.mimeType;
+            }
+            return next();
+        } catch (validationError) {
+            await removeFiles();
+            console.error("Falha ao validar anexos da mensagem:", validationError);
+            return res.status(500).send("Não foi possível validar os arquivos.");
+        }
+    });
+};
 
 function createUploadHandler(
     parser: RequestHandler,
