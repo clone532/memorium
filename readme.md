@@ -62,6 +62,7 @@ Para bancos já existentes, as migrações verificam os dados antes de aplicar r
 npm run migrate:guardian-links
 npm run migrate:emails
 npm run migrate:message-system
+npm run migrate:notifications
 ```
 
 `migrate:emails` não altera registros e será interrompida se encontrar e-mails duplicados. Para remover duplicatas sem dados relacionados, mantendo a conta de menor ID por e-mail, existe o comando destrutivo explícito:
@@ -75,6 +76,7 @@ Ele cancela sem alterações se as contas excedentes tiverem dados vinculados. R
 `migrate:message-system` prepara mensagens, anexos privados, destinatários por usuário e confirmações de falecimento. Contatos de destinatários anteriores ficam sem proprietário e não são atribuídos nem apagados. Faça backup antes de aplicar a migração.
 
 O servidor inicia automaticamente o worker de entrega. Ele verifica mensagens vencidas a cada 15 segundos, envia um e-mail por destinatário com os anexos privados e tenta novamente falhas até oito vezes. O SMTP deve estar configurado em `EMAIL_USER` e `EMAIL_PASS`.
+Quando todos os destinatários recebem a mensagem, o worker registra uma notificação, remove a mensagem e seus metadados do banco e apaga os anexos privados. Mensagens antigas já marcadas como enviadas também são limpas pelo worker. As notificações ficam disponíveis no sino do header.
 
 ### 5. Inicie o servidor
 ```sh
@@ -89,6 +91,7 @@ O servidor estará rodando em `http://localhost:3333/`
 - `npm run migrate:guardian-links` - Impõe vínculo obrigatório e único entre usuário e guardião
 - `npm run migrate:emails` - Impõe unicidade de e-mail após verificação de duplicados
 - `npm run migrate:message-system` - Prepara o banco para mensagens e confirmação por guardiões
+- `npm run migrate:notifications` - Cria a tabela de notificações do usuário
 - `npm run dedupe:emails -- --confirm-keep-lowest-id` - Remove contas excedentes sem dados vinculados e cria o índice único
 - `npm test` - Executa os testes (ainda não implementados)
 

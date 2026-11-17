@@ -28,6 +28,19 @@ type MensagemFila = {
     anexos: AnexoFila[];
 };
 
+async function removerArquivosAnexos(caminhos: string[]) {
+    for (const caminho of caminhos) {
+        try {
+            await fs.unlink(path.resolve(privateMessageDirectory, path.basename(caminho)));
+        } catch (error) {
+            const code = error && typeof error === "object" && "code" in error ? error.code : null;
+            if (code !== "ENOENT") {
+                console.error("Não foi possível remover anexo de mensagem enviada:", error);
+            }
+        }
+    }
+}
+
 async function recuperarEnviosInterrompidos(client: PoolClient) {
     await client.query(
         `UPDATE destinatario_mensagem
@@ -164,9 +177,21 @@ async function finalizarEntrega(
     client: PoolClient,
     entrega: MensagemFila,
     erro?: unknown
-) {
+): Promise<string[]> {
     await client.query("BEGIN");
     try {
+        const mensagem = await client.query(
+            `SELECT id, fkusuario, titulo
+             FROM mensagem
+             WHERE id = $1
+             FOR UPDATE`,
+            [entrega.id]
+        );
+        if (!mensagem.rows[0]) {
+            await client.query("COMMIT");
+            return [];
+        }
+
         if (erro === undefined) {
             await client.query(
                 `UPDATE destinatario_mensagem
@@ -198,6 +223,7 @@ async function finalizarEntrega(
         const messageStatus = await client.query(
             `SELECT
                 COUNT(*) FILTER (WHERE status_envio = 'enviado')::int AS enviados,
+                COUNT(*) FILTER (WHERE status_envio <> 'enviado')::int AS nao_enviados,
                 COUNT(*) FILTER (WHERE status_envio IN ('pendente', 'enviando'))::int AS ativos,
                 COUNT(*) FILTER (WHERE status_envio = 'falha' AND tentativas < $2)::int AS retentaveis,
                 COUNT(*) FILTER (WHERE status_envio = 'falha' AND tentativas >= $2)::int AS falhas_permanentes
@@ -206,6 +232,31 @@ async function finalizarEntrega(
             [entrega.id, retryLimit]
         );
         const counts = messageStatus.rows[0];
+        const todosEnviados = counts.enviados > 0
+            && counts.nao_enviados === 0;
+        if (todosEnviados) {
+            const anexos = await client.query(
+                `SELECT caminho_privado
+                 FROM anexo_mensagem
+                 WHERE fkmensagem = $1`,
+                [entrega.id]
+            );
+            await client.query(
+                `INSERT INTO notificacao (fkusuario, titulo, conteudo)
+                 VALUES ($1, $2, $3)`,
+                [
+                    mensagem.rows[0].fkusuario,
+                    "Mensagem enviada",
+                    `A mensagem "${mensagem.rows[0].titulo}" foi enviada para todos os destinatários.`
+                ]
+            );
+            await client.query(`UPDATE biografia SET fkmensagem = NULL WHERE fkmensagem = $1`, [entrega.id]);
+            await client.query(`DELETE FROM destinatario_mensagem WHERE fkmensagem = $1`, [entrega.id]);
+            await client.query(`DELETE FROM mensagem WHERE id = $1`, [entrega.id]);
+            await client.query("COMMIT");
+            return anexos.rows.map((anexo) => anexo.caminho_privado as string);
+        }
+
         const status = counts.ativos > 0 || counts.retentaveis > 0 || counts.falhas_permanentes > 0
             ? counts.enviados > 0 ? 'parcialmente_enviada' : 'falha'
             : counts.enviados > 0 ? 'enviada' : 'falha';
@@ -220,6 +271,64 @@ async function finalizarEntrega(
             [entrega.id, status, erro instanceof Error ? erro.message.slice(0, 1000) : null]
         );
         await client.query("COMMIT");
+        return [];
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+    }
+}
+
+async function limparMensagemJaEnviada(client: PoolClient): Promise<string[] | null> {
+    await client.query("BEGIN");
+    try {
+        const mensagem = await client.query(
+            `SELECT m.id, m.fkusuario, m.titulo
+             FROM mensagem m
+             WHERE m.status = 'enviada'
+               AND EXISTS (
+                   SELECT 1 FROM destinatario_mensagem dm
+                   WHERE dm.fkmensagem = m.id
+               )
+               AND NOT EXISTS (
+                   SELECT 1 FROM destinatario_mensagem dm
+                   WHERE dm.fkmensagem = m.id
+                     AND dm.status_envio <> 'enviado'
+               )
+             ORDER BY m.id
+             FOR UPDATE OF m SKIP LOCKED
+             LIMIT 1`
+        );
+        if (!mensagem.rows[0]) {
+            await client.query("COMMIT");
+            return null;
+        }
+
+        const anexos = await client.query(
+            `SELECT caminho_privado
+             FROM anexo_mensagem
+             WHERE fkmensagem = $1`,
+            [mensagem.rows[0].id]
+        );
+        await client.query(
+            `INSERT INTO notificacao (fkusuario, titulo, conteudo)
+             VALUES ($1, $2, $3)`,
+            [
+                mensagem.rows[0].fkusuario,
+                "Mensagem enviada",
+                `A mensagem "${mensagem.rows[0].titulo}" foi enviada para todos os destinatários.`
+            ]
+        );
+        await client.query(
+            `UPDATE biografia SET fkmensagem = NULL WHERE fkmensagem = $1`,
+            [mensagem.rows[0].id]
+        );
+        await client.query(
+            `DELETE FROM destinatario_mensagem WHERE fkmensagem = $1`,
+            [mensagem.rows[0].id]
+        );
+        await client.query(`DELETE FROM mensagem WHERE id = $1`, [mensagem.rows[0].id]);
+        await client.query("COMMIT");
+        return anexos.rows.map((anexo) => anexo.caminho_privado as string);
     } catch (error) {
         await client.query("ROLLBACK");
         throw error;
@@ -256,18 +365,27 @@ export async function processarFilaMensagens() {
     try {
         let processadas = 0;
         while (true) {
+            const anexosDeMensagemAnterior = await limparMensagemJaEnviada(client);
+            if (anexosDeMensagemAnterior !== null) {
+                await removerArquivosAnexos(anexosDeMensagemAnterior);
+                processadas++;
+                continue;
+            }
+
             const entrega = await reservarMensagem(client);
             if (!entrega) {
                 return processadas;
             }
 
+            let erroEnvio: unknown;
             try {
                 await enviarMensagem(entrega);
-                await finalizarEntrega(client, entrega);
             } catch (error) {
+                erroEnvio = error;
                 console.error(`Falha ao enviar mensagem ${entrega.id} para ${entrega.email}:`, error);
-                await finalizarEntrega(client, entrega, error);
             }
+            const anexosExcluidos = await finalizarEntrega(client, entrega, erroEnvio);
+            await removerArquivosAnexos(anexosExcluidos);
             processadas++;
         }
     } finally {

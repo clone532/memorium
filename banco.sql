@@ -192,6 +192,22 @@ CREATE INDEX confirmacao_falecimento_pendente_idx
 	ON Confirmacao_Falecimento (expira_em)
 	WHERE confirmado_em IS NULL;
 
+CREATE TABLE Notificacao (
+	id SERIAL PRIMARY KEY,
+	fkUsuario INT NOT NULL REFERENCES Usuario(id) ON DELETE CASCADE,
+	titulo VARCHAR(255) NOT NULL,
+	conteudo TEXT NOT NULL,
+	criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	lida_em TIMESTAMPTZ
+);
+
+CREATE INDEX notificacao_usuario_recente_idx
+	ON Notificacao (fkUsuario, criado_em DESC);
+
+CREATE INDEX notificacao_usuario_nao_lida_idx
+	ON Notificacao (fkUsuario)
+	WHERE lida_em IS NULL;
+
 create table Destinatario_Mensagem (
 	id SERIAL PRIMARY KEY,
 	fkDestinatario INT NOT NULL REFERENCES Destinatario(id),

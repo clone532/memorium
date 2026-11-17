@@ -12,6 +12,7 @@
     "dedupe:emails": "node scripts/dedupe-user-emails.js",
     "migrate:guardian-links": "node scripts/migrate-guardian-links.js",
     "migrate:message-system": "node scripts/migrate-message-system.js",
+    "migrate:notifications": "node scripts/migrate-notifications.js",
     "test:email": "node scripts/test-email.js"
   },
   "keywords": [],

@@ -8,6 +8,9 @@
     <main class="content">
       <h1>Minhas mensagens</h1>
       <p><a href="/mensagem/cadastrar">Criar nova mensagem</a></p>
+      <% if (mensagem) { %>
+        <p role="status"><%= mensagem.valor %></p>
+      <% } %>
 
       <% if (mensagens.length === 0) { %>
         <p>Você ainda não cadastrou mensagens.</p>
@@ -46,6 +49,14 @@
                   <li><%= anexo.nome %> — <%= (Number(anexo.tamanho) / 1024).toFixed(1) %> KB</li>
                 <% }); %>
               </ul>
+            <% } %>
+
+            <% if (['enviando', 'enviada', 'parcialmente_enviada'].includes(mensagem.status)) { %>
+              <p>Esta mensagem não pode ser excluída porque o envio já foi iniciado.</p>
+            <% } else { %>
+              <form action="/mensagem/excluir/<%= mensagem.id %>" method="post" onsubmit="return confirm('Tem certeza que deseja excluir esta mensagem?')">
+                <button type="submit">Excluir mensagem</button>
+              </form>
             <% } %>
           </article>
         <% }); %>

@@ -20,7 +20,67 @@ export class MensagemController {
     static async carregarListar(req: Request, res: Response) {
         const usuario = (req.session as any).usuario;
         const mensagens = await Mensagem.listarDoUsuario(Number(usuario.id));
-        return res.render('pages/mensagem/listar', { mensagens });
+        const resultados: Record<string, { tipo: string; valor: string }> = {
+            excluida: { tipo: 'success', valor: 'Mensagem excluída com sucesso.' },
+            arquivos: {
+                tipo: 'error',
+                valor: 'A mensagem foi excluída, mas não foi possível remover todos os arquivos anexados.'
+            },
+            enviada: {
+                tipo: 'error',
+                valor: 'Esta mensagem não pode ser excluída porque o envio já foi iniciado.'
+            },
+            vinculada: {
+                tipo: 'error',
+                valor: 'Esta mensagem não pode ser excluída porque está vinculada a outro registro.'
+            },
+            naoEncontrada: {
+                tipo: 'error',
+                valor: 'Mensagem não encontrada ou você não tem permissão para excluí-la.'
+            },
+            erro: { tipo: 'error', valor: 'Não foi possível excluir a mensagem.' }
+        };
+        const mensagem = typeof req.query.resultado === 'string'
+            ? resultados[req.query.resultado] || resultados.erro
+            : null;
+        return res.render('pages/mensagem/listar', { mensagens, mensagem });
+    }
+
+    static async excluir(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idMensagem = Number(req.params.id);
+        if (!Number.isSafeInteger(idMensagem) || idMensagem <= 0) {
+            return res.status(400).redirect('/mensagem/listar?resultado=erro');
+        }
+
+        try {
+            const anexos = await Mensagem.deletarDoUsuario(idMensagem, Number(usuario.id));
+            let falhasAoRemoverAnexos = 0;
+            for (const anexo of anexos) {
+                try {
+                    await fs.unlink(path.join(privateMessageDirectory, path.basename(anexo)));
+                } catch (error) {
+                    const code = error && typeof error === 'object' && 'code' in error ? error.code : null;
+                    if (code !== 'ENOENT') {
+                        falhasAoRemoverAnexos++;
+                        console.error('Não foi possível remover anexo de mensagem excluída:', error);
+                    }
+                }
+            }
+
+            return res.redirect(`/mensagem/listar?resultado=${falhasAoRemoverAnexos ? 'arquivos' : 'excluida'}`);
+        } catch (error) {
+            if (error instanceof Error && error.message === 'MENSAGEM_NAO_ENCONTRADA') {
+                return res.redirect('/mensagem/listar?resultado=naoEncontrada');
+            }
+            if (error instanceof Error && error.message === 'MENSAGEM_JA_ENVIADA') {
+                return res.redirect('/mensagem/listar?resultado=enviada');
+            }
+            if (error instanceof Error && error.message === 'MENSAGEM_VINCULADA') {
+                return res.redirect('/mensagem/listar?resultado=vinculada');
+            }
+            throw error;
+        }
     }
 
     static async criar(req: Request, res: Response) {

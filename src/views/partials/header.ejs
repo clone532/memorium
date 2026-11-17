@@ -12,6 +12,19 @@
     </div>
 
     <% if (usuario) { %>
+      <div class="d-flex align-items-center gap-3">
+      <div class="dropdown">
+        <button class="btn btn-outline-light position-relative" id="notificationToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
+          <i class="bi bi-bell" aria-hidden="true"></i>
+          <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" hidden></span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end p-2 notification-menu" aria-labelledby="notificationToggle">
+          <h2 class="h6 px-2 pt-2">Notificações</h2>
+          <div id="notificationList" aria-live="polite">
+            <p class="dropdown-item-text text-muted mb-0">Carregando notificações...</p>
+          </div>
+        </div>
+      </div>
       <div class="dropdown">
         <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
           <% if (usuario.imagem) { %>
@@ -34,6 +47,7 @@
             </form>
           </li>
         </ul>
+      </div>
       </div>
     <% } else { %>
       <a class="nav-link text-white" href="/usuario/logar">Entrar</a>
@@ -84,6 +98,12 @@
     object-fit: cover;
   }
 
+  .notification-menu {
+    width: min(22rem, calc(100vw - 2rem));
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
   .sidebar.bg-dark {
     border-right: 1px solid #51208f;
     background: #6127aa !important;
@@ -108,3 +128,89 @@
     color: #d9c5ff;
   }
 </style>
+
+<% if (usuario) { %>
+  <script>
+    (() => {
+      const toggle = document.getElementById('notificationToggle');
+      const badge = document.getElementById('notificationCount');
+      const list = document.getElementById('notificationList');
+      if (!toggle || !badge || !list) return;
+
+      const renderNotifications = (data) => {
+        badge.textContent = data.naoLidas > 99 ? '99+' : String(data.naoLidas);
+        badge.hidden = data.naoLidas === 0;
+        list.replaceChildren();
+
+        if (!data.notificacoes.length) {
+          const empty = document.createElement('p');
+          empty.className = 'dropdown-item-text text-muted mb-0';
+          empty.textContent = 'Nenhuma notificação.';
+          list.append(empty);
+          return;
+        }
+
+        data.notificacoes.forEach((notification) => {
+          const item = document.createElement('div');
+          item.className = `px-2 py-2 border-bottom${notification.lida_em ? '' : ' bg-light'}`;
+
+          const title = document.createElement('strong');
+          title.className = 'd-block';
+          title.textContent = notification.titulo;
+          item.append(title);
+
+          const message = document.createElement('p');
+          message.className = 'small mb-1';
+          message.textContent = notification.conteudo;
+          item.append(message);
+
+          const date = document.createElement('time');
+          date.className = 'small text-muted';
+          date.dateTime = notification.criado_em;
+          date.textContent = new Date(notification.criado_em).toLocaleString('pt-BR');
+          item.append(date);
+
+          if (!notification.lida_em) {
+            const markRead = document.createElement('button');
+            markRead.type = 'button';
+            markRead.className = 'btn btn-sm btn-link d-block px-0';
+            markRead.textContent = 'Marcar como lida';
+            markRead.addEventListener('click', async () => {
+              markRead.disabled = true;
+              try {
+                const response = await fetch(`/api/notificacoes/${notification.id}/lida`, { method: 'POST' });
+                if (!response.ok) throw new Error('Falha ao atualizar notificação.');
+                await loadNotifications();
+              } catch (error) {
+                markRead.disabled = false;
+                markRead.textContent = 'Falha ao marcar como lida. Tente novamente.';
+                console.error(error);
+              }
+            });
+            item.append(markRead);
+          }
+
+          list.append(item);
+        });
+      };
+
+      const loadNotifications = async () => {
+        try {
+          const response = await fetch('/api/notificacoes');
+          if (!response.ok) throw new Error('Falha ao carregar notificações.');
+          renderNotifications(await response.json());
+        } catch (error) {
+          list.replaceChildren();
+          const message = document.createElement('p');
+          message.className = 'dropdown-item-text text-danger mb-0';
+          message.textContent = 'Não foi possível carregar as notificações.';
+          list.append(message);
+          console.error(error);
+        }
+      };
+
+      toggle.addEventListener('click', loadNotifications);
+      void loadNotifications();
+    })();
+  </script>
+<% } %>

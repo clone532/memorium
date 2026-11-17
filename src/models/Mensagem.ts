@@ -107,4 +107,59 @@ export class Mensagem {
             client.release();
         }
     }
+
+    static async deletarDoUsuario(idMensagem: number, fkUsuario: number) {
+        const client = await connection.connect();
+        try {
+            await client.query("BEGIN");
+            const mensagem = await client.query(
+                `SELECT id, status
+                 FROM mensagem
+                 WHERE id = $1 AND fkusuario = $2
+                 FOR UPDATE`,
+                [idMensagem, fkUsuario]
+            );
+            if (!mensagem.rows[0]) {
+                throw new Error("MENSAGEM_NAO_ENCONTRADA");
+            }
+
+            const entregas = await client.query(
+                `SELECT 1
+                 FROM destinatario_mensagem
+                 WHERE fkmensagem = $1
+                   AND status_envio IN ('enviando', 'enviado')
+                 LIMIT 1`,
+                [idMensagem]
+            );
+            if (
+                ['enviando', 'enviada', 'parcialmente_enviada'].includes(mensagem.rows[0].status)
+                || entregas.rows.length > 0
+            ) {
+                throw new Error("MENSAGEM_JA_ENVIADA");
+            }
+
+            const anexos = await client.query(
+                `SELECT caminho_privado FROM anexo_mensagem WHERE fkmensagem = $1`,
+                [idMensagem]
+            );
+            await client.query(`DELETE FROM destinatario_mensagem WHERE fkmensagem = $1`, [idMensagem]);
+            await client.query(
+                `DELETE FROM mensagem WHERE id = $1 AND fkusuario = $2`,
+                [idMensagem, fkUsuario]
+            );
+            await client.query("COMMIT");
+            return anexos.rows.map((anexo) => anexo.caminho_privado as string);
+        } catch (error) {
+            await client.query("ROLLBACK");
+            if (
+                error && typeof error === "object"
+                && "code" in error && error.code === "23503"
+            ) {
+                throw new Error("MENSAGEM_VINCULADA");
+            }
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
 }
