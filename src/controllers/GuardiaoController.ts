@@ -5,6 +5,14 @@ import { UsuarioGuardiao } from "../models/UsuarioGuardiao";
 import { SolicitacaoFalecimento } from "../models/SolicitacaoFalecimento";
 
 export class GuardiaoController {
+    static async carregarGerenciar(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        return res.render('pages/guardiao/gerenciar', {
+            titulo: 'Gerenciar guardiões',
+            usuario,
+            mensagem: null
+        });
+    }
     static async carregarCadastrar(req: Request, res: Response) {
         return res.render('pages/guardiao/cadastrar', {
             mensagem: null,
