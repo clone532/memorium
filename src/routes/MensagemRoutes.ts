@@ -15,6 +15,8 @@ mensagemRoutes.get('/mensagem/cadastrar', authMiddleware(['ADMIN', 'USUARIO', 'G
 mensagemRoutes.get('/mensagem/listar', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(MensagemController.carregarListar));
 mensagemRoutes.post('/mensagem/excluir/:id', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(MensagemController.excluir));
 mensagemRoutes.get('/api/notificacoes', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(NotificacaoController.listar));
+mensagemRoutes.post('/api/notificacoes/selecionadas/lidas', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(NotificacaoController.marcarSelecionadasComoLidas));
+mensagemRoutes.post('/api/notificacoes/selecionadas/excluir', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(NotificacaoController.excluirSelecionadas));
 mensagemRoutes.post('/api/notificacoes/:id/lida', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(NotificacaoController.marcarComoLida));
 mensagemRoutes.get('/api/mensagens', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(MensagemController.listar));
 mensagemRoutes.post('/api/mensagens', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), uploadAnexosMensagem, asyncExecutor(MensagemController.criar));

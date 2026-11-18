@@ -32,6 +32,10 @@ create table Usuario (
 	email VARCHAR(255) NOT NULL,
 	numero VARCHAR(20),
 	imagem VARCHAR(255),
+	termos_versao_aceita VARCHAR(20),
+	termos_aceito_em TIMESTAMPTZ,
+	privacidade_versao_lida VARCHAR(20),
+	privacidade_lida_em TIMESTAMPTZ,
 	tipoUsuario INT NOT NULL REFERENCES tipo_usuario(id)
 );
 
@@ -114,7 +118,7 @@ $$;
 CREATE TRIGGER anexo_mensagem_limite_total
 BEFORE INSERT OR UPDATE OF fkMensagem, tamanho_bytes ON Anexo_Mensagem
 FOR EACH ROW
-EXECUTE FUNCTION validar_limite_total_anexos_mensagem();
+EXECUTE PROCEDURE validar_limite_total_anexos_mensagem();
 
 create table Biografia (
 	id SERIAL PRIMARY KEY,

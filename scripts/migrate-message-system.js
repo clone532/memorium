@@ -166,7 +166,7 @@ async function migrateMessageSystem() {
             CREATE TRIGGER anexo_mensagem_limite_total
             BEFORE INSERT OR UPDATE OF fkmensagem, tamanho_bytes ON anexo_mensagem
             FOR EACH ROW
-            EXECUTE FUNCTION validar_limite_total_anexos_mensagem()
+            EXECUTE PROCEDURE validar_limite_total_anexos_mensagem()
         `);
 
         await client.query(`

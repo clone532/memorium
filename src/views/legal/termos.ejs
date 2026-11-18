@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Termos de Uso | Memorium</title>
+  <style>
+    body { margin: 0; padding: 32px 16px; background: #f5f1fa; color: #292436; font: 16px/1.7 Arial, sans-serif; }
+    main { max-width: 860px; margin: auto; padding: 32px; border-radius: 16px; background: #fff; box-shadow: 0 8px 30px #27103a18; }
+    h1, h2 { color: #59249b; line-height: 1.3; }
+    h1 { margin-top: 0; }
+    .notice { padding: 14px 16px; border-left: 4px solid #9250ec; background: #f5efff; }
+    .nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    a { color: #59249b; }
+    @media (max-width: 600px) { main { padding: 22px 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav class="nav" aria-label="Documentos legais">
+      <a href="/privacidade">Aviso de Privacidade</a>
+      <a href="/usuario/logar">Voltar ao login e cadastro</a>
+    </nav>
+    <h1>Termos de Uso do Memorium</h1>
+    <p>Versão <%= termosVersao %></p>
+    <p class="notice"><strong>Documento preliminar:</strong> esta versão ainda precisa ser revisada e ter os dados de identificação do responsável legal e a regra de idade mínima definidos antes da operação pública do serviço.</p>
+
+    <h2>1. Sobre o serviço</h2>
+    <p>O Memorium permite que usuários mantenham informações de perfil e biografia, cadastrem destinatários e guardiões e, conforme as funcionalidades estiverem disponíveis, preparem mensagens para envio em uma data programada ou após uma confirmação de óbito.</p>
+    <p>O serviço e suas funcionalidades podem passar por alterações. O Memorium não garante disponibilidade ininterrupta, entrega em horário exato ou que um e-mail seja aceito, entregue, aberto ou lido pelo destinatário. A entrega depende também do provedor de e-mail e dos sistemas dos destinatários.</p>
+
+    <h2>2. Conta e responsabilidades do usuário</h2>
+    <p>O usuário deve fornecer informações corretas e manter seus dados de acesso em segurança. Também é responsável por revisar os destinatários, endereços de e-mail, conteúdo, anexos e datas antes de programar uma mensagem.</p>
+    <p>É proibido publicar ou enviar conteúdo sexual explícito ou destinado a adultos. Nomes de usuário, imagens de perfil, biografias e demais conteúdos não podem ser ilegais, discriminatórios, abusivos ou violar direitos de terceiros. O Memorium poderá remover conteúdo ou restringir contas em caso de violação, observadas as leis aplicáveis.</p>
+    <p>Ao cadastrar dados de destinatários ou guardiões, o usuário deve fornecer informações corretas e ter autorização ou outra base legal adequada para inseri-las e utilizá-las no serviço.</p>
+
+    <h2>3. Mensagens e impossibilidade de desfazer envios</h2>
+    <p>Mensagens programadas são enviadas conforme as configurações do usuário e a disponibilidade do serviço. Uma mensagem cujo envio já foi aceito pelo servidor SMTP não pode ser recuperada pelo Memorium. O cancelamento pode impedir envios que ainda não começaram, mas não garante a interrupção de uma entrega já em andamento.</p>
+    <p>O usuário reconhece que o Memorium não pode garantir a retirada de uma mensagem depois que ela foi aceita para envio. É responsabilidade do usuário conferir cuidadosamente o conteúdo e os destinatários antes de confirmar o agendamento.</p>
+
+    <h2>4. Guardiões e confirmação de óbito</h2>
+    <p>Quando a funcionalidade estiver disponível, o usuário poderá convidar guardiões ou, se habilitado, receber solicitações de vínculo. Um vínculo só será ativado após a aceitação correspondente. O usuário é responsável por escolher pessoas de confiança e manter atualizados os dados necessários para contato.</p>
+    <p>Para criar mensagens sem data de envio (“mensagens trancadas”), será necessário ter pelo menos três vínculos de guardião confirmados e ativos. A confirmação de óbito dependerá do voto de pelo menos metade dos guardiões elegíveis, arredondada para cima (<code>ceil(N / 2)</code>), conforme a quantidade de guardiões ativos considerada no início da solicitação.</p>
+    <p>Ao atingir o quórum, as mensagens trancadas poderão ser liberadas para envio aos destinatários cadastrados. O usuário pode cancelar uma confirmação de óbito pelo fluxo disponibilizado no serviço. O cancelamento interrompe mensagens que ainda não começaram a ser enviadas, quando tecnicamente possível; mensagens já aceitas pelo provedor de e-mail não podem ser recuperadas, e uma entrega em andamento pode ser concluída.</p>
+
+    <h2>5. Dados pessoais e privacidade</h2>
+    <p>O tratamento de dados pessoais é descrito no <a href="/privacidade">Aviso de Privacidade</a>. A aceitação destes Termos não representa consentimento automático para usos opcionais de dados. Quando houver tratamento opcional que dependa de consentimento, ele será solicitado separadamente e desativado por padrão.</p>
+
+    <h2>6. Suspensão e encerramento de conta</h2>
+    <p>O usuário pode deixar de utilizar o serviço e solicitar atendimento pelo canal indicado no Aviso de Privacidade. O Memorium poderá restringir o acesso em caso de violação destes Termos ou por necessidade de segurança, cumprimento legal ou proteção de direitos, sem afastar os direitos do titular previstos na legislação.</p>
+    <p>O encerramento da conta e a eliminação de dados estão sujeitos às finalidades do tratamento, às obrigações legais e às hipóteses de conservação descritas no Aviso de Privacidade.</p>
+
+    <h2>7. Alterações dos Termos</h2>
+    <p>Alterações relevantes serão comunicadas pelo serviço. Quando necessário, será solicitado novo aceite, com registro da versão aceita e da data correspondente.</p>
+
+    <h2>8. Código-fonte e propriedade intelectual</h2>
+    <p>Estes Termos regulam o uso do serviço Memorium e não concedem licença para copiar, distribuir ou modificar o código-fonte. Os direitos e permissões de reutilização do projeto devem ser consultados em uma licença própria publicada junto ao repositório. Na ausência de uma licença aplicável, não se presume autorização adicional além da prevista em lei.</p>
+
+    <h2>9. Contato</h2>
+    <p>Para dúvidas sobre estes Termos, entre em contato pelo e-mail <a href="mailto:tccmemorium@gmail.com">tccmemorium@gmail.com</a>.</p>
+  </main>
+</body>
+</html>

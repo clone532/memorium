@@ -6,6 +6,7 @@ import { TipoUsuarioEnum } from "../enums/TipoUsuario";
 import { Comentario } from "../models/Comentario";
 import { Mural } from "../models/Mural";
 import { Biografia } from "../models/Biografia";
+import { PRIVACIDADE_VERSAO, TERMOS_VERSAO } from "../constants/LegalDocuments";
 import fs from "fs";
 import path from "path";
 
@@ -57,7 +58,7 @@ export class UsuarioController {
 // FUNÇÕES DE CARREGAR !!!!!!!
 
     static carregarLogin(req: Request, res: Response) {
-        res.render('login', {
+        return res.render('login', {
             mensagem: null
         });
     }
@@ -88,6 +89,22 @@ export class UsuarioController {
             usuario,
             usuarioPerfil: usuarioEncontrado,
             titulo: 'Configuração do Perfil',
+            mensagem: null
+        });
+    }
+
+    static async carregarAceiteDocumentos(req: Request, res: Response) {
+        const usuarioSessao = (req.session as any).usuario;
+        const usuarioEncontrado = await Usuario.buscarPorId(String(usuarioSessao.id));
+
+        if (!usuarioEncontrado) {
+            return res.redirect('/usuario/logar');
+        }
+
+        return res.render('legal/aceitarDocumentos', {
+            usuario: usuarioSessao,
+            termosVersao: TERMOS_VERSAO,
+            privacidadeVersao: PRIVACIDADE_VERSAO,
             mensagem: null
         });
     }
@@ -184,6 +201,16 @@ export class UsuarioController {
             });
         }
 
+        if (req.body.aceitaTermos !== "on" || req.body.leuPrivacidade !== "on") {
+            return res.status(400).render('login', {
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Aceite os Termos de Uso e confirme a leitura do Aviso de Privacidade para concluir o cadastro.',
+                    titulo: 'Documentos obrigatórios'
+                }
+            });
+        }
+
         const usuarioEncontrado = await Usuario.buscarPorEmail(emailNormalizado);
 
         if (usuarioEncontrado) {
@@ -214,7 +241,9 @@ export class UsuarioController {
             dataNasc,
             estaMorto: false,
             numero: '',
-            tipoUsuario: tipoPadrao
+            tipoUsuario: tipoPadrao,
+            termosVersaoAceita: TERMOS_VERSAO,
+            privacidadeVersaoLida: PRIVACIDADE_VERSAO
         });
 
         try {
@@ -362,7 +391,9 @@ export class UsuarioController {
                 email: usuario.email,
                 id: usuario.id,
                 tipo: usuario.tipoUsuario.nome,
-                imagem: usuario.imagem
+                imagem: usuario.imagem,
+                termosVersaoAceita: usuario.termosVersaoAceita,
+                privacidadeVersaoLida: usuario.privacidadeVersaoLida
             };
 
             req.session.save((saveError) => {
@@ -377,7 +408,9 @@ export class UsuarioController {
                     });
                 }
 
-                return res.redirect('/dashboard');
+                const documentosAtualizados = usuario.termosVersaoAceita === TERMOS_VERSAO
+                    && usuario.privacidadeVersaoLida === PRIVACIDADE_VERSAO;
+                return res.redirect(documentosAtualizados ? '/dashboard' : '/usuario/aceitar-documentos');
             });
         });
     }

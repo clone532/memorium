@@ -4,6 +4,7 @@ import { authMiddleware } from '../middlewares/AuthMiddleware';
 import { asyncExecutor } from '../../utils/AsyncExecutor';
 import { uploadImagem } from '../middlewares/UploadMiddleware';
 import { loginRateLimit } from '../middlewares/LoginRateLimitMiddleware';
+import { LegalController } from '../controllers/LegalController';
 
 const usuarioRoutes = Router();
 
@@ -13,6 +14,8 @@ usuarioRoutes.get('/usuario/logar', asyncExecutor(UsuarioController.carregarLogi
 usuarioRoutes.post('/usuario/logar', loginRateLimit, asyncExecutor(UsuarioController.logar));
 usuarioRoutes.post('/usuario/deslogar', asyncExecutor(UsuarioController.deslogar));
 usuarioRoutes.post('/usuario/cadastrar', asyncExecutor(UsuarioController.cadastrarUsuario));
+usuarioRoutes.get('/usuario/aceitar-documentos', authMiddleware(), asyncExecutor(UsuarioController.carregarAceiteDocumentos));
+usuarioRoutes.post('/usuario/aceitar-documentos', authMiddleware(), asyncExecutor(LegalController.aceitarDocumentos));
 
 // ROTAS DO USUÁRIO COMUM
 usuarioRoutes.get('/perfilUsuario/perfil/:id', authMiddleware(['ADMIN', 'USUARIO', 'GUARDIAO']), asyncExecutor(UsuarioController.carregarPerfil));

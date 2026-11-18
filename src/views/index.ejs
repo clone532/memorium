@@ -185,6 +185,16 @@
       color: #cda7e8 !important;
       margin-top: 15px;
     }
+    .links-legais {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .links-legais a {
+      color: #cda7e8;
+    }
     @media (max-width: 700px) {
       .header {
         height: 75px;
@@ -334,6 +344,10 @@
     <p>
       © 2026 Memorium - Todos os direitos reservados.
     </p>
+    <nav class="links-legais" aria-label="Documentos legais">
+      <a href="/termos">Termos de Uso</a>
+      <a href="/privacidade">Aviso de Privacidade</a>
+    </nav>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

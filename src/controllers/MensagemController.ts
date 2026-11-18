@@ -101,8 +101,8 @@ export class MensagemController {
                     return Number(id);
                 });
         } catch {
-            await this.removerAnexos(files);
-            return this.responderErro(req, res, isHtmlForm, 400, 'Informe destinatários válidos.');
+            await MensagemController.removerAnexos(files);
+            return MensagemController.responderErro(req, res, isHtmlForm, 400, 'Informe destinatários válidos.');
         }
 
         const data = rawDataEnvio === undefined || rawDataEnvio === '' ? null : new Date(rawDataEnvio);
@@ -114,8 +114,8 @@ export class MensagemController {
             || new Set(destinatarios).size !== destinatarios.length
             || (data !== null && Number.isNaN(data.getTime()))
         ) {
-            await this.removerAnexos(files);
-            return this.responderErro(req, res, isHtmlForm, 400, 'Informe um título, conteúdo ou arquivo, destinatários e uma data válida.');
+            await MensagemController.removerAnexos(files);
+            return MensagemController.responderErro(req, res, isHtmlForm, 400, 'Informe um título, conteúdo ou arquivo, destinatários e uma data válida.');
         }
 
         try {
@@ -141,13 +141,13 @@ export class MensagemController {
             }
             return res.status(201).json({ id, mensagem: 'Mensagem salva.' });
         } catch (error) {
-            await this.removerAnexos(files);
+            await MensagemController.removerAnexos(files);
             if (error instanceof Error && error.message === 'DESTINATARIO_INVALIDO') {
-                return this.responderErro(req, res, isHtmlForm, 400, 'Um ou mais destinatários não pertencem à sua conta.');
+                return MensagemController.responderErro(req, res, isHtmlForm, 400, 'Um ou mais destinatários não pertencem à sua conta.');
             }
             if (isHtmlForm) {
                 console.error('Falha ao salvar mensagem:', error);
-                return this.responderErro(req, res, true, 500, 'Não foi possível salvar a mensagem. Tente novamente.');
+                return MensagemController.responderErro(req, res, true, 500, 'Não foi possível salvar a mensagem. Tente novamente.');
             }
             throw error;
         }

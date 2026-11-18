@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aviso de Privacidade | Memorium</title>
+  <style>
+    body { margin: 0; padding: 32px 16px; background: #f5f1fa; color: #292436; font: 16px/1.7 Arial, sans-serif; }
+    main { max-width: 860px; margin: auto; padding: 32px; border-radius: 16px; background: #fff; box-shadow: 0 8px 30px #27103a18; }
+    h1, h2 { color: #59249b; line-height: 1.3; }
+    h1 { margin-top: 0; }
+    .notice { padding: 14px 16px; border-left: 4px solid #9250ec; background: #f5efff; }
+    .nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    a { color: #59249b; }
+    @media (max-width: 600px) { main { padding: 22px 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav class="nav" aria-label="Documentos legais">
+      <a href="/termos">Termos de Uso</a>
+      <a href="/usuario/logar">Voltar ao login e cadastro</a>
+    </nav>
+    <h1>Aviso de Privacidade do Memorium</h1>
+    <p>Versão <%= privacidadeVersao %></p>
+    <p class="notice"><strong>Documento preliminar:</strong> o responsável legal, os fornecedores de produção, a regra de idade mínima e os prazos de retenção da infraestrutura precisam ser confirmados antes da operação pública.</p>
+
+    <h2>1. Quem é responsável pelo tratamento</h2>
+    <p><strong>Controlador:</strong> responsável legal pelo Memorium — identificação a ser preenchida antes da publicação.</p>
+    <p><strong>Contato para privacidade:</strong> <a href="mailto:tccmemorium@gmail.com">tccmemorium@gmail.com</a>.</p>
+    <p>Fornecedores de hospedagem, banco de dados, envio de e-mail e infraestrutura poderão tratar dados em nome do controlador, conforme suas funções e contratos.</p>
+
+    <h2>2. Dados tratados</h2>
+    <p>Conforme as funcionalidades utilizadas, o Memorium poderá tratar dados de cadastro e perfil (como nome, e-mail, telefone e data de nascimento); dados necessários para autenticação; informações de guardiões e destinatários; conteúdo de mensagens, biografias e anexos; datas ou condições de envio; convites, solicitações, votos, notificações, estados de entrega e registros técnicos necessários para manter a sessão, proteger o serviço e diagnosticar falhas.</p>
+    <p>O usuário que cadastra destinatários ou guardiões deve informar essas pessoas sobre o uso de seus dados quando necessário e assegurar que possui uma base legal adequada para fornecê-los ao serviço.</p>
+
+    <h2>3. Finalidades do tratamento</h2>
+    <p>Os dados podem ser utilizados para criar e administrar contas, autenticar usuários, proteger o serviço, oferecer as funcionalidades de perfil, biografia, mensagens, anexos, destinatários e guardiões, processar convites e votos, enviar mensagens e notificações, prestar suporte, investigar falhas, prevenir fraude e cumprir obrigações legais.</p>
+    <p>Estatísticas opcionais somente serão produzidas se essa finalidade estiver implementada e houver consentimento específico, livre e revogável. A opção deverá ficar desativada por padrão e sua recusa não impedirá o uso das funções essenciais. A data de nascimento não será compartilhada para estatísticas individuais.</p>
+
+    <h2>4. E-mail e compartilhamento com fornecedores</h2>
+    <p>O Memorium não vende dados pessoais. Para enviar mensagens, convites ou comunicações do serviço, os dados necessários são transmitidos ao provedor de e-mail configurado pelo operador. O provedor poderá processar endereços de remetentes e destinatários e, conforme o tipo de comunicação, o conteúdo e os anexos necessários à entrega. No código atual, o envio de e-mails utiliza o serviço Gmail; essa informação deve ser atualizada se a configuração de produção for diferente.</p>
+    <p>Dados também poderão ser processados por fornecedores de hospedagem, banco de dados e infraestrutura necessários à operação. O controlador deve identificar os fornecedores efetivamente usados, suas finalidades e, quando aplicável, informar transferências internacionais e as salvaguardas adotadas.</p>
+    <p>O compartilhamento também poderá ocorrer quando necessário para cumprir obrigação legal, atender ordem válida de autoridade competente ou proteger direitos e a segurança de usuários e do serviço.</p>
+
+    <h2>5. Retenção e eliminação</h2>
+    <p>Os dados serão mantidos pelo período necessário às finalidades informadas, observadas obrigações legais, exercício regular de direitos e outras hipóteses permitidas pela legislação.</p>
+    <p>Após a entrega de uma mensagem a todos os destinatários, o sistema remove a mensagem e seus metadados do banco e apaga os anexos privados. Registros técnicos, cópias de segurança ou dados mantidos pelo provedor de e-mail podem seguir prazos próprios, que devem ser definidos para a infraestrutura de produção.</p>
+    <p>Pedidos de eliminação serão avaliados conforme a finalidade, a base legal e as hipóteses de conservação aplicáveis. A eliminação no Memorium não garante a remoção de mensagens já entregues ou de cópias mantidas pelos destinatários ou provedores.</p>
+
+    <h2>6. Segurança</h2>
+    <p>O controlador deve adotar medidas técnicas e administrativas proporcionais para proteger os dados pessoais. Nenhum sistema pode garantir segurança absoluta. Em caso de incidente que possa gerar risco ou dano relevante, serão adotadas as medidas e comunicações exigidas pela legislação aplicável.</p>
+
+    <h2>7. Direitos dos titulares</h2>
+    <p>Nos termos da legislação aplicável, o titular pode solicitar confirmação da existência de tratamento e acesso aos dados; correção; anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em desconformidade; portabilidade, quando aplicável; informações sobre compartilhamentos e sobre a possibilidade e as consequências de não fornecer consentimento; e revogação do consentimento, quando essa for a base legal utilizada.</p>
+    <p>As solicitações podem ser enviadas para <a href="mailto:tccmemorium@gmail.com">tccmemorium@gmail.com</a>. O controlador poderá solicitar informações para confirmar a identidade do solicitante e responderá nos prazos e limites previstos na legislação.</p>
+
+    <h2>8. Atualizações deste Aviso</h2>
+    <p>Este Aviso poderá ser atualizado para refletir mudanças no serviço, nos tratamentos ou na legislação. A versão vigente e a data de atualização deverão ser exibidas no serviço. Alterações que exijam consentimento serão apresentadas separadamente, sem consentimento pré-selecionado.</p>
+  </main>
+</body>
+</html>

@@ -56,6 +56,11 @@ hora. Para encerrar uma sessão, faça logout ou remova os registros da tabela.
 ### 4. Configure o banco de dados
 Execute o script SQL `banco.sql` no seu PostgreSQL para criar as tabelas necessárias.
 
+O pgAdmin é apenas o cliente usado para administrar o banco; a compatibilidade depende da
+versão do servidor PostgreSQL. O esquema inicial e o armazenamento de sessões exigem PostgreSQL
+9.5 ou superior. As migrações para bancos existentes exigem PostgreSQL 9.6 ou superior. Para
+conferir a versão do servidor no pgAdmin, execute `SELECT version();`.
+
 Para bancos já existentes, as migrações verificam os dados antes de aplicar restrições:
 
 ```sh
@@ -63,7 +68,10 @@ npm run migrate:guardian-links
 npm run migrate:emails
 npm run migrate:message-system
 npm run migrate:notifications
+npm run migrate:legal-consent
 ```
+
+`migrate:legal-consent` adiciona os campos de versão e data de aceite dos Termos de Uso e de leitura do Aviso de Privacidade. Contas já existentes ficam sem aceite registrado e serão solicitadas a aceitar os documentos ao entrar.
 
 `migrate:emails` não altera registros e será interrompida se encontrar e-mails duplicados. Para remover duplicatas sem dados relacionados, mantendo a conta de menor ID por e-mail, existe o comando destrutivo explícito:
 
@@ -76,7 +84,9 @@ Ele cancela sem alterações se as contas excedentes tiverem dados vinculados. R
 `migrate:message-system` prepara mensagens, anexos privados, destinatários por usuário e confirmações de falecimento. Contatos de destinatários anteriores ficam sem proprietário e não são atribuídos nem apagados. Faça backup antes de aplicar a migração.
 
 O servidor inicia automaticamente o worker de entrega. Ele verifica mensagens vencidas a cada 15 segundos, envia um e-mail por destinatário com os anexos privados e tenta novamente falhas até oito vezes. O SMTP deve estar configurado em `EMAIL_USER` e `EMAIL_PASS`.
-Quando todos os destinatários recebem a mensagem, o worker registra uma notificação, remove a mensagem e seus metadados do banco e apaga os anexos privados. Mensagens antigas já marcadas como enviadas também são limpas pelo worker. As notificações ficam disponíveis no sino do header.
+As telas `/mensagem/cadastrar` e `/mensagem/listar` oferecem cadastro com anexos múltiplos e uma listagem pesquisável e paginada. Mensagens podem ser excluídas individualmente antes do início do envio.
+
+Quando todos os destinatários recebem a mensagem, o worker registra uma notificação, remove a mensagem e seus metadados do banco e apaga os anexos privados. Mensagens antigas já marcadas como enviadas também são limpas pelo worker. No sino do header, o usuário pode marcar notificações como lidas ou excluí-las individualmente ou em lote.
 
 ### 5. Inicie o servidor
 ```sh

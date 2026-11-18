@@ -1,7 +1,7 @@
 <nav class="navbar navbar-dark bg-black">
   <div class="container-fluid">
 
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center header-brand-group">
       <button class="btn btn-outline-light me-3" id="toggleSidebar" type="button" aria-label="Alternar menu" title="Alternar menu">
         <i class="bi bi-list" aria-hidden="true"></i>
       </button>
@@ -12,14 +12,29 @@
     </div>
 
     <% if (usuario) { %>
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3 header-actions">
       <div class="dropdown">
-        <button class="btn btn-outline-light position-relative" id="notificationToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
+        <button class="btn btn-outline-light position-relative notification-toggle" id="notificationToggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notificações">
           <i class="bi bi-bell" aria-hidden="true"></i>
           <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" hidden></span>
         </button>
         <div class="dropdown-menu dropdown-menu-end p-2 notification-menu" aria-labelledby="notificationToggle">
-          <h2 class="h6 px-2 pt-2">Notificações</h2>
+          <div class="d-flex align-items-center justify-content-between gap-2 px-2 pt-2 pb-2 border-bottom">
+            <h2 class="h6 mb-0">Notificações</h2>
+            <button type="button" id="toggleNotificationSelection" class="btn btn-sm btn-link p-0">
+              Selecionar várias
+            </button>
+          </div>
+          <div id="notificationBulkActions" class="d-flex flex-wrap align-items-center gap-2 px-2 py-2 border-bottom" hidden>
+            <span id="selectedNotificationCount" class="small text-muted me-auto">0 selecionadas</span>
+            <button type="button" id="markSelectedNotificationsRead" class="btn btn-sm btn-outline-primary" disabled>
+              Marcar lidas
+            </button>
+            <button type="button" id="deleteSelectedNotifications" class="btn btn-sm btn-outline-danger" disabled>
+              Excluir
+            </button>
+          </div>
+          <p id="notificationActionFeedback" class="small text-danger px-2 pt-2 mb-0" role="status" hidden></p>
           <div id="notificationList" aria-live="polite">
             <p class="dropdown-item-text text-muted mb-0">Carregando notificações...</p>
           </div>
@@ -50,7 +65,7 @@
       </div>
       </div>
     <% } else { %>
-      <a class="nav-link text-white" href="/usuario/logar">Entrar</a>
+      <a class="nav-link text-white header-login" href="/usuario/logar">Entrar</a>
     <% } %>
 
   </div>
@@ -62,6 +77,17 @@
     border-bottom: 1px solid rgba(255, 255, 255, .16);
   }
 
+  .navbar .header-brand-group,
+  .navbar .header-actions {
+    flex-grow: 0;
+    overflow: visible;
+  }
+
+  .navbar .header-actions,
+  .navbar .header-login {
+    margin-left: auto;
+  }
+
   .navbar.navbar-dark .btn-outline-light {
     border-color: rgba(255, 255, 255, .55);
     color: #fff;
@@ -71,6 +97,26 @@
     border-color: #fff;
     background: #451a78;
     color: #fff;
+  }
+
+  .navbar .notification-toggle {
+    transition: background .3s ease, border-color .3s ease, color .3s ease;
+  }
+
+  .navbar .notification-toggle:hover,
+  .navbar .notification-toggle:focus-visible {
+    border-color: #451a78;
+    background: #451a78;
+    color: #fff;
+  }
+
+  .navbar .notification-toggle.show,
+  .navbar .notification-toggle.show:hover,
+  .navbar .notification-toggle.show:focus {
+    border-color: transparent;
+    background: linear-gradient(105deg, #8250ed, #be47dc);
+    color: #fff;
+    box-shadow: none;
   }
 
   .memorium-brand {
@@ -104,6 +150,23 @@
     overflow-y: auto;
   }
 
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .75rem .5rem;
+    border-bottom: 1px solid #e9e3f2;
+  }
+
+  .notification-item:last-child {
+    border-bottom: 0;
+  }
+
+  .notification-item-content {
+    min-width: 0;
+    flex: 1;
+  }
+
   .sidebar.bg-dark {
     border-right: 1px solid #51208f;
     background: #6127aa !important;
@@ -129,17 +192,38 @@
   }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <% if (usuario) { %>
   <script>
     (() => {
       const toggle = document.getElementById('notificationToggle');
       const badge = document.getElementById('notificationCount');
       const list = document.getElementById('notificationList');
-      if (!toggle || !badge || !list) return;
+      const selectionToggle = document.getElementById('toggleNotificationSelection');
+      const bulkActions = document.getElementById('notificationBulkActions');
+      const selectedCount = document.getElementById('selectedNotificationCount');
+      const markSelectedButton = document.getElementById('markSelectedNotificationsRead');
+      const deleteSelectedButton = document.getElementById('deleteSelectedNotifications');
+      const actionFeedback = document.getElementById('notificationActionFeedback');
+      if (!toggle || !badge || !list || !selectionToggle || !bulkActions || !selectedCount || !markSelectedButton || !deleteSelectedButton || !actionFeedback) return;
+
+      let selectionMode = false;
+      const selectedIds = new Set();
+      const updateBulkActions = () => {
+        const hasSelection = selectedIds.size > 0;
+        selectedCount.textContent = `${selectedIds.size} selecionadas`;
+        markSelectedButton.disabled = !hasSelection;
+        deleteSelectedButton.disabled = !hasSelection;
+      };
 
       const renderNotifications = (data) => {
         badge.textContent = data.naoLidas > 99 ? '99+' : String(data.naoLidas);
         badge.hidden = data.naoLidas === 0;
+        selectionToggle.textContent = selectionMode ? 'Cancelar seleção' : 'Selecionar várias';
+        bulkActions.hidden = !selectionMode;
+        actionFeedback.hidden = true;
+        actionFeedback.textContent = '';
         list.replaceChildren();
 
         if (!data.notificacoes.length) {
@@ -152,46 +236,107 @@
 
         data.notificacoes.forEach((notification) => {
           const item = document.createElement('div');
-          item.className = `px-2 py-2 border-bottom${notification.lida_em ? '' : ' bg-light'}`;
+          item.className = `notification-item${notification.lida_em ? '' : ' bg-light'}`;
+
+          if (selectionMode) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-check-input mt-1';
+            checkbox.checked = selectedIds.has(notification.id);
+            checkbox.setAttribute('aria-label', `Selecionar: ${notification.titulo}`);
+            checkbox.addEventListener('change', () => {
+              if (checkbox.checked) {
+                selectedIds.add(notification.id);
+              } else {
+                selectedIds.delete(notification.id);
+              }
+              updateBulkActions();
+            });
+            item.append(checkbox);
+          }
+
+          const content = document.createElement('div');
+          content.className = 'notification-item-content';
 
           const title = document.createElement('strong');
           title.className = 'd-block';
           title.textContent = notification.titulo;
-          item.append(title);
+          content.append(title);
 
           const message = document.createElement('p');
           message.className = 'small mb-1';
           message.textContent = notification.conteudo;
-          item.append(message);
+          content.append(message);
 
           const date = document.createElement('time');
           date.className = 'small text-muted';
           date.dateTime = notification.criado_em;
           date.textContent = new Date(notification.criado_em).toLocaleString('pt-BR');
-          item.append(date);
+          content.append(date);
 
-          if (!notification.lida_em) {
-            const markRead = document.createElement('button');
-            markRead.type = 'button';
-            markRead.className = 'btn btn-sm btn-link d-block px-0';
-            markRead.textContent = 'Marcar como lida';
-            markRead.addEventListener('click', async () => {
-              markRead.disabled = true;
-              try {
-                const response = await fetch(`/api/notificacoes/${notification.id}/lida`, { method: 'POST' });
-                if (!response.ok) throw new Error('Falha ao atualizar notificação.');
-                await loadNotifications();
-              } catch (error) {
-                markRead.disabled = false;
-                markRead.textContent = 'Falha ao marcar como lida. Tente novamente.';
-                console.error(error);
+          if (!selectionMode) {
+            const actions = document.createElement('div');
+            actions.className = 'd-flex justify-content-between align-items-center gap-2 mt-1';
+
+            if (!notification.lida_em) {
+              const markRead = document.createElement('button');
+              markRead.type = 'button';
+              markRead.className = 'btn btn-sm btn-link p-0';
+              markRead.textContent = 'Marcar como lida';
+              markRead.addEventListener('click', async () => {
+                markRead.disabled = true;
+                try {
+                  const response = await fetch(`/api/notificacoes/${notification.id}/lida`, { method: 'POST' });
+                  if (!response.ok) throw new Error('Falha ao atualizar notificação.');
+                  await loadNotifications();
+                } catch (error) {
+                  markRead.disabled = false;
+                  markRead.textContent = 'Falha ao marcar como lida. Tente novamente.';
+                  console.error(error);
+                }
+              });
+              actions.append(markRead);
+            } else {
+              actions.append(document.createElement('span'));
+            }
+
+            const deleteNotification = document.createElement('button');
+            deleteNotification.type = 'button';
+            deleteNotification.className = 'btn btn-sm btn-link text-danger p-0';
+            deleteNotification.setAttribute('aria-label', `Excluir notificação: ${notification.titulo}`);
+            deleteNotification.title = 'Excluir notificação';
+            const deleteIcon = document.createElement('i');
+            deleteIcon.className = 'bi bi-trash';
+            deleteIcon.setAttribute('aria-hidden', 'true');
+            deleteNotification.append(deleteIcon);
+            deleteNotification.addEventListener('click', async () => {
+              const result = await Swal.fire({
+                title: 'Deseja realmente excluir?',
+                icon: 'warning',
+                backdrop: false,
+                showCancelButton: true,
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar'
+              });
+              if (result.isConfirmed) {
+                await submitNotificationAction(
+                  '/api/notificacoes/selecionadas/excluir',
+                  [notification.id],
+                  deleteNotification
+                );
               }
             });
-            item.append(markRead);
+            actions.append(deleteNotification);
+            content.append(actions);
           }
 
+          item.append(content);
           list.append(item);
         });
+        selectedIds.forEach((id) => {
+          if (!data.notificacoes.some((notification) => notification.id === id)) selectedIds.delete(id);
+        });
+        updateBulkActions();
       };
 
       const loadNotifications = async () => {
@@ -208,6 +353,60 @@
           console.error(error);
         }
       };
+
+      selectionToggle.addEventListener('click', () => {
+        selectionMode = !selectionMode;
+        if (!selectionMode) selectedIds.clear();
+        void loadNotifications();
+      });
+
+      const submitNotificationAction = async (endpoint, ids, button) => {
+        if (!ids.length) return;
+        button.disabled = true;
+        actionFeedback.hidden = true;
+        try {
+          const body = new URLSearchParams();
+          ids.forEach((id) => body.append('ids', String(id)));
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
+          if (!response.ok) throw new Error('Falha ao atualizar notificações.');
+          ids.forEach((id) => selectedIds.delete(id));
+          await loadNotifications();
+        } catch (error) {
+          console.error(error);
+          actionFeedback.textContent = 'Não foi possível concluir a ação. Tente novamente.';
+          actionFeedback.hidden = false;
+          button.disabled = false;
+        }
+      };
+
+      markSelectedButton.addEventListener('click', () => {
+        void submitNotificationAction(
+          '/api/notificacoes/selecionadas/lidas',
+          Array.from(selectedIds),
+          markSelectedButton
+        );
+      });
+      deleteSelectedButton.addEventListener('click', async () => {
+        const result = await Swal.fire({
+          title: 'Deseja realmente excluir?',
+          icon: 'warning',
+          backdrop: false,
+          showCancelButton: true,
+          confirmButtonText: 'Sim',
+          cancelButtonText: 'Cancelar'
+        });
+        if (result.isConfirmed) {
+          await submitNotificationAction(
+            '/api/notificacoes/selecionadas/excluir',
+            Array.from(selectedIds),
+            deleteSelectedButton
+          );
+        }
+      });
 
       toggle.addEventListener('click', loadNotifications);
       void loadNotifications();

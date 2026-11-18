@@ -12,8 +12,10 @@ export class Usuario {
     numero: string = '';
     imagem?: string;
     tipoUsuario: TipoUsuario;
+    termosVersaoAceita?: string | null;
+    privacidadeVersaoLida?: string | null;
 
-    constructor({ id, nome, email, senha, dataNasc, estaMorto, numero, tipoUsuario, imagem }: { id?: number, nome: string, email: string, senha: string,  dataNasc: Date, estaMorto: boolean, numero: string, tipoUsuario: TipoUsuario, imagem?: string }) {
+    constructor({ id, nome, email, senha, dataNasc, estaMorto, numero, tipoUsuario, imagem, termosVersaoAceita, privacidadeVersaoLida }: { id?: number, nome: string, email: string, senha: string,  dataNasc: Date, estaMorto: boolean, numero: string, tipoUsuario: TipoUsuario, imagem?: string, termosVersaoAceita?: string | null, privacidadeVersaoLida?: string | null }) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -23,6 +25,8 @@ export class Usuario {
         this.numero = numero;
         this.imagem = imagem;
         this.tipoUsuario = tipoUsuario;
+        this.termosVersaoAceita = termosVersaoAceita;
+        this.privacidadeVersaoLida = privacidadeVersaoLida;
 
     }
 
@@ -33,16 +37,46 @@ export class Usuario {
     static async cadastrarUsuario(usuario: Usuario) {
         const senhaHash = await bcrypt.hash(usuario.senha, 10);
 
-        await connection.query(`INSERT INTO Usuario(nome, email, senha, dataNasc, tipoUsuario, imagem) VALUES ($1, $2, $3, $4, $5, $6);`,
+        await connection.query(`
+            INSERT INTO Usuario(
+                nome, email, senha, dataNasc, tipoUsuario, imagem,
+                termos_versao_aceita, termos_aceito_em,
+                privacidade_versao_lida, privacidade_lida_em
+            )
+            VALUES (
+                $1, $2, $3, $4, $5, $6, $7,
+                CASE WHEN $7::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END,
+                $8,
+                CASE WHEN $8::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END
+            )
+        `,
             [
                 usuario.nome,
                 Usuario.normalizarEmail(usuario.email),
                 senhaHash,
                 usuario.dataNasc,
                 usuario.tipoUsuario.id,
-                usuario.imagem
+                usuario.imagem,
+                usuario.termosVersaoAceita ?? null,
+                usuario.privacidadeVersaoLida ?? null
             ]
         );
+    }
+
+    static async registrarAceiteDocumentos(id: number, termosVersao: string, privacidadeVersao: string) {
+        const { rows } = await connection.query(`
+            UPDATE Usuario
+            SET termos_versao_aceita = $1,
+                termos_aceito_em = CURRENT_TIMESTAMP,
+                privacidade_versao_lida = $2,
+                privacidade_lida_em = CURRENT_TIMESTAMP
+            WHERE id = $3
+            RETURNING id
+        `, [termosVersao, privacidadeVersao, id]);
+
+        if (rows.length !== 1) {
+            throw new Error("Não foi possível registrar o aceite dos documentos para a conta.");
+        }
     }
 
     static async buscarTodos() {
@@ -159,7 +193,7 @@ export class Usuario {
     static async buscarPorEmailESenha(email: string, senha: string) {
         const { rows } = await connection.query(
             `SELECT u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
-            u.dataNasc, u.estaMorto,
+            u.dataNasc, u.estaMorto, u.termos_versao_aceita, u.privacidade_versao_lida,
             t.id as id_tipo, t.nome as nome_tipo, t.descricao
             FROM Usuario u
             JOIN tipo_usuario t ON u.tipoUsuario = t.id
@@ -194,7 +228,9 @@ export class Usuario {
             dataNasc: usuarioAutenticado.dataNasc,
             estaMorto: usuarioAutenticado.estaMorto,
             tipoUsuario: new TipoUsuario(usuarioAutenticado.id_tipo, usuarioAutenticado.nome_tipo, usuarioAutenticado.descricao),
-            imagem: usuarioAutenticado.imagem
+            imagem: usuarioAutenticado.imagem,
+            termosVersaoAceita: usuarioAutenticado.termos_versao_aceita,
+            privacidadeVersaoLida: usuarioAutenticado.privacidade_versao_lida
         });
     }
 }

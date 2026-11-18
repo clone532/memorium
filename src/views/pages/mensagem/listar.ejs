@@ -1,68 +1,498 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <%- include('../../partials/head', { titulo: 'Minhas mensagens' }) %>
-<body>
+<style>
+  .messages-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .9);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .78);
+    box-shadow: 0 8px 24px rgba(70, 42, 105, .07);
+  }
+
+  .messages-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eeeaf8;
+  }
+
+  .messages-heading,
+  .messages-toolbar-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .messages-heading { gap: 12px; }
+
+  .messages-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #f0edff;
+    color: #7047c5;
+    font-size: 17px;
+  }
+
+  .messages-heading h1 {
+    margin: 0;
+    color: #27243b;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .messages-heading p {
+    margin: 3px 0 0;
+    color: #777487;
+    font-size: 12px;
+  }
+
+  .messages-toolbar-actions {
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .btn-message-create {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #6541bd;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-message-create:hover {
+    background: #52319e;
+    color: #fff;
+  }
+
+  .messages-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(300px, 45%);
+    padding: 0 11px;
+    border: 1px solid #e9e5f7;
+    border-radius: 20px;
+    background: #fbfaff;
+    color: #7956ba;
+  }
+
+  .messages-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #332d48;
+    font-size: 12px;
+  }
+
+  .messages-alert {
+    margin: 10px 12px 0;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+  }
+
+  .messages-alert.success {
+    background: #eaf7ef;
+    color: #28643e;
+  }
+
+  .messages-alert.error {
+    background: #fff0f1;
+    color: #a82f42;
+  }
+
+  .messages-table-wrap {
+    flex: 1;
+    overflow: auto;
+    margin: 8px 12px 0;
+    border: 1px solid #e9e5f7;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .messages-table {
+    min-width: 980px;
+    margin: 0;
+    color: #343146;
+    font-size: 13px;
+  }
+
+  .messages-table thead th {
+    padding: 9px 12px;
+    border: 0;
+    background: #f0edff;
+    color: #48415f;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .messages-table thead th:first-child { border-radius: 7px 0 0 7px; }
+  .messages-table thead th:last-child { border-radius: 0 7px 7px 0; }
+
+  .messages-table tbody td {
+    padding: 9px 12px;
+    border-color: #eeeaf7;
+    vertical-align: middle;
+  }
+
+  .messages-table tbody tr:hover { background: #faf9ff; }
+  .messages-table td:first-child { width: 48px; text-align: center; color: #716b83; }
+
+  .message-title {
+    display: block;
+    max-width: 220px;
+    overflow-wrap: anywhere;
+    color: #343146;
+  }
+
+  .message-details {
+    margin-top: 5px;
+    color: #6b667a;
+    font-size: 11px;
+  }
+
+  .message-details summary {
+    color: #6541bd;
+    cursor: pointer;
+  }
+
+  .message-details p,
+  .message-details ul {
+    margin: 5px 0 0;
+  }
+
+  .message-details ul {
+    padding-left: 18px;
+  }
+
+  .message-details li + li { margin-top: 3px; }
+
+  .message-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: #f0edff;
+    color: #59409a;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .message-actions { white-space: nowrap; }
+
+  .btn-message-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border: 0;
+    border-radius: 5px;
+    background: #e53d5c;
+    color: #fff;
+    font-size: 11px;
+  }
+
+  .btn-message-delete:hover {
+    background: #c72d49;
+    color: #fff;
+  }
+
+  .message-delete-locked {
+    color: #777487;
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .empty-messages {
+    padding: 24px !important;
+    color: #777487;
+    text-align: center;
+  }
+
+  .messages-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 48px;
+    margin: 8px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: #f5f3fc;
+  }
+
+  .messages-summary {
+    margin: 0;
+    color: #666176;
+    font-size: 11px;
+  }
+
+  .messages-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .messages-pagination button {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #665d7b;
+    font-size: 11px;
+  }
+
+  .messages-pagination button[aria-current="page"] {
+    background: #7047c5;
+    color: #fff;
+  }
+
+  .messages-pagination button:disabled { opacity: .4; }
+
+  @media (max-width: 640px) {
+    .messages-toolbar { align-items: stretch; flex-direction: column; gap: 12px; }
+    .messages-toolbar-actions { align-items: stretch; flex-direction: column; }
+    .messages-search { width: 100%; }
+    .messages-footer { align-items: flex-start; flex-direction: column; }
+  }
+</style>
+<body class="bg-light">
   <%- include('../../partials/header') %>
   <div class="d-flex">
     <%- include('../../partials/sidebar') %>
     <main class="content">
-      <h1>Minhas mensagens</h1>
-      <p><a href="/mensagem/cadastrar">Criar nova mensagem</a></p>
-      <% if (mensagem) { %>
-        <p role="status"><%= mensagem.valor %></p>
-      <% } %>
+      <section class="messages-page" aria-labelledby="messagesTitle">
+        <header class="messages-toolbar">
+          <div class="messages-heading">
+            <span class="messages-icon" aria-hidden="true"><i class="bi bi-envelope-paper"></i></span>
+            <div>
+              <h1 id="messagesTitle">Minhas mensagens</h1>
+              <p>Consulte e gerencie suas mensagens</p>
+            </div>
+          </div>
+          <div class="messages-toolbar-actions">
+            <a class="btn-message-create" href="/mensagem/cadastrar">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              Criar mensagem
+            </a>
+            <label class="messages-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input id="messageSearch" type="search" placeholder="Buscar mensagens..." aria-label="Buscar mensagens">
+            </label>
+          </div>
+        </header>
 
-      <% if (mensagens.length === 0) { %>
-        <p>Você ainda não cadastrou mensagens.</p>
-      <% } else { %>
-        <% mensagens.forEach((mensagem) => { %>
-          <article>
-            <hr>
-            <h2><%= mensagem.titulo %></h2>
-            <% if (mensagem.conteudo) { %>
-              <p><%= mensagem.conteudo %></p>
-            <% } %>
-            <p>Status: <%= mensagem.status %></p>
-            <p>Envio:
-              <% if (mensagem.data_envio) { %>
-                <%= new Date(mensagem.data_envio).toLocaleString('pt-BR') %>
-              <% } else { %>
-                após confirmação dos guardiões
+        <% if (mensagem) { %>
+          <div class="messages-alert <%= mensagem.tipo === 'success' ? 'success' : 'error' %>" role="status">
+            <%= mensagem.valor %>
+          </div>
+        <% } %>
+
+        <div class="messages-table-wrap">
+          <table class="table messages-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Mensagem</th>
+                <th scope="col">Destinatários</th>
+                <th scope="col">Envio</th>
+                <th scope="col">Status</th>
+                <th scope="col">Arquivos</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody">
+              <% if (mensagens && mensagens.length) { %>
+                <% const statusLabels = {
+                  agendada: 'Agendada',
+                  aguardando_confirmacao: 'Aguardando confirmação',
+                  pronta_para_envio: 'Pronta para envio',
+                  enviando: 'Enviando',
+                  parcialmente_enviada: 'Parcialmente enviada',
+                  enviada: 'Enviada',
+                  falha: 'Falha no envio',
+                  cancelada: 'Cancelada',
+                  rascunho: 'Rascunho'
+                }; %>
+                <% mensagens.forEach((mensagem, i) => { %>
+                  <tr class="message-row">
+                    <td><%= i + 1 %></td>
+                    <td>
+                      <strong class="message-title"><%= mensagem.titulo %></strong>
+                      <details class="message-details">
+                        <summary>Ver conteúdo</summary>
+                        <p><%= mensagem.conteudo || 'Mensagem enviada com arquivo(s).' %></p>
+                      </details>
+                    </td>
+                    <td>
+                      <% if (mensagem.destinatarios.length) { %>
+                        <details class="message-details">
+                          <summary><%= mensagem.destinatarios.length %> destinatário(s)</summary>
+                          <ul>
+                            <% mensagem.destinatarios.forEach((destinatario) => { %>
+                              <li><%= destinatario.nome %> — <%= destinatario.email %> (<%= destinatario.status %>)</li>
+                            <% }); %>
+                          </ul>
+                        </details>
+                      <% } else { %>
+                        <span class="text-muted">Nenhum destinatário</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (mensagem.data_envio) { %>
+                        <%= new Date(mensagem.data_envio).toLocaleString('pt-BR') %>
+                      <% } else { %>
+                        Após confirmação dos guardiões
+                      <% } %>
+                    </td>
+                    <td><span class="message-status"><%= statusLabels[mensagem.status] || mensagem.status %></span></td>
+                    <td>
+                      <% if (mensagem.anexos.length) { %>
+                        <details class="message-details">
+                          <summary><%= mensagem.anexos.length %> arquivo(s)</summary>
+                          <ul>
+                            <% mensagem.anexos.forEach((anexo) => { %>
+                              <li><%= anexo.nome %> — <%= (Number(anexo.tamanho) / 1024).toFixed(1) %> KB</li>
+                            <% }); %>
+                          </ul>
+                        </details>
+                      <% } else { %>
+                        <span class="text-muted">Nenhum</span>
+                      <% } %>
+                    </td>
+                    <td class="message-actions">
+                      <% if (['enviando', 'enviada', 'parcialmente_enviada'].includes(mensagem.status)) { %>
+                        <span class="message-delete-locked">Envio iniciado</span>
+                      <% } else { %>
+                        <form class="message-delete-form" action="/mensagem/excluir/<%= mensagem.id %>" method="post">
+                          <button type="submit" class="btn-message-delete">
+                            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                            Excluir
+                          </button>
+                        </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }); %>
               <% } %>
-            </p>
+              <tr id="emptyMessages" <%= mensagens && mensagens.length ? 'hidden' : '' %>>
+                <td class="empty-messages" colspan="7">Você ainda não cadastrou mensagens.</td>
+              </tr>
+              <tr id="noMatchingMessages" hidden>
+                <td class="empty-messages" colspan="7">Nenhuma mensagem encontrada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-            <h3>Destinatários</h3>
-            <% if (mensagem.destinatarios.length) { %>
-              <ul>
-                <% mensagem.destinatarios.forEach((destinatario) => { %>
-                  <li><%= destinatario.nome %> — <%= destinatario.email %> (<%= destinatario.status %>)</li>
-                <% }); %>
-              </ul>
-            <% } else { %>
-              <p>Nenhum destinatário.</p>
-            <% } %>
-
-            <% if (mensagem.anexos.length) { %>
-              <h3>Arquivos</h3>
-              <ul>
-                <% mensagem.anexos.forEach((anexo) => { %>
-                  <li><%= anexo.nome %> — <%= (Number(anexo.tamanho) / 1024).toFixed(1) %> KB</li>
-                <% }); %>
-              </ul>
-            <% } %>
-
-            <% if (['enviando', 'enviada', 'parcialmente_enviada'].includes(mensagem.status)) { %>
-              <p>Esta mensagem não pode ser excluída porque o envio já foi iniciado.</p>
-            <% } else { %>
-              <form action="/mensagem/excluir/<%= mensagem.id %>" method="post" onsubmit="return confirm('Tem certeza que deseja excluir esta mensagem?')">
-                <button type="submit">Excluir mensagem</button>
-              </form>
-            <% } %>
-          </article>
-        <% }); %>
-      <% } %>
+        <footer class="messages-footer">
+          <p class="messages-summary" id="messagesSummary" aria-live="polite"></p>
+          <nav class="messages-pagination" id="messagesPagination" aria-label="Paginação das mensagens"></nav>
+        </footer>
+      </section>
     </main>
   </div>
   <%- include('../../partials/scripts') %>
+  <script>
+    const messageRows = Array.from(document.querySelectorAll('.message-row'));
+    const messageSearch = document.getElementById('messageSearch');
+    const messagesSummary = document.getElementById('messagesSummary');
+    const messagesPagination = document.getElementById('messagesPagination');
+    const emptyMessages = document.getElementById('emptyMessages');
+    const noMatchingMessages = document.getElementById('noMatchingMessages');
+    const pageSize = 10;
+    const visiblePageCount = 5;
+    let currentPage = 1;
+
+    function renderMessagePage() {
+      const query = messageSearch.value.trim().toLocaleLowerCase('pt-BR');
+      const filteredRows = messageRows.filter((row) => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+      const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const firstPage = Math.min(currentPage, Math.max(1, pageCount - visiblePageCount + 1));
+      const lastPage = Math.min(firstPage + visiblePageCount - 1, pageCount);
+      const firstVisible = (currentPage - 1) * pageSize;
+      const lastVisible = Math.min(firstVisible + pageSize, filteredRows.length);
+
+      messageRows.forEach((row) => { row.hidden = true; });
+      filteredRows.slice(firstVisible, lastVisible).forEach((row) => { row.hidden = false; });
+      emptyMessages.hidden = messageRows.length > 0;
+      noMatchingMessages.hidden = filteredRows.length > 0 || messageRows.length === 0;
+      messagesSummary.textContent = filteredRows.length
+        ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filteredRows.length} mensagens`
+        : 'Mostrando 0 de 0 mensagens';
+
+      messagesPagination.replaceChildren();
+      const addPageButton = (label, page, ariaLabel, isCurrent, isDisabled) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = label;
+        button.setAttribute('aria-label', ariaLabel);
+        button.disabled = isDisabled;
+        if (isCurrent) button.setAttribute('aria-current', 'page');
+        button.addEventListener('click', () => {
+          currentPage = page;
+          renderMessagePage();
+        });
+        messagesPagination.appendChild(button);
+      };
+
+      if (firstPage > 1) {
+        addPageButton('<i class="bi bi-chevron-double-left"></i>', 1, 'Primeira página', false, false);
+      }
+      addPageButton('<i class="bi bi-chevron-left"></i>', currentPage - 1, 'Página anterior', false, currentPage === 1);
+      for (let page = firstPage; page <= lastPage; page += 1) {
+        addPageButton(String(page), page, `Página ${page}`, page === currentPage, false);
+      }
+      addPageButton('<i class="bi bi-chevron-right"></i>', currentPage + 1, 'Próxima página', false, currentPage === pageCount);
+      if (lastPage < pageCount) {
+        addPageButton('<i class="bi bi-chevron-double-right"></i>', pageCount, 'Última página', false, false);
+      }
+    }
+
+    messageSearch.addEventListener('input', () => {
+      currentPage = 1;
+      renderMessagePage();
+    });
+
+    document.querySelectorAll('.message-delete-form').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        Swal.fire({
+          title: 'Deseja realmente excluir?',
+          icon: 'warning',
+          backdrop: false,
+          showCancelButton: true,
+          confirmButtonText: 'Sim',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) form.submit();
+        });
+      });
+    });
+
+    renderMessagePage();
+  </script>
 </body>
 </html>

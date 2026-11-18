@@ -34,4 +34,21 @@ export class Notificacao {
         );
         return resultado.rows.length > 0;
     }
+
+    static async marcarSelecionadasComoLidas(ids: number[], fkUsuario: number) {
+        await connection.query(
+            `UPDATE notificacao
+             SET lida_em = CURRENT_TIMESTAMP
+             WHERE fkusuario = $1 AND id = ANY($2::integer[]) AND lida_em IS NULL`,
+            [fkUsuario, ids]
+        );
+    }
+
+    static async excluirSelecionadas(ids: number[], fkUsuario: number) {
+        await connection.query(
+            `DELETE FROM notificacao
+             WHERE fkusuario = $1 AND id = ANY($2::integer[])`,
+            [fkUsuario, ids]
+        );
+    }
 }
