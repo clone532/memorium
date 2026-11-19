@@ -91,11 +91,11 @@
                 class="btn-memorium">
                 Criar primeira lembrança
             </a>
-            <a
-                href="/guardiao/cadastrar"
-                class="btn-memorium">
-                Definir Guardião
-            </a>
+            <% if (usuario.tipo === 'GUARDIAO') { %>
+                <a href="/guardiao/gerenciar" class="btn-memorium">Área do Guardião</a>
+            <% } else { %>
+                <a href="/guardiao/cadastrar" class="btn-memorium">Definir Guardião</a>
+            <% } %>
         </div>
     </main>
   </div>

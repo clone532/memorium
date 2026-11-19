@@ -50,22 +50,14 @@
           <i class="bi bi-shield-fill me-2 text-black" aria-hidden="true"></i>Menu do Guardião
         </a>
         <div class="collapse show ms-3" id="guardiaoMenu">
-          <ul class="nav flex-column"><li class="nav-item">
+          <ul class="nav flex-column">
+            <li class="nav-item">
               <a class="nav-link text-black" href="/guardiao/gerenciar">
                  Gerenciar
               </a>
             </li>
-            <% if (usuario.tipo === 'GUARDIAO') { %>
-              <li class="nav-item">
-                <a class="nav-link text-black" href="/guardiao/falecimento">
-                  Solicitar confirmação
-                </a>
-              </li>
-            <% } %>
             <li class="nav-item">
-              <a class="nav-link text-black" href="/guardiao/cadastrar">
-                 Cadastrar
-              </a>
+              <a class="nav-link text-black" href="/guardiao/cadastrar">Convidar guardião</a>
             </li>
           </ul>
         </div>
@@ -119,16 +111,21 @@
           <i class="bi bi-shield-fill me-2 text-black" aria-hidden="true"></i>Menu do Guardião
         </a>
         <div class="collapse show ms-3" id="guardiaoMenu">
-          <ul class="nav flex-column"><li class="nav-item">
+          <ul class="nav flex-column">
+            <li class="nav-item">
               <a class="nav-link text-black" href="/guardiao/gerenciar">
                  Gerenciar
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/guardiao/cadastrar">
-                 Cadastrar
-              </a>
-            </li>
+            <% if (usuario.tipo === 'GUARDIAO') { %>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="/guardiao/falecimento">Solicitar confirmação</a>
+              </li>
+            <% } else { %>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="/guardiao/cadastrar">Convidar guardião</a>
+              </li>
+            <% } %>
           </ul>
         </div>
         <a class="nav-link text-black" data-bs-toggle="collapse" href="#planosMenu">
