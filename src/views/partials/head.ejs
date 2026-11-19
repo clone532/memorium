@@ -2,15 +2,18 @@
   <meta charset="UTF-8">
   <title><%= titulo %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/IMGS/gallery/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/IMGS/gallery/favicon.ico">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
-    html, body { 
-      height: 100%; 
+    html, body {
+      height: 100%;
+      height: 100dvh;
       margin: 0;
-      overflow: hidden; 
+      overflow: hidden;
     }
     body {
       display: flex;
@@ -29,7 +32,9 @@
     }
     body > .d-flex {
       flex: 1 1 0;
+      height: 0;
       min-height: 0;
+      max-height: 100%;
     }
     body > .d-flex > .sidebar {
       height: auto;
@@ -42,9 +47,34 @@
     .sidebar {
       width: 250px;
       flex: 0 0 250px;
-      height: 100%;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      z-index: 1020;
+      height: auto;
+      max-height: none;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
       transition: margin-left 0.3s ease;
+    }
+    body > .d-flex > .sidebar ~ .content,
+    body > .d-flex > .sidebar ~ main {
+      margin-left: 250px;
+      transition: margin-left 0.3s ease;
+    }
+    body > .d-flex > .sidebar.hidden ~ .content,
+    body > .d-flex > .sidebar.hidden ~ main {
+      margin-left: 0;
+    }
+      body.sidebar-hidden > .d-flex > .sidebar ~ main {
+      margin-left: 0;
+    }
+    .sidebar > .sidebar-plans {
+      width: 100%;
+      margin-top: auto;
     }
     .sidebar.hidden { margin-left: -250px; }
     .sidebar .nav-link {

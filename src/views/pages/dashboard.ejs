@@ -13,12 +13,14 @@
         }
 
         .dashboard {
-            min-height: 100vh;
+            min-height: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             flex: 1;
             width: 100%;
+            margin-left: 0;
+            box-sizing: border-box;
         }
 
         .conteudo {
@@ -75,26 +77,27 @@
         }
     </style>
 
-<body class="bg-light">
+<body class="bg-light sidebar-hidden">
   <%- include('../partials/header') %>
   <div class="d-flex">
+    <%- include('../partials/sidebar') %>
     <main class="dashboard">
         <div class="conteudo">
             <h1 class="logo">
                 MEMORIUM
             </h1>
             <p class="subtitulo">
-                criando memorias
+                criando memorias 
             </p>
             <a
-                href="/perfilUsuario/perfil/<%= usuario.id %>"
+                href="/mensagem/gerenciar"
                 class="btn-memorium">
                 Criar primeira lembrança
             </a>
             <% if (usuario.tipo === 'GUARDIAO') { %>
                 <a href="/guardiao/gerenciar" class="btn-memorium">Área do Guardião</a>
             <% } else { %>
-                <a href="/guardiao/cadastrar" class="btn-memorium">Definir Guardião</a>
+                <a href="/guardiao/gerenciar" class="btn-memorium">Gerenciar Guardiões</a>
             <% } %>
         </div>
     </main>

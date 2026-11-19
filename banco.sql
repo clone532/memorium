@@ -202,7 +202,9 @@ CREATE TABLE Notificacao (
 	titulo VARCHAR(255) NOT NULL,
 	conteudo TEXT NOT NULL,
 	criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	lida_em TIMESTAMPTZ
+	lida_em TIMESTAMPTZ,
+	tipo VARCHAR(50),
+	referencia_id INTEGER
 );
 
 CREATE INDEX notificacao_usuario_recente_idx
@@ -211,6 +213,10 @@ CREATE INDEX notificacao_usuario_recente_idx
 CREATE INDEX notificacao_usuario_nao_lida_idx
 	ON Notificacao (fkUsuario)
 	WHERE lida_em IS NULL;
+
+CREATE UNIQUE INDEX notificacao_vinculo_unica_idx
+	ON Notificacao (fkUsuario, tipo, referencia_id)
+	WHERE tipo IS NOT NULL AND referencia_id IS NOT NULL;
 
 create table Destinatario_Mensagem (
 	id SERIAL PRIMARY KEY,

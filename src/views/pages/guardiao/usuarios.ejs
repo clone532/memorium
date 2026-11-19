@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo: 'Meus usuários' }) %>
+<style>
+  .users-page { display:flex; flex-direction:column; width:100%; min-height:100%; overflow:hidden; border:1px solid rgba(255,255,255,.9); border-radius:12px; background:rgba(255,255,255,.78); box-shadow:0 8px 24px rgba(70,42,105,.07); }
+  .users-toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 16px; border-bottom:1px solid #eeeaf8; }
+  .list-heading { display:flex; align-items:center; gap:12px; }
+  .list-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:8px; background:#f0edff; color:#7047c5; font-size:17px; }
+  .list-heading h1 { margin:0; color:#27243b; font-size:20px; font-weight:600; }
+  .list-heading p { margin:3px 0 0; color:#777487; font-size:12px; }
+  .users-toolbar-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+  .users-toolbar-link { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border:0; border-radius:6px; background:#6541bd; color:#fff; font-size:12px; text-decoration:none; white-space:nowrap; }
+  .users-toolbar-link:hover { background:#52319e; color:#fff; }
+  .users-toolbar-link.secondary { border:1px solid #e2ddf0; background:#fff; color:#59409a; }
+  .users-toolbar-link.secondary:hover { background:#f0edff; }
+  .user-search { display:flex; align-items:center; gap:8px; width:min(300px,45vw); padding:0 11px; border:1px solid #e9e5f7; border-radius:20px; background:#fbfaff; color:#7956ba; }
+  .user-search input { width:100%; min-width:0; padding:8px 0; border:0; outline:0; background:transparent; color:#332d48; font-size:12px; }
+  .user-table-wrap { flex:1; overflow:auto; margin:8px 12px 0; border:1px solid #e9e5f7; border-radius:10px; background:#fff; }
+  .user-table { margin:0; color:#343146; font-size:13px; }
+  .user-table thead th { padding:9px 12px; border:0; background:#f0edff; color:#48415f; font-size:12px; font-weight:600; white-space:nowrap; }
+  .user-table thead th:first-child { border-radius:7px 0 0 7px; }
+  .user-table thead th:last-child { border-radius:0 7px 7px 0; }
+  .user-table tbody td { padding:7px 12px; border-color:#eeeaf7; vertical-align:middle; }
+  .user-table tbody tr:hover { background:#faf9ff; }
+  .user-table td:first-child { width:48px; text-align:center; color:#716b83; }
+  .user-vote-action { min-width:150px; padding:5px 10px; border:0; border-radius:6px; background:#6541bd; color:#fff; font-size:11px; }
+  .user-vote-action:hover { background:#52319e; color:#fff; }
+  .user-vote-action:disabled { background:#aaa4b7; cursor:not-allowed; }
+  .user-vote-status { color:#777487; font-size:11px; }
+  .empty-users { padding:24px!important; color:#777487; text-align:center; }
+  .users-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:48px; margin:8px; padding:7px 12px; border-radius:8px; background:#f5f3fc; }
+  .page-summary { margin:0; color:#666176; font-size:11px; }
+  .user-pagination { display:flex; align-items:center; gap:5px; }
+  .user-pagination button { min-width:28px; height:28px; padding:0 8px; border:0; border-radius:50%; background:transparent; color:#665d7b; font-size:11px; }
+  .user-pagination button[aria-current="page"] { background:#7047c5; color:#fff; }
+  .user-pagination button:disabled { opacity:.4; }
+  @media (max-width:640px) { .users-toolbar { align-items:stretch; flex-direction:column; gap:12px; } .users-toolbar-actions { align-items:stretch; flex-direction:column; } .users-toolbar-link, .user-search { width:100%; } .users-footer { align-items:flex-start; flex-direction:column; } .user-table { min-width:520px; } }
+</style>
+<body class="bg-light">
+  <%- include('../../partials/header') %>
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+    <main class="content">
+      <section class="users-page" aria-labelledby="usersTitle">
+        <header class="users-toolbar">
+          <div class="list-heading">
+            <span class="list-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+            <div>
+              <h1 id="usersTitle">Meus usuários</h1>
+              <p>Usuários com vínculo confirmado com você</p>
+            </div>
+          </div>
+          <div class="users-toolbar-actions">
+            <a class="users-toolbar-link secondary" href="/guardiao/gerenciar">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>Voltar
+            </a>
+            <a class="users-toolbar-link" href="/guardiao/solicitarVinculo">
+              <i class="bi bi-person-plus-fill" aria-hidden="true"></i>Solicitar vínculo
+            </a>
+            <label class="user-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input id="userSearch" type="search" placeholder="Buscar por nome..." aria-label="Buscar usuários">
+            </label>
+          </div>
+        </header>
+        <div class="user-table-wrap">
+          <table class="table user-table">
+            <thead><tr><th scope="col">#</th><th scope="col">Nome</th><th scope="col">Votar</th></tr></thead>
+            <tbody>
+              <% if (usuarios && usuarios.length) { %>
+                <% usuarios.forEach((usuarioVinculado, index) => { %>
+                  <tr class="user-row">
+                    <td><%= index + 1 %></td>
+                    <td><a href="/perfilUsuario/perfil/<%= usuarioVinculado.id %>"><%= usuarioVinculado.nome %></a></td>
+                    <td>
+                      <% if (usuarioVinculado.estamorto) { %>
+                        <span class="user-vote-status">Óbito confirmado</span>
+                      <% } else if (usuarioVinculado.quantidade_guardioes < 3) { %>
+                        <button type="button" class="user-vote-action" disabled title="São necessários pelo menos três guardiões confirmados">
+                          Confirmar óbito
+                        </button>
+                        <span class="user-vote-status d-block">Menos de 3 guardiões</span>
+                      <% } else if (usuarioVinculado.meu_voto) { %>
+                        <span class="user-vote-status">Voto registrado</span>
+                      <% } else { %>
+                        <form class="vote-form" action="/guardiao/usuarios/<%= usuarioVinculado.id %>/confirmar-obito" method="post">
+                          <button type="submit" class="user-vote-action">Confirmar óbito</button>
+                        </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+              <tr id="emptyUsers" hidden><td class="empty-users" colspan="3">Nenhum usuário vinculado encontrado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <footer class="users-footer">
+          <p class="page-summary" id="pageSummary" aria-live="polite"></p>
+          <nav class="user-pagination" id="userPagination" aria-label="Paginação dos usuários"></nav>
+        </footer>
+      </section>
+    </main>
+  </div>
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const userRows = Array.from(document.querySelectorAll('.user-row'));
+    const userSearch = document.getElementById('userSearch');
+    const pageSummary = document.getElementById('pageSummary');
+    const userPagination = document.getElementById('userPagination');
+    const emptyUsers = document.getElementById('emptyUsers');
+    const pageSize = 12;
+    let currentPage = 1;
+    function renderUserPage() {
+      const query = userSearch.value.trim().toLocaleLowerCase('pt-BR');
+      const filtered = userRows.filter(row => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+      const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const firstVisible = (currentPage - 1) * pageSize;
+      const lastVisible = Math.min(firstVisible + pageSize, filtered.length);
+      userRows.forEach(row => row.hidden = true);
+      filtered.slice(firstVisible, lastVisible).forEach(row => row.hidden = false);
+      emptyUsers.hidden = filtered.length > 0;
+      pageSummary.textContent = filtered.length
+        ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filtered.length} registros`
+        : 'Mostrando 0 de 0 registros';
+      userPagination.replaceChildren();
+      const addPageButton = (label, page, ariaLabel, isCurrent, isDisabled) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = label;
+        button.setAttribute('aria-label', ariaLabel);
+        button.disabled = isDisabled;
+        if (isCurrent) button.setAttribute('aria-current', 'page');
+        button.addEventListener('click', () => { currentPage = page; renderUserPage(); });
+        userPagination.appendChild(button);
+      };
+      addPageButton('<i class="bi bi-chevron-left"></i>', currentPage - 1, 'Página anterior', false, currentPage === 1);
+      for (let page = 1; page <= pageCount; page += 1) {
+        addPageButton(String(page), page, `Página ${page}`, page === currentPage, false);
+      }
+      addPageButton('<i class="bi bi-chevron-right"></i>', currentPage + 1, 'Próxima página', false, currentPage === pageCount);
+    }
+    userSearch.addEventListener('input', () => { currentPage = 1; renderUserPage(); });
+    renderUserPage();
+
+    document.querySelectorAll('.vote-form').forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!window.confirm('Confirma que deseja votar pelo falecimento deste usuário?')) {
+          event.preventDefault();
+        }
+      });
+    });
+  </script>
+  <% if (mensagem) { %>
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+  <% } %>
+</body>
+</html>

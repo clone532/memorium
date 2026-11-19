@@ -262,7 +262,7 @@
                 <% usuarios.forEach((usuario, i) => { %>
                   <tr class="user-row">
                     <td><%= i + 1 %></td>
-                    <td><%= usuario.nome %></td>
+                    <td><a href="/perfilUsuario/perfil/<%= usuario.id %>"><%= usuario.nome %></a></td>
                     <td><%= usuario.email %></td>
                     <td><%= usuario.tipoUsuario.nome %></td>
                     <td>

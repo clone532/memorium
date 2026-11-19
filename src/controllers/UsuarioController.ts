@@ -24,6 +24,40 @@ function isDuplicateEmailError(error: unknown) {
     return isPostgresError(error, "23505", "usuario_email_unico");
 }
 
+function validarDataNascimento(dataNasc: unknown) {
+    if (typeof dataNasc !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dataNasc)) {
+        return "Informe uma data de nascimento válida.";
+    }
+
+    const data = new Date(`${dataNasc}T00:00:00.000Z`);
+    if (Number.isNaN(data.getTime()) || data.toISOString().slice(0, 10) !== dataNasc) {
+        return "Informe uma data de nascimento válida.";
+    }
+
+    const hoje = new Date();
+    const limiteSuperior = new Date(Date.UTC(
+        hoje.getUTCFullYear(),
+        hoje.getUTCMonth(),
+        hoje.getUTCDate()
+    ));
+
+    if (data > limiteSuperior) {
+        return "Informe uma data de nascimento que não seja futura.";
+    }
+
+    const idadeMinima = new Date(Date.UTC(
+        hoje.getUTCFullYear() - 14,
+        hoje.getUTCMonth(),
+        hoje.getUTCDate()
+    ));
+
+    if (data > idadeMinima) {
+        return "É necessário ter pelo menos 14 anos para criar uma conta.";
+    }
+
+    return null;
+}
+
 async function removerAvatar(filename?: string) {
     if (!filename) {
         return;
@@ -59,6 +93,7 @@ export class UsuarioController {
 
     static carregarLogin(req: Request, res: Response) {
         return res.render('login', {
+            loginEmail: '',
             mensagem: null
         });
     }
@@ -188,7 +223,7 @@ export class UsuarioController {
 //FUNÇÕES DE CADASTRO !!!!!!
 
     static async cadastrarUsuario(req: Request, res: Response) {
-        const { nome, email, senha, dataNasc } = req.body;
+        const { nome, email, senha, dataNasc, tipo } = req.body;
         const emailNormalizado = typeof email === "string" ? Usuario.normalizarEmail(email) : "";
 
         if (!nome || !emailNormalizado || !senha || !dataNasc) {
@@ -197,6 +232,19 @@ export class UsuarioController {
                     tipo: 'error',
                     valor: 'Preencha corretamente os dados!',
                     titulo: 'Dados inválidos'
+                }
+            });
+        }
+
+        const erroDataNascimento = validarDataNascimento(dataNasc);
+        if (erroDataNascimento) {
+            return res.status(400).render('login', {
+                loginEmail: emailNormalizado,
+                cadastroAtivo: true,
+                mensagem: {
+                    tipo: 'error',
+                    valor: erroDataNascimento,
+                    titulo: 'Data de nascimento inválida'
                 }
             });
         }
@@ -223,12 +271,23 @@ export class UsuarioController {
             });
         }
 
-        const tipoPadrao = await TipoUsuario.buscarPorNome(TipoUsuarioEnum.USUARIO);
-        if (!tipoPadrao) {
+        const tipoSolicitado = typeof tipo === "string" ? tipo : TipoUsuarioEnum.USUARIO;
+        if (tipoSolicitado !== TipoUsuarioEnum.USUARIO) {
+            return res.status(400).render('login', {
+                mensagem: {
+                    tipo: 'error',
+                    valor: 'Selecione um tipo de conta válido.',
+                    titulo: 'Dados inválidos'
+                }
+            });
+        }
+
+        const tipoConta = await TipoUsuario.buscarPorNome(tipoSolicitado);
+        if (!tipoConta) {
             return res.render('login', {
                 mensagem: {
                     tipo: 'error',
-                    valor: 'Tipo de usuário padrão não encontrado',
+                    valor: 'Tipo de conta não encontrado',
                     titulo: 'Erro do sistema'
                 }
             });
@@ -241,7 +300,7 @@ export class UsuarioController {
             dataNasc,
             estaMorto: false,
             numero: '',
-            tipoUsuario: tipoPadrao,
+            tipoUsuario: tipoConta,
             termosVersaoAceita: TERMOS_VERSAO,
             privacidadeVersaoLida: PRIVACIDADE_VERSAO
         });
@@ -293,6 +352,18 @@ export class UsuarioController {
                     tipo: 'error',
                     valor: 'Preencha todos os campos corretamente.',
                     titulo: 'Dados inválidos'
+                }
+            });
+        }
+
+        const erroDataNascimento = validarDataNascimento(dataNasc);
+        if (erroDataNascimento) {
+            return res.status(400).render('pages/usuario/cadAdmin', {
+                titulo: 'Cadastrar Usuário',
+                mensagem: {
+                    tipo: 'error',
+                    valor: erroDataNascimento,
+                    titulo: 'Data de nascimento inválida'
                 }
             });
         }
@@ -351,9 +422,11 @@ export class UsuarioController {
 
     static async logar(req: Request, res: Response) {
         const { email, senha } = req.body;
+        const loginEmail = typeof email === "string" ? email.trim() : "";
 
         if (typeof email !== "string" || !email.trim() || typeof senha !== "string" || !senha) {
             return res.status(400).render('login', {
+                loginEmail,
                 mensagem: {
                     tipo: 'error',
                     valor: 'Preencha todos os campos corretamente',
@@ -366,6 +439,7 @@ export class UsuarioController {
 
         if (!usuario) {
             return res.status(401).render('login', {
+                loginEmail,
                 mensagem: {
                     tipo: 'error',
                     valor: 'E-mail ou senha incorretos',
@@ -378,6 +452,7 @@ export class UsuarioController {
             if (error) {
                 console.error('Erro ao renovar a sessão após o login:', error);
                 return res.status(500).render('login', {
+                    loginEmail,
                     mensagem: {
                         tipo: 'error',
                         valor: 'Não foi possível iniciar sua sessão. Tente novamente.',
@@ -400,6 +475,7 @@ export class UsuarioController {
                 if (saveError) {
                     console.error('Erro ao salvar a sessão após o login:', saveError);
                     return res.status(500).render('login', {
+                        loginEmail,
                         mensagem: {
                             tipo: 'error',
                             valor: 'Não foi possível iniciar sua sessão. Tente novamente.',

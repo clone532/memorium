@@ -34,6 +34,11 @@ async function migrateNotifications() {
             )
         `);
         await client.query(`
+            ALTER TABLE notificacao
+                ADD COLUMN IF NOT EXISTS tipo VARCHAR(50),
+                ADD COLUMN IF NOT EXISTS referencia_id INTEGER
+        `);
+        await client.query(`
             CREATE INDEX IF NOT EXISTS notificacao_usuario_recente_idx
             ON notificacao (fkusuario, criado_em DESC)
         `);
@@ -41,6 +46,11 @@ async function migrateNotifications() {
             CREATE INDEX IF NOT EXISTS notificacao_usuario_nao_lida_idx
             ON notificacao (fkusuario)
             WHERE lida_em IS NULL
+        `);
+        await client.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS notificacao_vinculo_unica_idx
+            ON notificacao (fkusuario, tipo, referencia_id)
+            WHERE tipo IS NOT NULL AND referencia_id IS NOT NULL
         `);
         await client.query("COMMIT");
         console.log("Tabela de notificações aplicada.");

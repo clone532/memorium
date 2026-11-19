@@ -1,10 +1,28 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<%- include('./legalModal') %>
 
 <script>
   const toggleBtn = document.getElementById('toggleSidebar');
   const sidebar = document.getElementById('sidebar');
+  const header = document.querySelector('.navbar');
+
+  if (document.body.classList.contains('sidebar-hidden') && sidebar) {
+    sidebar.classList.add('hidden');
+  }
 
   toggleBtn?.addEventListener('click', () => {
     sidebar.classList.toggle('hidden');
+    document.body.classList.toggle('sidebar-hidden', sidebar.classList.contains('hidden'));
   });
+
+  function atualizarPosicaoSidebar() {
+    if (!sidebar) return;
+
+    const headerBottom = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
+    sidebar.style.top = `${headerBottom}px`;
+  }
+
+  window.addEventListener('scroll', atualizarPosicaoSidebar, true);
+  window.addEventListener('resize', atualizarPosicaoSidebar);
+  atualizarPosicaoSidebar();
 </script>

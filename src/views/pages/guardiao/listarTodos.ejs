@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo: 'Todos os guardiões' }) %>
+<style>
+  .guardians-page { display:flex; flex-direction:column; width:100%; min-height:100%; border:1px solid rgba(255,255,255,.9); border-radius:12px; background:rgba(255,255,255,.78); box-shadow:0 8px 24px rgba(70,42,105,.07); overflow:hidden; }
+  .guardians-toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 16px; border-bottom:1px solid #eeeaf8; }
+  .list-heading { display:flex; align-items:center; gap:12px; }
+  .list-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:8px; background:#f0edff; color:#7047c5; font-size:17px; }
+  .list-heading h1 { margin:0; color:#27243b; font-size:20px; font-weight:600; }
+  .list-heading p { margin:3px 0 0; color:#777487; font-size:12px; }
+  .guardians-toolbar-actions { display:flex; align-items:center; gap:10px; }
+  .guardians-back { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border:1px solid #e2ddf0; border-radius:6px; background:#fff; color:#59409a; font-size:12px; text-decoration:none; white-space:nowrap; }
+  .guardians-back:hover { background:#f0edff; color:#59409a; }
+  .guardians-search { display:flex; align-items:center; gap:8px; width:min(300px,45vw); padding:0 11px; border:1px solid #e9e5f7; border-radius:20px; background:#fbfaff; color:#7956ba; }
+  .guardians-search input { width:100%; min-width:0; padding:8px 0; border:0; outline:0; background:transparent; color:#332d48; font-size:12px; }
+  .guardian-table-wrap { flex:1; overflow:auto; margin:8px 12px 0; border:1px solid #e9e5f7; border-radius:10px; background:#fff; }
+  .guardian-table { margin:0; color:#343146; font-size:13px; }
+  .guardian-table thead th { padding:9px 12px; border:0; background:#f0edff; color:#48415f; font-size:12px; font-weight:600; white-space:nowrap; }
+  .guardian-table thead th:first-child { border-radius:7px 0 0 7px; }
+  .guardian-table thead th:last-child { border-radius:0 7px 7px 0; }
+  .guardian-table tbody td { padding:7px 12px; border-color:#eeeaf7; vertical-align:middle; }
+  .guardian-table tbody tr:hover { background:#faf9ff; }
+  .guardian-table td:first-child { width:48px; text-align:center; color:#716b83; }
+  .empty-guardians { padding:24px!important; color:#777487; text-align:center; }
+  .guardians-footer { display:flex; align-items:center; justify-content:space-between; min-height:48px; margin:8px; padding:7px 12px; border-radius:8px; background:#f5f3fc; }
+  .page-summary { margin:0; color:#666176; font-size:11px; }
+  .guardian-pagination { display:flex; align-items:center; gap:5px; }
+  .guardian-pagination button { min-width:28px; height:28px; padding:0 8px; border:0; border-radius:50%; background:transparent; color:#665d7b; font-size:11px; }
+  .guardian-pagination button[aria-current="page"] { background:#7047c5; color:#fff; }
+  .guardian-pagination button:disabled { opacity:.4; }
+  @media (max-width:640px) { .guardians-toolbar { align-items:stretch; flex-direction:column; } .guardians-toolbar-actions { align-items:stretch; flex-direction:column; } .guardians-back, .guardians-search { width:100%; } .guardians-footer { align-items:flex-start; flex-direction:column; } .guardian-table { min-width:650px; } }
+</style>
+<body class="bg-light">
+  <%- include('../../partials/header') %>
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+    <main class="content">
+      <section class="guardians-page" aria-labelledby="guardiansTitle">
+        <header class="guardians-toolbar">
+          <div class="list-heading">
+            <span class="list-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+            <div><h1 id="guardiansTitle">Todos os guardiões</h1><p>Lista completa de guardiões cadastrados no sistema</p></div>
+          </div>
+          <div class="guardians-toolbar-actions">
+            <a class="guardians-back" href="/guardiao/gerenciar"><i class="bi bi-arrow-left" aria-hidden="true"></i>Voltar</a>
+            <label class="guardians-search"><i class="bi bi-search" aria-hidden="true"></i><input id="guardianSearch" type="search" placeholder="Buscar por nome, email ou telefone..." aria-label="Buscar guardiões"></label>
+          </div>
+        </header>
+        <div class="guardian-table-wrap">
+          <table class="table guardian-table" id="guardiansTable">
+            <thead><tr><th scope="col">#</th><th scope="col">Nome</th><th scope="col">Email</th><th scope="col">Telefone</th></tr></thead>
+            <tbody>
+              <% if (guardioes && guardioes.length) { %>
+                <% guardioes.forEach((guardiao, i) => { %>
+                  <tr class="guardian-row"><td><%= i + 1 %></td><td><% if (guardiao.id_usuario) { %><a href="/perfilUsuario/perfil/<%= guardiao.id_usuario %>"><%= guardiao.nome %></a><% } else { %><%= guardiao.nome %><% } %></td><td><%= guardiao.email %></td><td><%= guardiao.numero %></td></tr>
+                <% }) %>
+              <% } %>
+              <tr id="emptyGuardians" hidden><td class="empty-guardians" colspan="4">Nenhum guardião encontrado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <footer class="guardians-footer"><p class="page-summary" id="pageSummary" aria-live="polite"></p><nav class="guardian-pagination" id="guardianPagination" aria-label="Paginação dos guardiões"></nav></footer>
+      </section>
+    </main>
+  </div>
+  <%- include('../../partials/scripts') %>
+  <script>
+    const rows = Array.from(document.querySelectorAll('.guardian-row'));
+    const search = document.getElementById('guardianSearch');
+    const summary = document.getElementById('pageSummary');
+    const pagination = document.getElementById('guardianPagination');
+    const empty = document.getElementById('emptyGuardians');
+    const pageSize = 12;
+    let currentPage = 1;
+    function renderPage() {
+      const query = search.value.trim().toLocaleLowerCase('pt-BR');
+      const filtered = rows.filter(row => row.textContent.toLocaleLowerCase('pt-BR').includes(query));
+      const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const firstVisible = (currentPage - 1) * pageSize;
+      const lastVisible = Math.min(firstVisible + pageSize, filtered.length);
+      rows.forEach(row => row.hidden = true);
+      filtered.slice(firstVisible, lastVisible).forEach(row => row.hidden = false);
+      empty.hidden = filtered.length > 0;
+      summary.textContent = filtered.length ? `Mostrando ${firstVisible + 1} - ${lastVisible} de ${filtered.length} registros` : 'Mostrando 0 de 0 registros';
+      pagination.replaceChildren();
+      const add = (label, page, current=false, disabled=false) => { const button=document.createElement('button'); button.type='button'; button.innerHTML=label; button.disabled=disabled; if(current) button.setAttribute('aria-current','page'); button.addEventListener('click',()=>{currentPage=page;renderPage();}); pagination.appendChild(button); };
+      add('<i class="bi bi-chevron-left"></i>', currentPage-1, false, currentPage===1);
+      for(let page=1;page<=pageCount;page++) add(String(page),page,page===currentPage);
+      add('<i class="bi bi-chevron-right"></i>', currentPage+1,false,currentPage===pageCount);
+    }
+    search.addEventListener('input',()=>{currentPage=1;renderPage();});
+    renderPage();
+  </script>
+</body>
+</html>

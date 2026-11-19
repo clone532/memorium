@@ -3,8 +3,171 @@ import { createHash, randomBytes } from "crypto";
 import { transporter } from "../infra/mail/NodeMailer";
 import { UsuarioGuardiao } from "../models/UsuarioGuardiao";
 import { SolicitacaoFalecimento } from "../models/SolicitacaoFalecimento";
+import { Usuario } from "../models/Usuario";
+import { TipoUsuario } from "../models/TipoUsuario";
+import { TipoUsuarioEnum } from "../enums/TipoUsuario";
+import { TERMOS_VERSAO, PRIVACIDADE_VERSAO } from "../constants/LegalDocuments";
+import { Guardiao } from "../models/Guardiao";
+import { Notificacao } from "../models/Notificacao";
 
 export class GuardiaoController {
+    static async carregarSolicitarVinculo(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const email = typeof req.query.email === 'string' ? req.query.email.trim().toLowerCase() : '';
+        const usuarioEncontrado = email
+            ? await Usuario.buscarPorEmail(email)
+            : null;
+
+        const resultado = usuarioEncontrado
+            && usuarioEncontrado.id !== usuario.id
+            && (
+                usuarioEncontrado.tipoUsuario.nome === TipoUsuarioEnum.USUARIO
+                || usuarioEncontrado.tipoUsuario.nome === TipoUsuarioEnum.ADMIN
+            )
+            ? usuarioEncontrado
+            : null;
+
+        return res.render('pages/guardiao/solicitarVinculo', {
+            titulo: 'Solicitar vínculo',
+            usuario,
+            email,
+            usuarioEncontrado: resultado,
+            mensagem: null
+        });
+    }
+
+    static async solicitarVinculo(req: Request, res: Response) {
+        const guardiaoSessao = (req.session as any).usuario;
+        const idUsuario = Number(req.body.idUsuario);
+        const emailBusca = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+
+        const render = (mensagem: { tipo: 'error' | 'success'; valor: string; titulo: string }, usuarioEncontrado: Usuario | null = null, status = 200) =>
+            res.status(status).render('pages/guardiao/solicitarVinculo', {
+                titulo: 'Solicitar vínculo',
+                usuario: guardiaoSessao,
+                email: emailBusca,
+                usuarioEncontrado,
+                mensagem
+            });
+
+        if (!Number.isSafeInteger(idUsuario) || idUsuario <= 0) {
+            return render({
+                tipo: 'error',
+                valor: 'Informe um usuário válido.',
+                titulo: 'Usuário inválido'
+            }, null, 400);
+        }
+
+        const usuarioEncontrado = await Usuario.buscarPorId(String(idUsuario));
+        if (
+            !usuarioEncontrado
+            || (
+                usuarioEncontrado.tipoUsuario.nome !== TipoUsuarioEnum.USUARIO
+                && usuarioEncontrado.tipoUsuario.nome !== TipoUsuarioEnum.ADMIN
+            )
+        ) {
+            return render({
+                tipo: 'error',
+                valor: 'Nenhum usuário foi encontrado para este e-mail.',
+                titulo: 'Usuário não encontrado'
+            }, null, 404);
+        }
+        if (Number(usuarioEncontrado.id) === Number(guardiaoSessao.id)) {
+            return render({
+                tipo: 'error',
+                valor: 'Você não pode solicitar vínculo consigo mesmo.',
+                titulo: 'Ação inválida'
+            }, usuarioEncontrado, 400);
+        }
+
+        const resultado = await UsuarioGuardiao.solicitarVinculo(
+            Number(usuarioEncontrado.id),
+            {
+                nome: guardiaoSessao.nome,
+                email: guardiaoSessao.email,
+                numero: guardiaoSessao.numero || ''
+            }
+        );
+
+        if (resultado.estado === 'confirmado') {
+            return render({
+                tipo: 'error',
+                valor: 'Este usuário já possui um vínculo confirmado com você.',
+                titulo: 'Vínculo já confirmado'
+            }, usuarioEncontrado, 409);
+        }
+        await Notificacao.criarSolicitacaoVinculo(
+            Number(usuarioEncontrado.id),
+            'Solicitação de vínculo',
+            `${guardiaoSessao.nome} solicitou vínculo como seu guardião.`,
+            resultado.idVinculo
+        );
+
+        return render({
+            tipo: 'success',
+            valor: resultado.estado === 'pendente'
+                ? 'A solicitação já estava pendente. A notificação foi disponibilizada novamente para o usuário.'
+                : 'Solicitação enviada. O usuário pode aceitar ou recusar pela área de notificações.',
+            titulo: resultado.estado === 'pendente' ? 'Notificação reenviada' : 'Solicitação enviada'
+        }, usuarioEncontrado);
+    }
+
+    static async aceitarSolicitacaoVinculo(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idVinculo = Number(req.params.id);
+        if (!Number.isSafeInteger(idVinculo) || idVinculo <= 0) {
+            return res.status(400).json({ erro: 'Solicitação inválida.' });
+        }
+
+        const atualizada = await UsuarioGuardiao.responderSolicitacao(idVinculo, Number(usuario.id), true);
+        if (!atualizada) {
+            return res.status(404).json({ erro: 'Solicitação não encontrada.' });
+        }
+
+        await Notificacao.marcarComoLidaPorReferencia(idVinculo, Number(usuario.id), 'solicitacao_vinculo');
+        return res.json({ sucesso: true });
+    }
+
+    static async recusarSolicitacaoVinculo(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idVinculo = Number(req.params.id);
+        if (!Number.isSafeInteger(idVinculo) || idVinculo <= 0) {
+            return res.status(400).json({ erro: 'Solicitação inválida.' });
+        }
+
+        const atualizada = await UsuarioGuardiao.responderSolicitacao(idVinculo, Number(usuario.id), false);
+        if (!atualizada) {
+            return res.status(404).json({ erro: 'Solicitação não encontrada.' });
+        }
+
+        await Notificacao.marcarComoLidaPorReferencia(idVinculo, Number(usuario.id), 'solicitacao_vinculo');
+        return res.json({ sucesso: true });
+    }
+
+    static async carregarListarTodos(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const guardioes = await Guardiao.listarTodosParaAdministrador();
+
+        return res.render('pages/guardiao/listarTodos', {
+            titulo: 'Todos os guardiões',
+            usuario,
+            guardioes,
+            mensagem: null
+        });
+    }
+
+    static async carregarListar(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const guardioes = await UsuarioGuardiao.listarGuardioesConfirmados(Number(usuario.id));
+
+        return res.render('pages/guardiao/listar', {
+            titulo: 'Meus guardiões',
+            usuario,
+            guardioes,
+            mensagem: null
+        });
+    }
+
     static async carregarGerenciar(req: Request, res: Response) {
         const usuario = (req.session as any).usuario;
         return res.render('pages/guardiao/gerenciar', {
@@ -22,6 +185,7 @@ export class GuardiaoController {
     }
 
     static async cadastrarGuardiao(req: Request, res: Response) {
+        const usuarioSessao = (req.session as any).usuario;
         const nome = typeof req.body.nome === 'string' ? req.body.nome.trim() : '';
         const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
         const numero = typeof req.body.numero === 'string' ? req.body.numero.trim() : '';
@@ -44,63 +208,61 @@ export class GuardiaoController {
         ) {
             return renderFormulario({
                 tipo: 'error',
-                valor: 'Informe nome, e-mail válido e telefone dentro dos limites permitidos.',
+                valor: 'Informe nome, seu próprio e-mail e telefone.',
                 titulo: 'Dados inválidos'
             }, 400);
         }
 
-        const usuario = (req.session as any).usuario;
-        const token = randomBytes(32).toString('hex');
-        const tokenHash = createHash('sha256').update(token).digest('hex');
-        const estado = await UsuarioGuardiao.prepararConvite(
-            Number(usuario.id),
-            { nome, email, numero },
-            tokenHash
-        );
-
-        if (estado === 'confirmado') {
+        const tipoGuardiao = await TipoUsuario.buscarPorNome(TipoUsuarioEnum.GUARDIAO);
+        if (!tipoGuardiao) {
             return renderFormulario({
                 tipo: 'error',
-                valor: 'Este guardião já confirmou o vínculo com sua conta.',
-                titulo: 'Vínculo já confirmado'
-            }, 409);
+                valor: 'O tipo Guardião não está configurado no sistema.',
+                titulo: 'Erro do sistema'
+            }, 500);
         }
 
         try {
-            const baseUrl = process.env.APP_BASE_URL
-                || (process.env.NODE_ENV === 'production'
-                    ? ''
-                    : `http://localhost:${process.env.PORT || 3333}`);
-            if (!baseUrl || !process.env.EMAIL_USER) {
-                throw new Error('APP_BASE_URL e EMAIL_USER precisam estar configurados para enviar convites.');
+            if (!usuarioSessao || usuarioSessao.tipo !== 'USUARIO') {
+                return renderFormulario({
+                    tipo: 'error',
+                    valor: 'Somente usuários podem solicitar a mudança para guardião.',
+                    titulo: 'Ação não permitida'
+                }, 403);
             }
 
-            const conviteUrl = new URL('/guardiao/vinculo/confirmar', baseUrl);
-            conviteUrl.searchParams.set('token', token);
-
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: 'Confirme seu vínculo como guardião',
-                text: `Olá, ${nome}.\n\n${usuario.nome} cadastrou você como guardião no Memorium. Confirme o vínculo neste link (válido por 7 dias):\n\n${conviteUrl.toString()}\n\nSe você não reconhece esta solicitação, ignore este e-mail.`
-            });
-
-            const conviteAtualizado = await UsuarioGuardiao.marcarConviteEnviado(tokenHash);
-            if (!conviteAtualizado) {
-                throw new Error('O convite deixou de estar pendente antes de ser registrado como enviado.');
+            const usuarioEncontrado = await Usuario.buscarPorId(String(usuarioSessao.id));
+            if (!usuarioEncontrado || Usuario.normalizarEmail(usuarioEncontrado.email) !== Usuario.normalizarEmail(email)) {
+                return renderFormulario({
+                    tipo: 'error',
+                    valor: 'Informe o e-mail da sua própria conta de usuário.',
+                    titulo: 'E-mail inválido'
+                }, 403);
             }
+
+            await Usuario.promoverParaGuardiao(
+                Number(usuarioSessao.id),
+                tipoGuardiao.id,
+                nome,
+                numero,
+                email
+            );
+            usuarioSessao.tipo = TipoUsuarioEnum.GUARDIAO;
+            usuarioSessao.nome = nome;
+            usuarioSessao.numero = numero;
+            (req.session as any).usuario = usuarioSessao;
         } catch (error) {
-            console.error('Não foi possível enviar o convite de guardião:', error);
+            console.error('Não foi possível cadastrar o guardião:', error);
             return renderFormulario({
                 tipo: 'error',
-                valor: 'O vínculo ficou pendente, mas o e-mail não foi enviado. Confira a configuração de e-mail e cadastre novamente os mesmos dados para reenviar o convite.',
-                titulo: 'Falha ao enviar convite'
-            }, 502);
+                valor: 'Não foi possível cadastrar o guardião.',
+                titulo: 'Falha no cadastro'
+            }, 500);
         }
 
         return renderFormulario({
             tipo: 'success',
-            valor: 'Convite enviado. O guardião precisa confirmar o vínculo pelo link recebido por e-mail.',
+            valor: 'Conta de guardião cadastrada com sucesso.',
             titulo: 'Sucesso'
         }, 200, { nome: '', email: '', numero: '' });
     }
@@ -190,6 +352,102 @@ export class GuardiaoController {
             titulo: 'Solicitar confirmação de falecimento',
             usuarios,
             mensagem: null
+        });
+    }
+
+    static async carregarUsuariosVinculados(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const usuarios = await SolicitacaoFalecimento.listarUsuariosParaGuardiao(usuario.email);
+
+        return res.render('pages/guardiao/usuarios', {
+            titulo: 'Meus usuários',
+            usuario,
+            usuarios,
+            mensagem: null
+        });
+    }
+
+    static async confirmarObitoUsuario(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idUsuario = Number(req.params.id);
+        const render = async (
+            mensagem: { tipo: 'error' | 'success'; valor: string; titulo: string },
+            status = 200
+        ) => {
+            const usuarios = await SolicitacaoFalecimento.listarUsuariosParaGuardiao(usuario.email);
+            return res.status(status).render('pages/guardiao/usuarios', {
+                titulo: 'Meus usuários',
+                usuario,
+                usuarios,
+                mensagem
+            });
+        };
+
+        if (!Number.isSafeInteger(idUsuario) || idUsuario <= 0) {
+            return render({
+                tipo: 'error',
+                valor: 'Selecione um usuário válido.',
+                titulo: 'Usuário inválido'
+            }, 400);
+        }
+
+        const idVinculo = await SolicitacaoFalecimento.buscarVinculoConfirmado(usuario.email, idUsuario);
+        if (!idVinculo) {
+            return render({
+                tipo: 'error',
+                valor: 'Você não possui vínculo confirmado com este usuário.',
+                titulo: 'Vínculo inválido'
+            }, 403);
+        }
+
+        const resultado = await SolicitacaoFalecimento.votar(idUsuario, idVinculo);
+        const mensagens = {
+            usuario_invalido: {
+                tipo: 'error' as const,
+                valor: 'Usuário não encontrado.',
+                titulo: 'Não encontrado'
+            },
+            guardiao_nao_vinculado: {
+                tipo: 'error' as const,
+                valor: 'Você não possui vínculo confirmado com este usuário.',
+                titulo: 'Vínculo inválido'
+            },
+            falecimento_ja_confirmado: {
+                tipo: 'error' as const,
+                valor: 'O falecimento deste usuário já foi confirmado.',
+                titulo: 'Já confirmado'
+            },
+            guardioes_insuficientes: {
+                tipo: 'error' as const,
+                valor: 'São necessários pelo menos três guardiões confirmados para votar.',
+                titulo: 'Guardiões insuficientes'
+            },
+            voto_ja_registrado: {
+                tipo: 'error' as const,
+                valor: 'Seu voto já foi registrado para este usuário.',
+                titulo: 'Voto já registrado'
+            }
+        };
+
+        if (
+            resultado.estado !== 'aguardando_confirmacoes'
+            && resultado.estado !== 'confirmada'
+        ) {
+            return render(mensagens[resultado.estado], 400);
+        }
+
+        if (resultado.estado === 'confirmada') {
+            return render({
+                tipo: 'success',
+                valor: 'Voto registrado. O quórum foi atingido e o falecimento foi confirmado.',
+                titulo: 'Confirmação concluída'
+            });
+        }
+
+        return render({
+            tipo: 'success',
+            valor: `Voto registrado (${resultado.confirmacoes} de ${resultado.necessarias}).`,
+            titulo: 'Voto registrado'
         });
     }
 

@@ -240,11 +240,22 @@ async function migrateMessageSystem() {
 
         await client.query(`
             ALTER TABLE usuario_guardiao
+                ADD COLUMN IF NOT EXISTS votoconfirma BOOLEAN,
                 ADD COLUMN IF NOT EXISTS estado_vinculo VARCHAR(20),
                 ADD COLUMN IF NOT EXISTS token_vinculo_hash CHAR(64),
                 ADD COLUMN IF NOT EXISTS token_vinculo_expira_em TIMESTAMPTZ,
                 ADD COLUMN IF NOT EXISTS convite_enviado_em TIMESTAMPTZ,
                 ADD COLUMN IF NOT EXISTS vinculo_confirmado_em TIMESTAMPTZ
+        `);
+        await client.query(`
+            UPDATE usuario_guardiao
+            SET votoconfirma = FALSE
+            WHERE votoconfirma IS NULL
+        `);
+        await client.query(`
+            ALTER TABLE usuario_guardiao
+                ALTER COLUMN votoconfirma SET DEFAULT FALSE,
+                ALTER COLUMN votoconfirma SET NOT NULL
         `);
         await client.query(`
             UPDATE usuario_guardiao

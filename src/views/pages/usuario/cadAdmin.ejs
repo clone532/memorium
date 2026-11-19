@@ -50,7 +50,9 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-calendar-event-fill"></i></span>
               <div>
                 <label for="dataNasc">Data de nascimento</label>
-                <input class="form-control" type="date" name="dataNasc" id="dataNasc" required>
+                <input class="form-control" type="date" name="dataNasc" id="dataNasc"
+                  max="<%= new Date().getFullYear() - 14 %>-12-31" required>
+                <small class="form-text">Não é permitido criar conta para quem nasceu antes de <%= new Date().getFullYear() - 14 %>.</small>
               </div>
             </div>
 

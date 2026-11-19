@@ -188,4 +188,123 @@ export class UsuarioGuardiao {
         return result.rowCount === 1;
     }
 
+    static async listarGuardioesConfirmados(idUsuario: number) {
+        const { rows } = await connection.query(
+            `SELECT
+                ug.id,
+                ug.estado_vinculo,
+                ug.vinculo_confirmado_em,
+                COALESCE(ug.votoconfirma, FALSE) AS voto_confirma,
+                g.id AS id_guardiao,
+                u.id AS id_usuario,
+                g.nome,
+                g.email,
+                g.numero
+             FROM usuario_guardiao ug
+             JOIN guardiao g ON g.id = ug.idguardiao
+             LEFT JOIN usuario u ON LOWER(BTRIM(u.email)) = LOWER(BTRIM(g.email))
+             WHERE ug.idusuario = $1
+               AND ug.estado_vinculo = 'confirmado'
+             ORDER BY g.nome ASC`,
+            [idUsuario]
+        );
+
+        return rows;
+    }
+
+    static async solicitarVinculo(idUsuario: number, guardiao: { nome: string; email: string; numero: string }) {
+        const client = await connection.connect();
+
+        try {
+            await client.query("BEGIN");
+
+            let guardiaoEncontrado = await client.query(
+                `SELECT id FROM guardiao
+                 WHERE LOWER(BTRIM(email)) = LOWER(BTRIM($1))
+                 LIMIT 1
+                 FOR UPDATE`,
+                [guardiao.email]
+            );
+
+            let idGuardiao: number;
+            if (guardiaoEncontrado.rows[0]) {
+                idGuardiao = guardiaoEncontrado.rows[0].id;
+                await client.query(
+                    `UPDATE guardiao SET nome = $1, numero = $2 WHERE id = $3`,
+                    [guardiao.nome, guardiao.numero, idGuardiao]
+                );
+            } else {
+                const novoGuardiao = await client.query(
+                    `INSERT INTO guardiao(nome, email, numero) VALUES ($1, $2, $3) RETURNING id`,
+                    [guardiao.nome, guardiao.email, guardiao.numero]
+                );
+                idGuardiao = novoGuardiao.rows[0].id;
+            }
+
+            const vinculo = await client.query(
+                `SELECT id, estado_vinculo
+                 FROM usuario_guardiao
+                 WHERE idusuario = $1 AND idguardiao = $2
+                 FOR UPDATE`,
+                [idUsuario, idGuardiao]
+            );
+
+            if (vinculo.rows[0]?.estado_vinculo === 'confirmado') {
+                await client.query("COMMIT");
+                return { estado: 'confirmado' as const };
+            }
+            if (vinculo.rows[0]?.estado_vinculo === 'pendente') {
+                await client.query("COMMIT");
+                return {
+                    estado: 'pendente' as const,
+                    idVinculo: vinculo.rows[0].id as number
+                };
+            }
+
+            const novoVinculo = vinculo.rows[0]
+                ? await client.query(
+                    `UPDATE usuario_guardiao
+                     SET estado_vinculo = 'pendente',
+                         votoconfirma = FALSE,
+                         vinculo_confirmado_em = NULL
+                     WHERE id = $1
+                     RETURNING id`,
+                    [vinculo.rows[0].id]
+                )
+                : await client.query(
+                    `INSERT INTO usuario_guardiao
+                     (idusuario, idguardiao, estado_vinculo, votoconfirma)
+                     VALUES ($1, $2, 'pendente', FALSE)
+                     RETURNING id`,
+                    [idUsuario, idGuardiao]
+                );
+
+            await client.query("COMMIT");
+            return { estado: 'criado' as const, idVinculo: novoVinculo.rows[0].id as number };
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async responderSolicitacao(idVinculo: number, idUsuario: number, aceitar: boolean) {
+        const result = await connection.query(
+            aceitar
+                ? `UPDATE usuario_guardiao
+                   SET estado_vinculo = 'confirmado',
+                       vinculo_confirmado_em = CURRENT_TIMESTAMP
+                   WHERE id = $1 AND idusuario = $2 AND estado_vinculo = 'pendente'
+                   RETURNING id`
+                : `UPDATE usuario_guardiao
+                   SET estado_vinculo = 'revogado',
+                       vinculo_confirmado_em = NULL
+                   WHERE id = $1 AND idusuario = $2 AND estado_vinculo = 'pendente'
+                   RETURNING id`,
+            [idVinculo, idUsuario]
+        );
+        return result.rowCount === 1;
+    }
+
 }

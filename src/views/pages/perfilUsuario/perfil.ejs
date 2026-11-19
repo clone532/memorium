@@ -95,10 +95,12 @@
             }
 
             .perfil-layout>.sidebar {
-                position: sticky;
-                top: 0;
-                align-self: flex-start;
-                height: 100vh;
+                position: fixed;
+                top: 56px;
+                bottom: 0;
+                left: 0;
+                align-self: stretch;
+                height: auto;
                 min-height: 0;
                 overflow-y: auto;
             }
@@ -107,8 +109,14 @@
                 flex: 1;
                 min-width: 0;
                 min-height: calc(100vh - 56px);
+                margin-left: 250px;
                 background: var(--perfil-bg);
                 padding: 40px 20px;
+                transition: margin-left 0.3s ease;
+            }
+
+            .perfil-layout>.sidebar.hidden~.perfil-container {
+                margin-left: 0;
             }
 
             .perfil-header {

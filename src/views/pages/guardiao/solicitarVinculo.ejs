@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<%- include('../../partials/head', { titulo: 'Solicitar vínculo' }) %>
+<%- include('../../partials/formataçãoFormulario') %>
+
+<body class="bg-light">
+  <%- include('../../partials/header') %>
+  <div class="d-flex">
+    <%- include('../../partials/sidebar') %>
+    <main class="content">
+      <div class="container-fluid py-3">
+        <section class="config-page" aria-labelledby="vinculoTitle">
+          <header class="config-header">
+            <span class="config-icon" aria-hidden="true"><i class="bi bi-person-plus-fill"></i></span>
+            <div>
+              <h1 id="vinculoTitle">Solicitar vínculo</h1>
+              <p>Encontre um usuário pelo e-mail para solicitar o vínculo de guardião</p>
+            </div>
+          </header>
+
+          <form class="config-form" action="/guardiao/solicitarVinculo" method="get">
+            <div class="config-field">
+              <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
+              <div>
+                <label for="emailUsuario">E-mail do usuário</label>
+                <input class="form-control" type="email" id="emailUsuario" name="email" value="<%= email %>" placeholder="usuario@example.com" required>
+              </div>
+            </div>
+            <div class="config-footer">
+              <button type="submit" class="btn config-save">
+                <i class="bi bi-search me-2" aria-hidden="true"></i>Pesquisar
+              </button>
+              <a href="/guardiao/gerenciar" class="btn config-secondary">Voltar</a>
+            </div>
+          </form>
+
+          <% if (email && usuarioEncontrado) { %>
+            <div class="config-alert border rounded p-3 mt-3" style="margin: 0 28px 20px;">
+              <div class="d-flex align-items-center justify-content-between gap-3">
+                <div>
+                  <strong class="d-block"><%= usuarioEncontrado.nome %></strong>
+                  <span class="text-muted"><%= usuarioEncontrado.email %></span>
+                </div>
+                <form action="/guardiao/solicitarVinculo" method="post">
+                  <input type="hidden" name="idUsuario" value="<%= usuarioEncontrado.id %>">
+                  <input type="hidden" name="email" value="<%= email %>">
+                  <button type="submit" class="btn config-save">
+                    <i class="bi bi-send-fill me-2" aria-hidden="true"></i>Solicitar vínculo
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% } else if (email) { %>
+            <div class="config-alert border rounded p-3 mt-3 text-muted" style="margin: 0 28px 20px;">
+              Nenhum usuário encontrado para este e-mail.
+            </div>
+          <% } %>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../partials/scripts') %>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <% if (mensagem) { %>
+    <script>
+      Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: '<%= mensagem.tipo %>',
+        text: '<%= mensagem.valor %>',
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        backdrop: false
+      });
+    </script>
+  <% } %>
+</body>
+</html>

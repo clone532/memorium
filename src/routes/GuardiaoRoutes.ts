@@ -13,8 +13,16 @@ guardiaoRoutes.post('/guardiao/falecimento/confirmar', asyncExecutor(GuardiaoCon
 
 // Área e ações disponíveis para usuários autenticados.
 guardiaoRoutes.get('/guardiao/gerenciar', authMiddleware(['USUARIO', 'GUARDIAO', 'ADMIN']), asyncExecutor(GuardiaoController.carregarGerenciar));
-guardiaoRoutes.get('/guardiao/cadastrar', authMiddleware(['USUARIO', 'ADMIN']), asyncExecutor(GuardiaoController.carregarCadastrar));
-guardiaoRoutes.post('/guardiao/cadastrar', authMiddleware(['USUARIO', 'ADMIN']), asyncExecutor(GuardiaoController.cadastrarGuardiao));
+guardiaoRoutes.get('/guardiao/listarTodos', authMiddleware(['ADMIN']), asyncExecutor(GuardiaoController.carregarListarTodos));
+guardiaoRoutes.get('/guardiao/listar', authMiddleware(['USUARIO', 'GUARDIAO', 'ADMIN']), asyncExecutor(GuardiaoController.carregarListar));
+guardiaoRoutes.get('/guardiao/solicitarVinculo', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarSolicitarVinculo));
+guardiaoRoutes.post('/guardiao/solicitarVinculo', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.solicitarVinculo));
+guardiaoRoutes.post('/api/vinculos/:id/aceitar', authMiddleware(['USUARIO', 'ADMIN']), asyncExecutor(GuardiaoController.aceitarSolicitacaoVinculo));
+guardiaoRoutes.post('/api/vinculos/:id/recusar', authMiddleware(['USUARIO', 'ADMIN']), asyncExecutor(GuardiaoController.recusarSolicitacaoVinculo));
+guardiaoRoutes.get('/guardiao/cadastrar', authMiddleware(['USUARIO']), asyncExecutor(GuardiaoController.carregarCadastrar));
+guardiaoRoutes.post('/guardiao/cadastrar', authMiddleware(['USUARIO']), asyncExecutor(GuardiaoController.cadastrarGuardiao));
+guardiaoRoutes.get('/guardiao/usuarios', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarUsuariosVinculados));
+guardiaoRoutes.post('/guardiao/usuarios/:id/confirmar-obito', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.confirmarObitoUsuario));
 guardiaoRoutes.get('/guardiao/falecimento', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarSolicitacaoFalecimento));
 guardiaoRoutes.post('/guardiao/falecimento', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.iniciarSolicitacaoFalecimento));
 

@@ -45,29 +45,20 @@
                             <a href="/guardiao/listar" class="btn-config">
                                 Seus guardiões
                             </a>
-                            <a href="/guardiao/gerarLinkConvite" class="btn-config">
-                                Gerar link de convite
-                            </a>
-                            <a href="/guardiao/cadastrar" class="btn-config">
-                                Criar conta de guardião
-                            </a>
                         </div>
                     <% } else if(usuario.tipo === 'GUARDIAO') { %>
                         <div class="container-fluid py-4">
-                            <a href="/guardiao/listarUsuarioResponsavel" class="btn-config">
-                                Seus usuarios
+                            <a href="/guardiao/usuarios" class="btn-config">
+                                Seus usuários
                             </a>
-                            <a href="/guardiao/gerarLinkConvite" class="btn-config">
+                            <a href="/guardiao/solicitarVinculo" class="btn-config">
                                 Solicitar novo vínculo
-                            </a>    
+                            </a>   
                         </div>
                     <% } else { %>
                         <div class="container-fluid py-4">
                             <a href="/guardiao/listar" class="btn-config">
                                 Seus guardiões
-                            </a>
-                            <a href="/guardiao/gerarLinkConvite" class="btn-config">
-                                Gerar link de convite
                             </a>
                             <a href="/guardiao/cadastrar" class="btn-config">
                                 Criar conta de guardião

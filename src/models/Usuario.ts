@@ -39,15 +39,15 @@ export class Usuario {
 
         await connection.query(`
             INSERT INTO Usuario(
-                nome, email, senha, dataNasc, tipoUsuario, imagem,
+                nome, email, senha, dataNasc, numero, tipoUsuario, imagem,
                 termos_versao_aceita, termos_aceito_em,
                 privacidade_versao_lida, privacidade_lida_em
             )
             VALUES (
-                $1, $2, $3, $4, $5, $6, $7,
-                CASE WHEN $7::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END,
-                $8,
-                CASE WHEN $8::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END
+                $1, $2, $3, $4, $5, $6, $7, $8,
+                CASE WHEN $8::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END,
+                $9,
+                CASE WHEN $9::VARCHAR IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END
             )
         `,
             [
@@ -55,6 +55,7 @@ export class Usuario {
                 Usuario.normalizarEmail(usuario.email),
                 senhaHash,
                 usuario.dataNasc,
+                usuario.numero,
                 usuario.tipoUsuario.id,
                 usuario.imagem,
                 usuario.termosVersaoAceita ?? null,
@@ -126,6 +127,20 @@ export class Usuario {
                 usuario.id
             ]
         );
+    }
+
+    static async promoverParaGuardiao(idUsuario: number, idTipoGuardiao: number, nome: string, numero: string, email: string) {
+        const result = await connection.query(
+            `UPDATE Usuario
+             SET tipoUsuario = $1,
+                 nome = $2,
+                 numero = $3
+             WHERE id = $4
+               AND LOWER(BTRIM(email)) = LOWER(BTRIM($5))
+             RETURNING id`,
+            [idTipoGuardiao, nome, numero, idUsuario, Usuario.normalizarEmail(email)]
+        );
+        return result.rowCount === 1;
     }
 
     static async deletarPorId(id: string) {
