@@ -114,6 +114,17 @@ export class Usuario {
         );
     }
 
+    static async atualizarSenha(id: number, senha: string) {
+        const senhaHash = await bcrypt.hash(senha, 10);
+        const resultado = await connection.query(
+            `UPDATE Usuario SET senha=$1 WHERE id=$2`,
+            [senhaHash, id]
+        );
+        if (resultado.rowCount !== 1) {
+            throw new Error("Não foi possível atualizar a senha da conta.");
+        }
+    }
+
     static async atualizarComTipo(usuario: Usuario) {
         const senhaFinal = usuario.senha && usuario.senha.startsWith("$2") ? usuario.senha : await bcrypt.hash(usuario.senha, 10);
 

@@ -5,6 +5,7 @@ import { asyncExecutor } from '../../utils/AsyncExecutor';
 import { uploadImagem } from '../middlewares/UploadMiddleware';
 import { loginRateLimit } from '../middlewares/LoginRateLimitMiddleware';
 import { LegalController } from '../controllers/LegalController';
+import { recoveryRateLimit } from '../middlewares/RecoveryRateLimitMiddleware';
 
 const usuarioRoutes = Router();
 
@@ -12,6 +13,8 @@ const usuarioRoutes = Router();
 // ROTA USUÁRIO NÃO LOGADO
 usuarioRoutes.get('/usuario/logar', asyncExecutor(UsuarioController.carregarLogin));
 usuarioRoutes.post('/usuario/logar', loginRateLimit, asyncExecutor(UsuarioController.logar));
+usuarioRoutes.post('/usuario/recuperar-senha/codigo', recoveryRateLimit, asyncExecutor(UsuarioController.enviarCodigoRecuperacao));
+usuarioRoutes.post('/usuario/recuperar-senha/redefinir', recoveryRateLimit, asyncExecutor(UsuarioController.redefinirSenha));
 usuarioRoutes.post('/usuario/deslogar', asyncExecutor(UsuarioController.deslogar));
 usuarioRoutes.post('/usuario/cadastrar', asyncExecutor(UsuarioController.cadastrarUsuario));
 usuarioRoutes.get('/usuario/aceitar-documentos', authMiddleware(), asyncExecutor(UsuarioController.carregarAceiteDocumentos));

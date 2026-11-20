@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { createHmac, randomInt, timingSafeEqual } from "crypto";
 import { Request, Response } from "express";
 import { Usuario } from "../models/Usuario";
 import { TipoUsuario } from "../models/TipoUsuario";
@@ -9,6 +10,7 @@ import { Biografia } from "../models/Biografia";
 import { PRIVACIDADE_VERSAO, TERMOS_VERSAO } from "../constants/LegalDocuments";
 import fs from "fs";
 import path from "path";
+import { transporter } from "../infra/mail/NodeMailer";
 
 function isPostgresError(error: unknown, code: string, constraint?: string) {
     if (!error || typeof error !== "object") {
@@ -74,7 +76,90 @@ async function removerAvatar(filename?: string) {
     }
 }
 
+function hashCodigoRecuperacao(sessionId: string, codigo: string) {
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) {
+        throw new Error("Defina SESSION_SECRET para validar códigos de recuperação.");
+    }
+
+    return createHmac("sha256", secret).update(`${sessionId}:${codigo}`).digest();
+}
+
 export class UsuarioController {
+    static async enviarCodigoRecuperacao(req: Request, res: Response) {
+        const email = typeof req.body.email === "string"
+            ? Usuario.normalizarEmail(req.body.email)
+            : "";
+        const sessao = req.session as any;
+        delete sessao.recuperacaoSenha;
+
+        if (!email) {
+            return res.status(400).json({ erro: "Informe um e-mail válido." });
+        }
+
+        const usuario = await Usuario.buscarPorEmail(email);
+        if (usuario?.id) {
+            const codigo = randomInt(0, 1_000_000).toString().padStart(6, "0");
+            sessao.recuperacaoSenha = {
+                usuarioId: usuario.id,
+                codigoHash: hashCodigoRecuperacao(req.sessionID, codigo).toString("hex"),
+                expiraEm: Date.now() + 10 * 60 * 1000,
+                tentativas: 0
+            };
+
+            try {
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: usuario.email,
+                    subject: "Código de recuperação de senha - Memorium",
+                    text: `Seu código de recuperação é ${codigo}. Ele expira em 10 minutos.`,
+                    html: `<p>Seu código de recuperação de senha é:</p><p style="font-size:24px;font-weight:bold;letter-spacing:4px">${codigo}</p><p>Ele expira em 10 minutos. Se você não solicitou esta alteração, ignore este e-mail.</p>`
+                });
+            } catch (error) {
+                delete sessao.recuperacaoSenha;
+                console.error("Erro ao enviar código de recuperação de senha:", error);
+                return res.status(500).json({ erro: "Não foi possível enviar o código. Tente novamente." });
+            }
+        }
+
+        return res.json({
+            mensagem: "Se o e-mail estiver cadastrado, enviaremos um código de recuperação."
+        });
+    }
+
+    static async redefinirSenha(req: Request, res: Response) {
+        const codigo = typeof req.body.codigo === "string" ? req.body.codigo.trim() : "";
+        const senha = typeof req.body.senha === "string" ? req.body.senha : "";
+        const sessao = req.session as any;
+        const recuperacao = sessao.recuperacaoSenha;
+
+        if (senha.length < 8) {
+            return res.status(400).json({ erro: "A nova senha deve ter pelo menos 8 caracteres." });
+        }
+
+        if (!recuperacao || Date.now() > recuperacao.expiraEm || recuperacao.tentativas >= 5) {
+            delete sessao.recuperacaoSenha;
+            return res.status(400).json({ erro: "Código inválido ou expirado. Solicite um novo código." });
+        }
+
+        const codigoHash = hashCodigoRecuperacao(req.sessionID, codigo);
+        const codigoHashEsperado = Buffer.from(recuperacao.codigoHash, "hex");
+        recuperacao.tentativas += 1;
+        if (
+            !/^\d{6}$/.test(codigo)
+            || codigoHash.length !== codigoHashEsperado.length
+            || !timingSafeEqual(codigoHash, codigoHashEsperado)
+        ) {
+            if (recuperacao.tentativas >= 5) {
+                delete sessao.recuperacaoSenha;
+            }
+            return res.status(400).json({ erro: "Código inválido ou expirado. Solicite um novo código." });
+        }
+
+        await Usuario.atualizarSenha(recuperacao.usuarioId, senha);
+        delete sessao.recuperacaoSenha;
+        return res.json({ mensagem: "Senha redefinida com sucesso." });
+    }
 
     static podeEditarUsuario(req: Request, idUsuarioDestino: string | number) {
         const sessionUser = (req.session as any)?.usuario;
