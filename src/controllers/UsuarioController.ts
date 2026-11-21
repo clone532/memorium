@@ -598,14 +598,18 @@ export class UsuarioController {
                 return res.redirect('/usuario/logar');
             }
 
-            if (!nome || !emailNormalizado) {
+            if (
+                typeof nome !== 'string' || !nome || nome.length > 100
+                || typeof email !== 'string' || !emailNormalizado || email.length > 150
+                || (typeof senha === 'string' && senha.length > 25)
+            ) {
                 return res.status(400).render('pages/usuario/configuracaoPerfil', {
                     usuario,
                     usuarioPerfil: usuarioEncontrado,
                     titulo: 'Configuração do Perfil',
                     mensagem: {
                         tipo: 'error',
-                        valor: 'Preencha nome e e-mail corretamente.',
+                        valor: 'Confira os dados: nome até 100, e-mail até 150 e senha até 25 caracteres.',
                         titulo: 'Dados inválidos'
                     }
                 });

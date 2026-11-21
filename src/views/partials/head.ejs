@@ -47,6 +47,7 @@
     .sidebar {
       width: 250px;
       flex: 0 0 250px;
+      border: 0 !important;
       position: fixed;
       top: 56px;
       bottom: 0;
@@ -59,6 +60,14 @@
       flex-direction: column;
       overflow-y: auto;
       transition: margin-left 0.3s ease;
+    }
+    .sidebar.bg-light {
+      background: #21102e url("/IMGS/gallery/sidebar.png") center center / cover no-repeat !important;
+    }
+    .sidebar,
+    .sidebar .text-black,
+    .sidebar .nav-link {
+      color: #f8f5ff !important;
     }
     body > .d-flex > .sidebar ~ .content,
     body > .d-flex > .sidebar ~ main {
@@ -96,5 +105,90 @@
     /* consistencia global */
     .card { border-radius: 1rem; }
     .form-control, .btn { border-radius: .6rem; }
+    .password-field {
+      position: relative;
+      width: 100%;
+    }
+    .password-field > input {
+      padding-right: 46px;
+    }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #6c757d;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .password-toggle:hover,
+    .password-toggle:focus-visible {
+      background: #eee8f7;
+      color: #54208f;
+      outline: 0;
+    }
   </style>
+
+  <script>
+    (() => {
+      const adicionarBotaoSenha = (raiz = document) => {
+        const campos = [];
+        if (raiz instanceof HTMLInputElement && raiz.type === 'password') {
+          campos.push(raiz);
+        }
+        campos.push(...raiz.querySelectorAll('input[type="password"]'));
+
+        campos.forEach((campo) => {
+          if (campo.closest('.password-field')) return;
+
+          const container = document.createElement('div');
+          container.className = 'password-field';
+          const botao = document.createElement('button');
+          botao.type = 'button';
+          botao.className = 'password-toggle';
+          botao.setAttribute('aria-label', 'Mostrar senha');
+          botao.title = 'Mostrar senha';
+          botao.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i>';
+
+          campo.parentNode.insertBefore(container, campo);
+          container.append(campo, botao);
+          botao.addEventListener('click', () => {
+            const mostrar = campo.type === 'password';
+            campo.type = mostrar ? 'text' : 'password';
+            botao.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+            botao.title = mostrar ? 'Ocultar senha' : 'Mostrar senha';
+            botao.innerHTML = mostrar
+              ? '<i class="bi bi-eye-slash" aria-hidden="true"></i>'
+              : '<i class="bi bi-eye" aria-hidden="true"></i>';
+            campo.focus();
+          });
+        });
+      };
+
+      const iniciar = () => {
+        adicionarBotaoSenha();
+        new MutationObserver((mutacoes) => {
+          mutacoes.forEach((mutacao) => {
+            mutacao.addedNodes.forEach((no) => {
+              if (no instanceof HTMLElement) adicionarBotaoSenha(no);
+            });
+          });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciar);
+      } else {
+        iniciar();
+      }
+    })();
+  </script>
 </head>

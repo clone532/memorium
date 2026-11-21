@@ -3,6 +3,9 @@
 <%- include('../../partials/head', { titulo: 'Gerenciar Guardião' }) %>
 
     <style>
+        body {
+            background-image: url("/IMGS/gallery/bg.png");
+        }
         .btn-config {
             display: flex;
             width: 245px;
@@ -19,7 +22,7 @@
             transition: 0.3s;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 3px 3px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 3px 3px rgba(255, 255, 255, 0.6);
         }
         .container-fluid.py-4 {
             min-height: 100%;
@@ -53,7 +56,10 @@
                             </a>
                             <a href="/guardiao/solicitarVinculo" class="btn-config">
                                 Solicitar novo vínculo
-                            </a>   
+                            </a>
+                            <button type="button" id="inserirCodigoConvite" class="btn-config">
+                                Inserir código de convite
+                            </button>
                         </div>
                     <% } else { %>
                         <div class="container-fluid py-4">
@@ -63,11 +69,115 @@
                             <a href="/guardiao/cadastrar" class="btn-config">
                                 Criar conta de guardião
                             </a>
+                            <button type="button" id="consultarCodigoConvite" class="btn-config">
+                                Consultar código de convite
+                            </button>
                         </div>
                     <% } %>
                     </main>
             </div>
 
             <%- include('../../partials/scripts') %>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+              const consultarCodigoConvite = document.getElementById('consultarCodigoConvite');
+              if (consultarCodigoConvite) {
+                consultarCodigoConvite.addEventListener('click', async () => {
+                  consultarCodigoConvite.disabled = true;
+                  try {
+                    const response = await fetch('/api/convites/codigo', { method: 'POST' });
+                    const resultado = await response.json();
+                    if (!response.ok) throw new Error(resultado.erro || 'Não foi possível gerar o código.');
+
+                    await Swal.fire({
+                      title: 'Seu código de convite',
+                      html: `<div style="font-size:34px;letter-spacing:.18em;font-weight:700;color:#54208f">${resultado.codigo}</div><p class="mt-3 mb-0 text-muted">Válido por 24 horas</p><p class="mt-3 mb-0 text-muted">Compartilhe este código apenas com pessoas de confiança.</p>`,
+                      confirmButtonText: 'Copiar código',
+                      confirmButtonColor: '#794bdd',
+                      showCancelButton: true,
+                      cancelButtonText: 'Fechar',
+                      backdrop: false
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        await navigator.clipboard.writeText(resultado.codigo);
+                        await Swal.fire({
+                          toast: true,
+                          position: 'center',
+                          icon: 'success',
+                          text: 'Código copiado.',
+                          showConfirmButton: false,
+                          timer: 1800,
+                          backdrop: false
+                        });
+                      }
+                    });
+                  } catch (error) {
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Não foi possível continuar',
+                      text: error.message,
+                      backdrop: false
+                    });
+                  } finally {
+                    consultarCodigoConvite.disabled = false;
+                  }
+                });
+              }
+
+              const inserirCodigoConvite = document.getElementById('inserirCodigoConvite');
+              if (inserirCodigoConvite) {
+                inserirCodigoConvite.addEventListener('click', async () => {
+                  const entrada = await Swal.fire({
+                    title: 'Inserir código de convite',
+                    input: 'text',
+                    inputAttributes: {
+                      inputmode: 'numeric',
+                      autocomplete: 'one-time-code',
+                      maxlength: '6',
+                      pattern: '[0-9]{6}'
+                    },
+                    inputPlaceholder: 'Código de 6 dígitos',
+                    confirmButtonText: 'Enviar solicitação',
+                    confirmButtonColor: '#794bdd',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    backdrop: false,
+                    inputValidator: (codigo) => {
+                      if (!/^\d{6}$/.test((codigo || '').trim())) {
+                        return 'Digite o código de 6 dígitos.';
+                      }
+                    }
+                  });
+                  if (!entrada.isConfirmed) return;
+
+                  try {
+                    const body = new URLSearchParams({ codigo: entrada.value.trim() });
+                    const response = await fetch('/api/convites/vincular', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                      body
+                    });
+                    const resultado = await response.json();
+                    if (!response.ok) throw new Error(resultado.erro || 'Não foi possível enviar a solicitação.');
+
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'Solicitação enviada',
+                      text: `${resultado.mensagem} Usuário: ${resultado.usuario}.`,
+                      confirmButtonColor: '#794bdd',
+                      backdrop: false
+                    });
+                  } catch (error) {
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Não foi possível vincular',
+                      text: error.message,
+                      confirmButtonColor: '#794bdd',
+                      backdrop: false
+                    });
+                  }
+                });
+              }
+            </script>
     </body>
 </html>

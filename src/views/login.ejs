@@ -8,6 +8,7 @@
   <link rel="icon" type="image/x-icon" href="/IMGS/gallery/favicon.ico">
   <link rel="shortcut icon" type="image/x-icon" href="/IMGS/gallery/favicon.ico">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     :root {
       color-scheme: dark;
@@ -43,6 +44,40 @@
       border-radius: 21px;
       background: var(--panel) !important;
       box-shadow: 0 10px 30px rgba(35, 24, 49, 0.2);
+    }
+
+    .password-field {
+      position: relative;
+      width: 100%;
+    }
+
+    .password-field > input {
+      padding-right: 46px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transform: translateY(-50%);
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #d7c8e4;
+      line-height: 1;
+    }
+
+    .password-toggle:hover,
+    .password-toggle:focus-visible {
+      background: #4a3158;
+      color: #fff;
+      outline: 0;
     }
 
     .brand {
@@ -289,11 +324,11 @@
         <form method="POST" action="/usuario/logar">
           <div class="mb-3">
             <label for="loginEmail" class="form-label">Email</label>
-            <input name="email" type="email" class="form-control" id="loginEmail" placeholder="exemplo@gmail.com" value="<%= typeof loginEmail === 'string' ? loginEmail : '' %>" required>
+            <input name="email" type="email" class="form-control" id="loginEmail" maxlength="150" placeholder="exemplo@gmail.com" value="<%= typeof loginEmail === 'string' ? loginEmail : '' %>" required>
           </div>
           <div class="mb-3">
             <label for="loginPassword" class="form-label">Senha</label>
-            <input type="password" name="senha" class="form-control" id="loginPassword" required>
+            <input type="password" name="senha" class="form-control" id="loginPassword" maxlength="25" required>
           </div>
           <button type="submit" class="btn btn-submit w-100">Entrar</button>
         </form>
@@ -303,15 +338,15 @@
         <form method="post" action="/usuario/cadastrar">
           <div class="mb-3">
             <label for="registerName" class="form-label">Nome</label>
-            <input type="text" name="nome" class="form-control" id="registerName" required>
+            <input type="text" name="nome" class="form-control" id="registerName" maxlength="100" required>
           </div>
           <div class="mb-3">
             <label for="registerEmail" class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" id="registerEmail" required>
+            <input type="email" name="email" class="form-control" id="registerEmail" maxlength="150" required>
           </div>
           <div class="mb-3">
             <label for="registerPassword" class="form-label">Senha</label>
-            <input type="password" name="senha" class="form-control" id="registerPassword" required>
+            <input type="password" name="senha" class="form-control" id="registerPassword" maxlength="25" required>
           </div>
           <div class="mb-3">
             <label for="registerDataNasc" class="form-label">Data de Nascimento</label>
@@ -352,6 +387,53 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     (() => {
+      const adicionarAlternancia = (raiz = document) => {
+        const campos = [];
+        if (raiz instanceof HTMLInputElement && raiz.type === 'password') {
+          campos.push(raiz);
+        }
+        campos.push(...raiz.querySelectorAll('input[type="password"]'));
+
+        campos.forEach((campo) => {
+          if (campo.closest('.password-field')) return;
+
+          const container = document.createElement('div');
+          container.className = 'password-field';
+          const botao = document.createElement('button');
+          botao.type = 'button';
+          botao.className = 'password-toggle';
+          botao.setAttribute('aria-label', 'Mostrar senha');
+          botao.title = 'Mostrar senha';
+          botao.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i>';
+
+          campo.parentNode.insertBefore(container, campo);
+          container.append(campo, botao);
+          botao.addEventListener('click', () => {
+            const mostrar = campo.type === 'password';
+            campo.type = mostrar ? 'text' : 'password';
+            botao.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+            botao.title = mostrar ? 'Ocultar senha' : 'Mostrar senha';
+            botao.innerHTML = mostrar
+              ? '<i class="bi bi-eye-slash" aria-hidden="true"></i>'
+              : '<i class="bi bi-eye" aria-hidden="true"></i>';
+            campo.focus();
+          });
+        });
+      };
+
+      adicionarAlternancia();
+      new MutationObserver((mutacoes) => {
+        mutacoes.forEach((mutacao) => {
+          mutacao.addedNodes.forEach((no) => {
+            if (no instanceof HTMLElement) adicionarAlternancia(no);
+          });
+        });
+      }).observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+
+  <script>
+    (() => {
       const link = document.getElementById('forgotPasswordLink');
       const enviarCodigo = async (email) => {
         const response = await fetch('/usuario/recuperar-senha/codigo', {
@@ -382,6 +464,7 @@
           input: 'email',
           inputLabel: 'Insira seu email',
           inputPlaceholder: 'exemplo@gmail.com',
+          inputAttributes: { maxlength: '150' },
           showCancelButton: true,
           confirmButtonText: 'Receber código de recuperação',
           cancelButtonText: 'Cancelar',
@@ -395,7 +478,7 @@
           const codigoResult = await Swal.fire({
             title: 'Redefinir senha',
             html: `<input id="recoveryCode" class="swal2-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Digite o código de 6 dígitos">
-              <input id="recoveryPassword" class="swal2-input" type="password" minlength="8" placeholder="Nova senha (mínimo 8 caracteres)">`,
+              <input id="recoveryPassword" class="swal2-input" type="password" minlength="8" maxlength="25" placeholder="Nova senha (mínimo 8 caracteres)">`,
             showCancelButton: true,
             confirmButtonText: 'Redefinir senha',
             cancelButtonText: 'Cancelar',

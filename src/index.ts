@@ -41,7 +41,44 @@ app.set('view engine', 'ejs');
 app.set('views', './src/views');
 app.use('/IMGS', express.static(path.resolve(__dirname, '..', 'IMGS')));
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+
+const limitesCamposTexto: Record<string, number> = {
+    codigo: 6,
+    dataNasc: 10,
+    dataEnvio: 30,
+    dataDeEnvio: 30,
+    dias: 3,
+    email: 150,
+    nome: 100,
+    nomePlano: 80,
+    nomeTipo: 25,
+    numero: 20,
+    senha: 25,
+    telefone: 20,
+    titulo: 100,
+    conteudo: 2500,
+    valorMensal: 20,
+    armazenamentoGB: 20,
+    tipo: 50
+};
+
+app.use((req, res, next) => {
+    for (const dados of [req.body, req.query]) {
+        if (!dados || typeof dados !== 'object') continue;
+
+        for (const [campo, valor] of Object.entries(dados)) {
+            const valores = Array.isArray(valor) ? valor : [valor];
+            const limite = limitesCamposTexto[campo] ?? 255;
+            if (valores.some((item) => typeof item === 'string' && item.length > limite)) {
+                res.status(400).send(`O campo informado excede o limite de ${limite} caracteres.`);
+                return;
+            }
+        }
+    }
+    next();
+});
 
 app.use('/uploads', (req, res, next): void => {
     const permittedExtensions = new Set([

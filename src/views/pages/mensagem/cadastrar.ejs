@@ -108,7 +108,7 @@
                                 <span class="field-icon" aria-hidden="true"><i class="bi bi-chat-left-text-fill"></i></span>
                                 <div>
                                     <label for="mensagemTitulo"></label>
-                                    <input class="form-control" type="text" id="mensagemTitulo" name="titulo" maxlength="255" value="<%= mensagemForm.titulo %>" placeholder="Digite o título da mensagem" required>
+                                    <input class="form-control" type="text" id="mensagemTitulo" name="titulo" maxlength="100" value="<%= mensagemForm.titulo %>" placeholder="Digite o título da mensagem" required>
                                 </div>
                             </div>
 
@@ -120,7 +120,7 @@
                                 <span class="field-icon" aria-hidden="true"><i class="bi bi-chat-left-text-fill"></i></span>
                                 <div>
                                     <label for="mensagemConteudo"></label>
-                                    <textarea class="form-control" id="mensagemConteudo" name="conteudo" maxlength="1000" placeholder="Digite o conteúdo da mensagem"><%= mensagemForm.conteudo %></textarea>
+                                    <textarea class="form-control" id="mensagemConteudo" name="conteudo" maxlength="2500" placeholder="Digite o conteúdo da mensagem"><%= mensagemForm.conteudo %></textarea>
                                 </div>
                             </div>
                             <div class="message-drop-zone" id="messageDropZone" role="button" tabindex="0" aria-label="Selecionar ou arrastar arquivos">

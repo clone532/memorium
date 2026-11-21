@@ -67,7 +67,7 @@
                             <span class="field-icon" aria-hidden="true"><i class="bi bi-card-text"></i></span>
                             <div>
                                 <label for="nomePlano">Nome do Plano</label>
-                                <input type="text" class="form-control" id="nomePlano" name="nomePlano" placeholder="Digite o nome do plano" required value="<%= planoParaEditar ? planoParaEditar.nomePlano : '' %>">
+                                <input type="text" class="form-control" id="nomePlano" name="nomePlano" maxlength="80" placeholder="Digite o nome do plano" required value="<%= planoParaEditar ? planoParaEditar.nomePlano : '' %>">
                             </div>
                         </div>
                         <div class="config-field">
@@ -106,7 +106,7 @@
                         </div>
                         <label class="records-search">
                             <i class="bi bi-search" aria-hidden="true"></i>
-                            <input id="planoSearch" type="search" placeholder="Buscar por nome ou valor..." aria-label="Buscar planos">
+                            <input id="planoSearch" type="search" maxlength="100" placeholder="Buscar por nome ou valor..." aria-label="Buscar planos">
                         </label>
                     </header>
                     <div class="records-table-wrap">

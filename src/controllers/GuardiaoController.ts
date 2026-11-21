@@ -11,6 +11,61 @@ import { Guardiao } from "../models/Guardiao";
 import { Notificacao } from "../models/Notificacao";
 
 export class GuardiaoController {
+    static async gerarCodigoConvite(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idUsuario = Number(usuario?.id);
+        if (!Number.isSafeInteger(idUsuario) || idUsuario <= 0) {
+            return res.status(401).json({ erro: 'Sessão inválida.' });
+        }
+
+        const codigo = await Usuario.gerarCodigoConvite(idUsuario);
+        return res.json({ codigo });
+    }
+
+    static async vincularPorCodigoConvite(req: Request, res: Response) {
+        const guardiaoSessao = (req.session as any).usuario;
+        const codigo = typeof req.body.codigo === 'string' ? req.body.codigo.trim() : '';
+        if (!/^\d{6}$/.test(codigo)) {
+            return res.status(400).json({ erro: 'Informe o código de convite com 6 dígitos.' });
+        }
+
+        const usuarioEncontrado = await Usuario.buscarPorCodigoConvite(codigo);
+        if (!usuarioEncontrado) {
+            return res.status(404).json({ erro: 'Código inválido, expirado ou não encontrado.' });
+        }
+        if (Number(usuarioEncontrado.id) === Number(guardiaoSessao.id)) {
+            return res.status(400).json({ erro: 'Você não pode vincular este código a si mesmo.' });
+        }
+
+        const resultado = await UsuarioGuardiao.solicitarVinculo(
+            Number(usuarioEncontrado.id),
+            {
+                nome: guardiaoSessao.nome,
+                email: guardiaoSessao.email,
+                numero: guardiaoSessao.numero || ''
+            }
+        );
+
+        if (resultado.estado === 'confirmado') {
+            return res.status(409).json({ erro: 'Este usuário já possui um vínculo confirmado com você.' });
+        }
+
+        await Notificacao.criarSolicitacaoVinculo(
+            Number(usuarioEncontrado.id),
+            'Solicitação de vínculo',
+            `${guardiaoSessao.nome} solicitou vínculo como seu guardião.`,
+            resultado.idVinculo
+        );
+
+        return res.json({
+            sucesso: true,
+            usuario: usuarioEncontrado.nome,
+            mensagem: resultado.estado === 'pendente'
+                ? 'A solicitação já estava pendente.'
+                : 'Solicitação enviada ao usuário.'
+        });
+    }
+
     static async carregarSolicitarVinculo(req: Request, res: Response) {
         const usuario = (req.session as any).usuario;
         const email = typeof req.query.email === 'string' ? req.query.email.trim().toLowerCase() : '';

@@ -107,8 +107,8 @@ export class MensagemController {
 
         const data = rawDataEnvio === undefined || rawDataEnvio === '' ? null : new Date(rawDataEnvio);
         if (
-            typeof titulo !== 'string' || !titulo.trim() || titulo.trim().length > 255
-            || typeof conteudo !== 'string' || conteudo.length > 20000
+            typeof titulo !== 'string' || !titulo.trim() || titulo.trim().length > 100
+            || typeof conteudo !== 'string' || conteudo.length > 2500
             || (!conteudo.trim() && files.length === 0)
             || destinatarios.length === 0
             || new Set(destinatarios).size !== destinatarios.length

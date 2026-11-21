@@ -25,7 +25,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
               <div>
                 <label for="destinatarioNome">Nome</label>
-                <input type="text" class="form-control" id="destinatarioNome" name="nome" placeholder="Digite o nome completo" required value="<%= destinatarioForm.nome %>">
+                <input type="text" class="form-control" id="destinatarioNome" name="nome" maxlength="100" placeholder="Digite o nome completo" required value="<%= destinatarioForm.nome %>">
               </div>
             </div>
 
@@ -33,7 +33,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
               <div>
                 <label for="destinatarioEmail">Email</label>
-                <input type="email" class="form-control" id="destinatarioEmail" name="email" placeholder="email@example.com" required value="<%= destinatarioForm.email %>">
+                <input type="email" class="form-control" id="destinatarioEmail" name="email" maxlength="150" placeholder="email@example.com" required value="<%= destinatarioForm.email %>">
               </div>
             </div>
 
@@ -41,7 +41,7 @@
               <span class="field-icon" aria-hidden="true"><i class="bi bi-telephone-fill"></i></span>
               <div>
                 <label for="destinatarioTelefone">Telefone</label>
-                <input type="text" class="form-control" id="destinatarioTelefone" name="numero" placeholder="(00) 1234-1234" required value="<%= destinatarioForm.numero %>">
+                <input type="text" class="form-control" id="destinatarioTelefone" name="numero" maxlength="20" placeholder="(00) 1234-1234" required value="<%= destinatarioForm.numero %>">
               </div>
             </div>
 

@@ -43,7 +43,7 @@ export class BiografiaController {
                 return res.status(404).send("Perfil não encontrado.");
             }
 
-            if ((!conteudo && !arquivo) || conteudo.length > 5000) {
+            if ((!conteudo && !arquivo) || conteudo.length > 2000) {
                 if (arquivo) {
                     await removerArquivo(arquivo.path);
                 }

@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomInt } from "crypto";
 import { connection } from "../infra/Connection";
 import { TipoUsuario } from "./TipoUsuario";
 
@@ -62,6 +63,84 @@ export class Usuario {
                 usuario.privacidadeVersaoLida ?? null
             ]
         );
+    }
+
+    static async gerarCodigoConvite(id: number) {
+        const atual = await connection.query(
+            `SELECT codigo_convite
+             FROM Usuario
+             WHERE id = $1
+               AND codigo_convite IS NOT NULL
+               AND codigo_convite_expira_em > CURRENT_TIMESTAMP
+             LIMIT 1`,
+            [id]
+        );
+        if (atual.rows[0]?.codigo_convite) {
+            return atual.rows[0].codigo_convite as string;
+        }
+
+        for (let tentativa = 0; tentativa < 20; tentativa++) {
+            const codigo = randomInt(0, 1_000_000).toString().padStart(6, "0");
+            try {
+                const resultado = await connection.query(
+                    `UPDATE Usuario
+                     SET codigo_convite = $1,
+                         codigo_convite_expira_em = CURRENT_TIMESTAMP + INTERVAL '24 hours'
+                     WHERE id = $2
+                     RETURNING codigo_convite`,
+                    [codigo, id]
+                );
+                if (resultado.rows[0]?.codigo_convite) {
+                    return resultado.rows[0].codigo_convite as string;
+                }
+            } catch (error) {
+                if (
+                    error && typeof error === "object"
+                    && "code" in error && error.code === "23505"
+                ) {
+                    continue;
+                }
+                throw error;
+            }
+        }
+
+        throw new Error("Não foi possível gerar um código de convite único.");
+    }
+
+    static async buscarPorCodigoConvite(codigo: string) {
+        const codigoNormalizado = codigo.trim();
+        if (!/^\d{6}$/.test(codigoNormalizado)) {
+            return null;
+        }
+
+        const { rows } = await connection.query(
+            `SELECT u.id, u.nome, u.email, u.senha, u.numero, u.imagem,
+                    u.dataNasc, u.estaMorto,
+                    t.id AS id_tipo, t.nome AS nome_tipo, t.descricao
+             FROM Usuario u
+             JOIN tipo_usuario t ON u.tipoUsuario = t.id
+             WHERE u.codigo_convite = $1
+               AND u.codigo_convite_expira_em > CURRENT_TIMESTAMP
+               AND t.nome IN ('USUARIO', 'ADMIN')
+             LIMIT 1`,
+            [codigoNormalizado]
+        );
+
+        if (!rows[0]) {
+            return null;
+        }
+
+        return new Usuario({
+            id: rows[0].id,
+            nome: rows[0].nome,
+            email: rows[0].email,
+            senha: rows[0].senha,
+            numero: rows[0].numero,
+            dataNasc: rows[0].datanasc,
+            estaMorto: rows[0].estamorto,
+            tipoUsuario: new TipoUsuario(rows[0].id_tipo, rows[0].nome_tipo, rows[0].descricao),
+            imagem: rows[0].imagem
+        });
     }
 
     static async registrarAceiteDocumentos(id: number, termosVersao: string, privacidadeVersao: string) {

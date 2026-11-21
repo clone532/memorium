@@ -53,7 +53,7 @@
             <span class="field-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
             <div>
               <label for="nome">Nome</label>
-              <input class="form-control" type="text" name="nome" id="nome" value="<%= usuarioPerfil.nome %>">
+              <input class="form-control" type="text" name="nome" id="nome" maxlength="100" value="<%= usuarioPerfil.nome %>">
             </div>
           </div>
 
@@ -61,7 +61,7 @@
             <span class="field-icon" aria-hidden="true"><i class="bi bi-envelope-fill"></i></span>
             <div>
               <label for="email">Email</label>
-              <input class="form-control" type="email" name="email" id="email" value="<%= usuarioPerfil.email %>">
+              <input class="form-control" type="email" name="email" id="email" maxlength="150" value="<%= usuarioPerfil.email %>">
             </div>
           </div>
 
@@ -69,7 +69,7 @@
             <span class="field-icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
             <div>
               <label for="senha">Nova senha (opcional)</label>
-              <input class="form-control" type="password" name="senha" id="senha" placeholder="Deixe em branco para manter a senha atual" value="" autocomplete="new-password">
+              <input class="form-control" type="password" name="senha" id="senha" maxlength="25" placeholder="Deixe em branco para manter a senha atual" value="" autocomplete="new-password">
             </div>
           </div>
 

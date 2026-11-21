@@ -14,6 +14,7 @@
     "migrate:message-system": "node scripts/migrate-message-system.js",
     "migrate:notifications": "node scripts/migrate-notifications.js",
     "migrate:legal-consent": "node scripts/migrate-legal-consent.js",
+    "migrate:invite-codes": "node scripts/migrate-invite-codes.js",
     "test:email": "node scripts/test-email.js"
   },
   "keywords": [],

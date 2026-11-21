@@ -13,6 +13,8 @@ guardiaoRoutes.post('/guardiao/falecimento/confirmar', asyncExecutor(GuardiaoCon
 
 // Área e ações disponíveis para usuários autenticados.
 guardiaoRoutes.get('/guardiao/gerenciar', authMiddleware(['USUARIO', 'GUARDIAO', 'ADMIN']), asyncExecutor(GuardiaoController.carregarGerenciar));
+guardiaoRoutes.post('/api/convites/codigo', authMiddleware(['USUARIO', 'ADMIN']), asyncExecutor(GuardiaoController.gerarCodigoConvite));
+guardiaoRoutes.post('/api/convites/vincular', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.vincularPorCodigoConvite));
 guardiaoRoutes.get('/guardiao/listarTodos', authMiddleware(['ADMIN']), asyncExecutor(GuardiaoController.carregarListarTodos));
 guardiaoRoutes.get('/guardiao/listar', authMiddleware(['USUARIO', 'GUARDIAO', 'ADMIN']), asyncExecutor(GuardiaoController.carregarListar));
 guardiaoRoutes.get('/guardiao/solicitarVinculo', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarSolicitarVinculo));

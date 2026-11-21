@@ -294,6 +294,7 @@
                         <div>
                           <label for="nomeTipo">Nome do Tipo</label>
                           <input type="text" class="form-control" id="nomeTipo" name="nomeTipo"
+                            maxlength="25"
                             placeholder="Ex: Texto, Áudio ou Vídeo"
                             value="<%= tipoMensagemParaEditar ? tipoMensagemParaEditar.nomeTipo : '' %>" required>
                         </div>
@@ -326,7 +327,7 @@
                       <label class="type-list-search">
                         <i class="bi bi-search" aria-hidden="true"></i>
                         <input id="tipoMensagemSearch" type="search" placeholder="Buscar tipo..."
-                          aria-label="Buscar tipos de mensagem">
+                          maxlength="100" aria-label="Buscar tipos de mensagem">
                       </label>
                     </header>
                     <div class="type-list-table-wrap">

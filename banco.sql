@@ -36,8 +36,14 @@ create table Usuario (
 	termos_aceito_em TIMESTAMPTZ,
 	privacidade_versao_lida VARCHAR(20),
 	privacidade_lida_em TIMESTAMPTZ,
+	codigo_convite CHAR(6),
+	codigo_convite_expira_em TIMESTAMPTZ,
 	tipoUsuario INT NOT NULL REFERENCES tipo_usuario(id)
 );
+
+CREATE UNIQUE INDEX usuario_codigo_convite_unico
+	ON Usuario (codigo_convite)
+	WHERE codigo_convite IS NOT NULL;
 
 ALTER TABLE Destinatario
 	ADD COLUMN fkUsuario INT NOT NULL REFERENCES Usuario(id);
