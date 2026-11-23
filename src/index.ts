@@ -19,6 +19,7 @@ import { transporter } from './infra/mail/NodeMailer';
 import { iniciarWorkerMensagens } from './infra/mail/MensagemDeliveryWorker';
 import { legalRoutes } from './routes/LegalRoutes';
 import { legalConsentMiddleware } from './middlewares/LegalConsentMiddleware';
+import { feedbackRoutes } from './routes/FeedbackRoutes';
 
 dotenv.config();
 const sessionSecret = process.env.SESSION_SECRET;
@@ -124,6 +125,7 @@ app.use(legalConsentMiddleware);
 
 // NÃO ESQUECER DO APP.USE!!! IMPORTANTÍSSIMO PARA QUE AS ROTAS SEJAM RECONHECIDAS PELO EXPRESS
 app.use(legalRoutes);
+app.use(feedbackRoutes);
 app.use(assinaturaRoutes);
 app.use(biografiaRoutes);
 app.use(comentarioRoutes);

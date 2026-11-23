@@ -10,9 +10,21 @@
     sidebar.classList.add('hidden');
   }
 
+  function atualizarEstadoBotaoSidebar() {
+    if (!toggleBtn || !sidebar) return;
+
+    const expanded = !sidebar.classList.contains('hidden');
+    toggleBtn.classList.toggle('sidebar-expanded', expanded);
+    toggleBtn.setAttribute('aria-pressed', String(expanded));
+  }
+
+  atualizarEstadoBotaoSidebar();
+
   toggleBtn?.addEventListener('click', () => {
+    if (!sidebar) return;
     sidebar.classList.toggle('hidden');
     document.body.classList.toggle('sidebar-hidden', sidebar.classList.contains('hidden'));
+    atualizarEstadoBotaoSidebar();
   });
 
   function atualizarPosicaoSidebar() {

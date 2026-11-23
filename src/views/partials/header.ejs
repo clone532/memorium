@@ -99,6 +99,19 @@
     color: #fff;
   }
 
+  .navbar #toggleSidebar {
+    transition: background .3s ease, border-color .3s ease, color .3s ease;
+  }
+
+  .navbar #toggleSidebar.sidebar-expanded,
+  .navbar #toggleSidebar.sidebar-expanded:hover,
+  .navbar #toggleSidebar.sidebar-expanded:focus-visible {
+    border-color: transparent;
+    background: linear-gradient(105deg, #8250ed, #be47dc);
+    color: #fff;
+    box-shadow: none;
+  }
+
   .navbar .notification-toggle {
     transition: background .3s ease, border-color .3s ease, color .3s ease;
   }

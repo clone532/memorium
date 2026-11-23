@@ -359,6 +359,26 @@
                 color: var(--perfil-muted);
             }
 
+            .publicacao-header-action,
+            .mural-header-action {
+                margin-left: auto;
+                flex-shrink: 0;
+            }
+
+            .botao-excluir-conteudo {
+                border: 1px solid #dc3545;
+                background: #fff;
+                color: #dc3545;
+                padding: 7px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+
+            .botao-excluir-conteudo:hover {
+                background: #dc3545;
+                color: #fff;
+            }
+
             .publicacao p {
                 color: #39364c;
                 line-height: 1.6;
@@ -622,6 +642,19 @@
                                                         <strong><%= usuarioPerfil.nome %></strong>
                                                         <small><%= new Date(publicacao.data_hora).toLocaleString('pt-BR') %></small>
                                                     </div>
+                                                    <% if (ehProprioPerfil || usuario.tipo === 'ADMIN') { %>
+                                                        <form class="publicacao-header-action"
+                                                            action="/perfilUsuario/perfil/<%= usuarioPerfil.id %>/biografia/<%= publicacao.id %>/excluir"
+                                                            method="post"
+                                                            data-swal-delete
+                                                            data-swal-title="Deseja excluir esta publicação da biografia?">
+                                                            <button type="submit" class="botao-excluir-conteudo botao-personalizado"
+                                                                aria-label="Excluir publicação da biografia"
+                                                                title="Excluir publicação">
+                                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                            </button>
+                                                        </form>
+                                                    <% } %>
                                                 </div>
                                                 <% if (publicacao.conteudo) { %>
                                                     <p><%= publicacao.conteudo %></p>
@@ -692,6 +725,19 @@
                                                     <strong><%= comentario.autor_nome %></strong>
                                                     <small><%= new Date(comentario.datahora).toLocaleString('pt-BR') %></small>
                                                 </div>
+                                                <% if (ehProprioPerfil || usuario.tipo === 'ADMIN' || Number(usuario.id) === Number(comentario.fk_usuario)) { %>
+                                                    <form class="mural-header-action"
+                                                        action="/perfilUsuario/perfil/<%= usuarioPerfil.id %>/comentarios/<%= comentario.id %>/excluir"
+                                                        method="post"
+                                                        data-swal-delete
+                                                        data-swal-title="Deseja excluir este comentário do mural?">
+                                                        <button type="submit" class="botao-excluir-conteudo botao-personalizado"
+                                                            aria-label="Excluir comentário do mural"
+                                                            title="Excluir comentário">
+                                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                                        </button>
+                                                    </form>
+                                                <% } %>
                                             </div>
                                             <p class="mural-texto"><%= comentario.conteudo %></p>
                                         </article>
@@ -701,6 +747,7 @@
                         </div>
                 </div>
                 <%- include('../../partials/scripts') %>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
                     <script>
                         const formularioBiografia = document.getElementById("formBiografia");
@@ -762,6 +809,26 @@
                                 }
                             });
                         }
+
+                        document.querySelectorAll("[data-swal-delete]").forEach((formExcluir) => {
+                            formExcluir.addEventListener("submit", (event) => {
+                                event.preventDefault();
+                                Swal.fire({
+                                    title: formExcluir.dataset.swalTitle,
+                                    text: "Esta ação não poderá ser desfeita.",
+                                    icon: "warning",
+                                    backdrop: false,
+                                    showCancelButton: true,
+                                    confirmButtonText: "Sim, excluir",
+                                    cancelButtonText: "Cancelar",
+                                    confirmButtonColor: "#dc3545"
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        formExcluir.submit();
+                                    }
+                                });
+                            });
+                        });
 
                         /* ABAS */
 

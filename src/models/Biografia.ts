@@ -52,4 +52,26 @@ export class Biografia {
 
         return rows;
     }
+
+    static async buscarPorId(id: number) {
+        const { rows } = await connection.query(
+            `SELECT id, anexoUrl AS anexo_url, fkUsuario AS fk_usuario
+             FROM Biografia
+             WHERE id = $1`,
+            [id]
+        );
+
+        return rows[0] || null;
+    }
+
+    static async deletarPorUsuario(id: number, fkUsuario: number) {
+        const { rows } = await connection.query(
+            `DELETE FROM Biografia
+             WHERE id = $1 AND fkUsuario = $2
+             RETURNING anexoUrl AS anexo_url`,
+            [id, fkUsuario]
+        );
+
+        return rows[0] || null;
+    }
 }

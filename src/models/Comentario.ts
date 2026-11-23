@@ -30,7 +30,7 @@ export class Comentario {
 
     static async buscarPorMural(fkMural: number) {
         const { rows } = await connection.query(
-            `SELECT c.id, c.dataHora, c.conteudo, c.fkMural, c.fkUsuario,
+            `SELECT c.id, c.dataHora, c.conteudo, c.fkMural AS fk_mural, c.fkUsuario AS fk_usuario,
                     u.nome AS autor_nome, u.imagem AS autor_imagem
              FROM Comentario c
              JOIN Usuario u ON u.id = c.fkUsuario
@@ -40,6 +40,24 @@ export class Comentario {
         );
 
         return rows;
+    }
+
+    static async buscarPorId(id: number) {
+        const { rows } = await connection.query(
+            `SELECT c.id, c.fkMural AS fk_mural, c.fkUsuario AS fk_usuario
+             FROM Comentario c
+             WHERE c.id = $1`,
+            [id]
+        );
+
+        return rows[0] || null;
+    }
+
+    static async deletarPorId(id: number) {
+        await connection.query(
+            `DELETE FROM Comentario WHERE id = $1`,
+            [id]
+        );
     }
 
     static async deletarComentario(id: number, fkUsuario: number) {

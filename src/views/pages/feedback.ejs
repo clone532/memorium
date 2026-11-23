@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head') %>
+    <%- include('../partials/formataçãoFormulario') %>
+        <style>
+            body {
+                background-color: #eee1f4 !important;
+                background-image: url("/IMGS/gallery/background.png");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                font-family: Georgia, serif;
+            }
+            .feedback {
+                min-height: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                width: 100%;
+                margin-left: 0;
+                box-sizing: border-box;
+            }
+            .conteudo {
+                width: min(100%, 760px);
+                box-sizing: border-box;
+                text-align: center;
+                margin-top: -20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .config-form {
+                width: min(100%, 640px);
+                padding-top: 2px;
+                padding-bottom: 8px;
+            }
+            .config-field {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+            .config-field > div {
+                width: 100%;
+            }
+            .config-field textarea.form-control {
+                width: 100%;
+                min-height: 220px;
+                padding: 12px 14px;
+                line-height: 1.5;
+                resize: vertical;
+            }
+            .config-form h5 {
+                margin: 4px 0;
+                font-size: 1rem;
+            }
+            .config-form p {
+                margin: 2px 0 6px;
+            }
+            .config-field {
+                margin-bottom: 6px;
+            }
+            .config-form .config-footer {
+                margin-top: 6px;
+                margin-bottom: 6px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+            @media (max-width: 575px) {
+                .conteudo {
+                    padding: 0 12px;
+                }
+                .config-field textarea.form-control {
+                    min-height: 180px;
+                }
+            }
+        </style>
+
+        <body class="bg-light sidebar-hidden">
+            <%- include('../partials/header') %>
+                <div class="container-fluid py-2 d-flex">
+                    <%- include('../partials/sidebar') %>
+                        <main class="feedback">
+                            <div class="conteudo">
+                                <h1>Feedback</h1>
+                                <p>Deixe sua sugestão ou reclamação aqui.</p>
+                                <% if (feedbackEnviado) { %>
+                                    <div class="alert alert-success" role="status">Feedback enviado com sucesso.</div>
+                                <% } %>
+                                <% if (erroFeedback) { %>
+                                <div class="alert alert-danger" role="alert">
+                                    <%= erroFeedback %>
+                                </div>
+                                <% } %>
+                                <form class="config-form" action="/feedback" method="POST">
+                                    <div class="config-field">
+                                        <div>
+                                        <label for="feedback" class="form-label">Mensagem:</label>
+                                        <textarea class="form-control" id="feedback" name="feedback" maxlength="2000" placeholder="Digite o conteúdo do seu feedback"
+                                            rows="5" required><%= feedbackTexto %></textarea>
+                                        </div>
+                                    </div>
+                                <button type="submit" class="btn config-savebtn config-save">Enviar</button>
+                                </form>
+                            </div>
+                        </main>
+                </div>
+                <%- include('../partials/scripts') %>
+        </body>
+
+</html>

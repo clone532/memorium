@@ -6,11 +6,7 @@ import { uploadPublicacao } from "../middlewares/UploadMiddleware";
 
 const biografiaRoutes = Router();
 
-biografiaRoutes.post(
-    "/perfilUsuario/perfil/:id/biografia",
-    authMiddleware(["ADMIN", "USUARIO", "GUARDIAO"]),
-    uploadPublicacao,
-    asyncExecutor(BiografiaController.criarPublicacao)
-);
+biografiaRoutes.post("/perfilUsuario/perfil/:id/biografia", authMiddleware(["ADMIN", "USUARIO", "GUARDIAO"]), uploadPublicacao, asyncExecutor(BiografiaController.criarPublicacao));
+biografiaRoutes.post("/perfilUsuario/perfil/:id/biografia/:publicacaoId/excluir", authMiddleware(["ADMIN", "USUARIO", "GUARDIAO"]), asyncExecutor(BiografiaController.deletarPublicacao));
 
 export { biografiaRoutes };

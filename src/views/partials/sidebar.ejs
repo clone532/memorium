@@ -1,150 +1,56 @@
-<div class="sidebar bg-light text-black p-3" id="sidebar" style="font-family: Georgia, serif;">
-  <h5><i class="bi bi-house-door-fill me-2 text-black" aria-hidden="true"></i>Menu</h5>
-
-  <ul class="nav nav-pills flex-column">
-
-    <li class="nav-item">
-      <% if(usuario.tipo === 'ADMIN')  { %>
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#usuarioMenu">
-          <i class="bi bi-person-fill me-2 text-black" aria-hidden="true"></i>Meu Perfil
-        </a>
-
-        <div class="collapse show ms-3" id="usuarioMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/perfilUsuario/perfil/<%= usuario.id %>">
-                 Perfil
-              </a>
-            </li>
-          </ul>
-        </div>
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#adminMenu">
-          <i class="bi bi-shield-lock-fill me-2 text-black" aria-hidden="true"></i>Menu do Admin
-        </a>
-        <div class="collapse show ms-3" id="adminMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/usuario/listar">
-                 Usuários
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/assinatura/cadastrarAssinatura">
-                 Assinatura
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/destinatario/cadastrarListar">
-                 Destinatário
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/plano/cadastrarListarPlanos">
-                 Planos
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#guardiaoMenu">
-          <i class="bi bi-shield-fill me-2 text-black" aria-hidden="true"></i>Menu do Guardião
-        </a>
-        <div class="collapse show ms-3" id="guardiaoMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/guardiao/gerenciar">
-                 Gerenciar
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#mensagemMenu">
-          <i class="bi bi-envelope-fill me-2 text-black" aria-hidden="true"></i>Mensagens
-        </a>
-        <div class="collapse show ms-3" id="mensagemMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/mensagem/gerenciar">
-                 Gerenciar
-              </a>
-            </li>
-          </ul>
-        </div>
-        
-      <% } else { %>
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#usuarioMenu">
-          <i class="bi bi-person-fill me-2 text-black" aria-hidden="true"></i>Meu Perfil
-        </a>
-
-        <div class="collapse show ms-3" id="usuarioMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/perfilUsuario/perfil/<%= usuario.id %>">
-                 Perfil
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/destinatario/cadastrarListar">
-                 Destinatário
-              </a>
-            </li>
-          </ul>
-        </div>
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#guardiaoMenu">
-          <i class="bi bi-shield-fill me-2 text-black" aria-hidden="true"></i>Menu do Guardião
-        </a>
-        <div class="collapse show ms-3" id="guardiaoMenu">
-          <ul class="nav flex-column">
-            
-            <% if (usuario.tipo === 'GUARDIAO') { %>
-              <li class="nav-item">
-              <a class="nav-link text-black" href="/guardiao/gerenciar">
-                 Gerenciar
-              </a>
-            </li>
-            <% } else { %>
-              <li class="nav-item">
-              <a class="nav-link text-black" href="/guardiao/gerenciar">
-                 Gerenciar
-              </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-black" href="/guardiao/cadastrar">Criar conta de guardião</a>
-              </li>
-            <% } %>
-          </ul>
-        </div>
-        <a class="nav-link text-black" data-bs-toggle="collapse" href="#mensagemMenu">
-          <i class="bi bi-envelope-fill me-2 text-black" aria-hidden="true"></i>Mensagens
-        </a>
-        <div class="collapse show ms-3" id="mensagemMenu">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-black" href="/mensagem/gerenciar">
-                 Gerenciar
-              </a>
-            </li>
-          </ul>
-        </div>
-
-      <% } %>
-    </li>
-
-  </ul>
-
-  <div class="sidebar-plans">
-    <a class="nav-link text-black" data-bs-toggle="collapse" href="#planosMenu">
-      <i class="bi bi-credit-card-fill me-2 text-black" aria-hidden="true"></i>Planos
+<aside class="sidebar bg-dark text-black p-3" id="sidebar" aria-label="Menu lateral">
+  <nav class="sidebar-nav" aria-label="Navegação principal">
+    <a class="sidebar-link" href="/perfilUsuario/perfil/<%= usuario.id %>">
+      <i class="bi bi-person" aria-hidden="true"></i>
+      <span>Perfil</span>
     </a>
-    <div class="collapse show ms-3" id="planosMenu">
-      <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link text-black" href="/plano/planos">
-            Planos disponíveis
-          </a>
-        </li>
-      </ul>
-    </div>
+
+    <a class="sidebar-link" href="/guardiao/gerenciar">
+      <i class="bi bi-shield" aria-hidden="true"></i>
+      <span>Guardião</span>
+    </a>
+
+    <a class="sidebar-link" href="/mensagem/gerenciar">
+      <i class="bi bi-envelope" aria-hidden="true"></i>
+      <span>Mensagem</span>
+    </a>
+
+    <% if (usuario.tipo === 'ADMIN') { %>
+      <div class="sidebar-admin-divider" aria-hidden="true"></div>
+      <div class="sidebar-admin-title">Menu do admin</div>
+      <a class="sidebar-link" href="/usuario/listar">
+        <i class="bi bi-people" aria-hidden="true"></i>
+        <span>Usuários</span>
+      </a>
+      <a class="sidebar-link" href="/destinatario/cadastrarListar">
+        <i class="bi bi-person-plus" aria-hidden="true"></i>
+        <span>Destinatários</span>
+      </a>
+      <a class="sidebar-link" href="/assinatura/cadastrarAssinatura">
+        <i class="bi bi-credit-card" aria-hidden="true"></i>
+        <span>Assinatura</span>
+      </a>
+      <a class="sidebar-link" href="/plano/cadastrarListarPlanos">
+        <i class="bi bi-wallet2" aria-hidden="true"></i>
+        <span>Planos</span>
+      </a>
+    <% } else { %>
+      <a class="sidebar-link" href="/destinatario/cadastrarListar">
+        <i class="bi bi-person-plus" aria-hidden="true"></i>
+        <span>Destinatário</span>
+      </a>
+    <% } %>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <a class="sidebar-plan-card" href="/plano/planos" aria-label="Explorar planos Memorium">
+      <img src="/IMGS/gallery/sidebarProp.png" alt="Expanda seus horizontes e explore os planos Memorium">
+    </a>
+    <div class="sidebar-admin-divider" aria-hidden="true"></div>
+    <br>
+    <a class="sidebar-feedback" href="/feedback" aria-label="Abrir página de feedback">
+      <i class="bi bi-chat-dots" aria-hidden="true"></i>
+      <span>Feedback</span>
+    </a>
   </div>
-</div>
+</aside>

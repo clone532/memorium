@@ -4,6 +4,37 @@ import { Mural } from "../models/Mural";
 import { Usuario } from "../models/Usuario";
 
 export class ComentarioController {
+    static async deletarComentario(req: Request, res: Response) {
+        const usuarioSessao = (req.session as any).usuario;
+        const idPerfil = Number(req.params.id);
+        const idComentario = Number(req.params.comentarioId);
+
+        if (!Number.isSafeInteger(idPerfil) || idPerfil <= 0
+            || !Number.isSafeInteger(idComentario) || idComentario <= 0) {
+            return res.status(404).send("Comentário não encontrado.");
+        }
+
+        const comentario = await Comentario.buscarPorId(idComentario);
+        if (!comentario) {
+            return res.status(404).send("Comentário não encontrado.");
+        }
+
+        const mural = await Mural.buscarPorUsuario(idPerfil);
+        if (!mural || Number(comentario.fk_mural) !== Number(mural.id)) {
+            return res.status(404).send("Comentário não encontrado.");
+        }
+
+        const podeExcluir = usuarioSessao.tipo === "ADMIN"
+            || Number(usuarioSessao.id) === idPerfil
+            || Number(usuarioSessao.id) === Number(comentario.fk_usuario);
+        if (!podeExcluir) {
+            return res.status(403).send("Você não pode excluir este comentário.");
+        }
+
+        await Comentario.deletarPorId(idComentario);
+        return res.redirect(`/perfilUsuario/perfil/${idPerfil}?aba=mural#mural`);
+    }
+
     static async carregarComentarios(req: Request, res: Response) {
         const usuario = (req.session as any).usuario;
         return res.redirect(`/perfilUsuario/perfil/${usuario.id}#mural`);
