@@ -34,7 +34,8 @@
       <section class="config-page">
         <header class="config-header">
           <% if (usuarioPerfil.imagem) { %>
-            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="config-avatar">
+            <img src="/uploads/<%= usuarioPerfil.imagem %>" class="config-avatar"
+              onerror="const fallback = document.createElement('i'); fallback.className = 'bi bi-person-circle config-avatar'; fallback.setAttribute('aria-hidden', 'true'); this.replaceWith(fallback);">
           <% } else { %>
             <i class="bi bi-person-circle config-avatar" aria-hidden="true"></i>
           <% } %>

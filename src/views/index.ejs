@@ -136,7 +136,7 @@
       gap: 22px;
     }
     .botao {
-      width: 190px;
+      width: 250px;
       padding: 15px 25px;
       border-radius: 30px;
       text-decoration: none;
@@ -144,15 +144,10 @@
       font-weight: 600;
       transition: 0.3s;
     }
-    .criar-conta {
-      background: #7131bb;
-      color: white;
+    .rolar {
+      background: #ffffff;
+      color: rgb(135, 49, 227);
       border: 2px solid #7131bb;
-    }
-    .criar-conta:hover {
-      background: #59249b;
-      border-color: #59249b;
-      transform: translateY(-3px);
     }
     .fazer-login {
       background: white;
@@ -211,11 +206,12 @@
       }
 
       .principal {
-        padding: 35px 15px;
+        min-height: auto;
+        padding: 60px 25px 20px;
       }
 
       .conteudo {
-        padding: 25px 10px;
+        padding: 45px 45px 0;
       }
 
       .titulo {
@@ -249,6 +245,118 @@
       .botao {
         width: 230px;
       }
+    }
+    
+    img {
+      border-radius: 8px;
+    }
+
+    :root {
+      --scroll-height: 5px;
+    }
+
+.section-2 {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;          /* no lugar do clip-path; não quebra as animações */
+  background: #000;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.section-2-bg {
+  position: absolute;
+  inset: 0;                /* ocupa a seção inteira */
+  z-index: -1;
+  pointer-events: none;
+}
+
+.section-2-bg video {
+  position: sticky;        /* acompanha a tela só dentro da seção */
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  filter: brightness(0.5);
+  pointer-events: none;    /* some com os botões do Chrome */
+}
+
+.section-2-conteudo {
+  padding: 4rem 1.5rem;
+}
+
+.section-2 .gif-container img {
+  max-width: 100%;
+  height: auto;
+}
+
+.section-2 .subtitulo { color: #e9d5ff; }
+.section-2 .descricao { color: #fff; }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        translate: -100vw 0;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    @keyframes scroll {
+      from{
+        scale: 0 1;
+      }
+      to{
+        scale: 1 1;
+      }
+    }
+
+    @keyframes reveal {
+     from{
+      opacity: 0;
+      clip-path: inset(45% 20% 45% 20%);
+     }
+     to{
+      opacity: 1;
+      clip-path: inset(0% 0% 0% 0%);
+     }
+    }
+
+    .animado {
+      animation: appear 1ms ease-in-out;
+      animation-timeline: view();
+      animation-range: cover 0% cover 50%;
+    }
+
+    .c-indicator {
+      animation: scroll 1ms ease-in-out;
+      animation-timeline: scroll();
+      background-color: #be47dc;
+      transform-origin: left;
+      height: var(--scroll-height);
+      inset: 0;
+      position: fixed;
+    }
+
+    .gif-container {
+      animation: reveal 1ms ease-in-out both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 50%;
+    }
+
+    .gif-lado-a-lado {
+      display: flex;
+      gap: 12px;
+      width: min(1100px, 95vw);
+      margin-inline: auto; 
+    }
+    .gif-lado-a-lado img {
+      flex: 1;
+      min-width: 0;
+      height: auto;
     }
   </style>
 
@@ -322,17 +430,81 @@
 
       <!-- BOTÕES -->
       <div class="botoes">
-        <a href="/usuario/logar" class="botao criar-conta">
-          Criar conta
-        </a>
-
-        <a href="/usuario/logar" class="botao fazer-login"> 
-          Login
+        <a class="botao rolar">
+          Role para descobrir ↓
         </a>
       </div>
+      <br>
+      <br>
     </section>
   </main>
+  <section class="section-2">
+      <div class="section-2-bg">
+        <video autoplay muted loop playsinline disablepictureinpicture e controlslist="nodownload noremoteplayback" poster="IMGS/gallery/poster.jpg">
+          <source src="IMGS/gallery/homepagebg.webm" type="video/webm">
+          <source src="IMGS/gallery/homepagebg.mp4" type="video/mp4">
+        </video>
+      </div>
 
+      <div class="section-2-conteudo">
+        <h2 class="subtitulo">
+          Primeiros passos
+        </h2>
+      <p class="descricao animado">
+        Faça seu cadastro com um nome de usuário, 
+        e-mail, senha e data de nascimento. 
+        Não se esqueça de ler os termos de uso e marcar 
+        as checkboxes de aceite. Em seguida, clique em "Cadastrar".
+      </p>
+      <div class="gif-container">
+        <img src="IMGS/gallery/cad.gif" alt="GIF">
+      </div>
+      <br>
+      <p class="descricao animado">
+        Para efetuar o login, insira seu e-mail e senha,
+        e clique em "Entrar".
+      </p>
+      <div class="gif-container">
+        <img src="IMGS/gallery/login.gif" alt="GIF">
+      </div>
+      <br>
+      <h2 class="subtitulo">
+        Personalizando seu perfil
+      </h2>
+      <p class="descricao animado">
+        Após logar, você pode personalizar seu perfil
+        adicionando uma foto de perfil, ou mudar o nome de usuário e a senha.
+      </p>
+      <div class="gif-container">
+        <img src="IMGS/gallery/edit.gif" alt="GIF">
+      </div>
+      <br>
+      <p class="descricao animado">
+        Na sua biografia, você conta a sua história, adicione suas fotos, vídeos
+        suas frases favoritas de filmes e séries e até mesmo suas músicas favoritas.
+      </p>
+      <div class="gif-container">
+        <img src="IMGS/gallery/biocoment.gif" alt="GIF">
+      </div>
+      <br>
+      <p class="descricao animado">
+        Explore todas as funcionalidades!
+      </p>
+      <div class="gif-container gif-lado-a-lado">
+        <img src="IMGS/gallery/01.gif" alt="GIF">
+        <img src="IMGS/gallery/02.gif" alt="GIF">
+        <img src="IMGS/gallery/03.gif" alt="GIF">
+        <img src="IMGS/gallery/04.gif" alt="GIF">
+      </div>
+      <br>
+      <br>
+        <div class="botoes">
+          <a href="#" class="botao rolar">
+            Voltar ao topo ⭡
+          </a>
+      </div>
+      </section>
+      <div class="c-indicator"></div>
   <!-- RODAPÉ -->
   <footer class="rodape">
     <h3>

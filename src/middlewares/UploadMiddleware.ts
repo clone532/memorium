@@ -53,7 +53,7 @@ function createUpload(mimeTypes: Set<string>, fileSize: number) {
     });
 }
 
-const avatarUpload = createUpload(imageMimeTypes, 2 * 1024 * 1024);
+const avatarUpload = createUpload(imageMimeTypes, 5 * 1024 * 1024);
 const publicationUpload = createUpload(publicationMimeTypes, 10 * 1024 * 1024);
 
 const messageUpload = multer({
@@ -280,7 +280,7 @@ export const uploadImagem = createUploadHandler(
     avatarUpload.single("imagem"),
     detectImageFormat,
     imageUploadError,
-    "A imagem deve ter no máximo 2 MB."
+    "A imagem deve ter no máximo 5 MB."
 );
 
 export const uploadPublicacao = createUploadHandler(

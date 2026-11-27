@@ -205,6 +205,88 @@ export class SolicitacaoFalecimento {
         }
     }
 
+    static async cancelarVoto(idUsuario: number, idVinculo: number): Promise<
+        | { estado: 'usuario_invalido' | 'guardiao_nao_vinculado' | 'falecimento_ja_confirmado' | 'solicitacao_nao_encontrada' | 'voto_nao_registrado' }
+        | { estado: 'voto_cancelado' }
+    > {
+        const client = await connection.connect();
+
+        try {
+            await client.query("BEGIN");
+            const usuario = await client.query(
+                `SELECT estamorto FROM usuario WHERE id = $1 FOR UPDATE`,
+                [idUsuario]
+            );
+            if (!usuario.rows[0]) {
+                await client.query("COMMIT");
+                return { estado: 'usuario_invalido' };
+            }
+            if (usuario.rows[0].estamorto) {
+                await client.query("COMMIT");
+                return { estado: 'falecimento_ja_confirmado' };
+            }
+
+            const vinculo = await client.query(
+                `SELECT id
+                 FROM usuario_guardiao
+                 WHERE id = $1 AND idusuario = $2 AND estado_vinculo = 'confirmado'
+                 FOR UPDATE`,
+                [idVinculo, idUsuario]
+            );
+            if (!vinculo.rows[0]) {
+                await client.query("COMMIT");
+                return { estado: 'guardiao_nao_vinculado' };
+            }
+
+            const solicitacao = await client.query(
+                `SELECT id
+                 FROM solicitacao_falecimento
+                 WHERE fkusuario = $1 AND status = 'aguardando_confirmacoes'
+                 FOR UPDATE`,
+                [idUsuario]
+            );
+            if (!solicitacao.rows[0]) {
+                await client.query("COMMIT");
+                return { estado: 'solicitacao_nao_encontrada' };
+            }
+
+            const voto = await client.query(
+                `SELECT id
+                 FROM confirmacao_falecimento
+                 WHERE fksolicitacao = $1
+                   AND fkusuarioguardiao = $2
+                   AND confirmado_em IS NOT NULL
+                 FOR UPDATE`,
+                [solicitacao.rows[0].id, idVinculo]
+            );
+            if (!voto.rows[0]) {
+                await client.query("COMMIT");
+                return { estado: 'voto_nao_registrado' };
+            }
+
+            await client.query(
+                `UPDATE confirmacao_falecimento
+                 SET confirmado_em = NULL, expira_em = CURRENT_TIMESTAMP
+                 WHERE id = $1`,
+                [voto.rows[0].id]
+            );
+            await client.query(
+                `UPDATE usuario_guardiao
+                 SET votoconfirma = FALSE
+                 WHERE id = $1`,
+                [idVinculo]
+            );
+
+            await client.query("COMMIT");
+            return { estado: 'voto_cancelado' };
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     static async buscarVinculoConfirmado(email: string, idUsuario: number): Promise<number | null> {
         const { rows } = await connection.query(
             `SELECT ug.id

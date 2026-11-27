@@ -25,6 +25,7 @@ guardiaoRoutes.get('/guardiao/cadastrar', authMiddleware(['USUARIO']), asyncExec
 guardiaoRoutes.post('/guardiao/cadastrar', authMiddleware(['USUARIO']), asyncExecutor(GuardiaoController.cadastrarGuardiao));
 guardiaoRoutes.get('/guardiao/usuarios', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarUsuariosVinculados));
 guardiaoRoutes.post('/guardiao/usuarios/:id/confirmar-obito', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.confirmarObitoUsuario));
+guardiaoRoutes.post('/guardiao/usuarios/:id/cancelar-confirmacao-obito', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.cancelarConfirmacaoObitoUsuario));
 guardiaoRoutes.get('/guardiao/falecimento', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.carregarSolicitacaoFalecimento));
 guardiaoRoutes.post('/guardiao/falecimento', authMiddleware(['GUARDIAO']), asyncExecutor(GuardiaoController.iniciarSolicitacaoFalecimento));
 

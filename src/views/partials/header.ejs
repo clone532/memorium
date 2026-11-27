@@ -43,7 +43,8 @@
       <div class="dropdown">
         <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
           <% if (usuario.imagem) { %>
-            <img src="/uploads/<%= usuario.imagem %>" class="header-avatar" alt="">
+            <img src="/uploads/<%= usuario.imagem %>" class="header-avatar" alt=""
+              onerror="const fallback = document.createElement('i'); fallback.className = 'bi bi-person-circle'; fallback.setAttribute('aria-hidden', 'true'); this.replaceWith(fallback);">
           <% } else { %>
             <i class="bi bi-person-circle" aria-hidden="true"></i>
           <% } %>

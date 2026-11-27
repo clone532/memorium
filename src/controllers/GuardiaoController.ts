@@ -506,6 +506,78 @@ export class GuardiaoController {
         });
     }
 
+    static async cancelarConfirmacaoObitoUsuario(req: Request, res: Response) {
+        const usuario = (req.session as any).usuario;
+        const idUsuario = Number(req.params.id);
+        const render = async (
+            mensagem: { tipo: 'error' | 'success'; valor: string; titulo: string },
+            status = 200
+        ) => {
+            const usuarios = await SolicitacaoFalecimento.listarUsuariosParaGuardiao(usuario.email);
+            return res.status(status).render('pages/guardiao/usuarios', {
+                titulo: 'Meus usuários',
+                usuario,
+                usuarios,
+                mensagem
+            });
+        };
+
+        if (!Number.isSafeInteger(idUsuario) || idUsuario <= 0) {
+            return render({
+                tipo: 'error',
+                valor: 'Selecione um usuário válido.',
+                titulo: 'Usuário inválido'
+            }, 400);
+        }
+
+        const idVinculo = await SolicitacaoFalecimento.buscarVinculoConfirmado(usuario.email, idUsuario);
+        if (!idVinculo) {
+            return render({
+                tipo: 'error',
+                valor: 'Você não possui vínculo confirmado com este usuário.',
+                titulo: 'Vínculo inválido'
+            }, 403);
+        }
+
+        const resultado = await SolicitacaoFalecimento.cancelarVoto(idUsuario, idVinculo);
+        if (resultado.estado !== 'voto_cancelado') {
+            const mensagens = {
+                usuario_invalido: {
+                    tipo: 'error' as const,
+                    valor: 'Usuário não encontrado.',
+                    titulo: 'Não encontrado'
+                },
+                guardiao_nao_vinculado: {
+                    tipo: 'error' as const,
+                    valor: 'Você não possui vínculo confirmado com este usuário.',
+                    titulo: 'Vínculo inválido'
+                },
+                falecimento_ja_confirmado: {
+                    tipo: 'error' as const,
+                    valor: 'O falecimento deste usuário já foi confirmado.',
+                    titulo: 'Já confirmado'
+                },
+                solicitacao_nao_encontrada: {
+                    tipo: 'error' as const,
+                    valor: 'Não há uma confirmação de óbito pendente para cancelar.',
+                    titulo: 'Solicitação não encontrada'
+                },
+                voto_nao_registrado: {
+                    tipo: 'error' as const,
+                    valor: 'Você não possui um voto registrado para este usuário.',
+                    titulo: 'Voto não registrado'
+                }
+            };
+            return render(mensagens[resultado.estado], 400);
+        }
+
+        return render({
+            tipo: 'success',
+            valor: 'Sua confirmação foi cancelada.',
+            titulo: 'Confirmação cancelada'
+        });
+    }
+
     static async iniciarSolicitacaoFalecimento(req: Request, res: Response) {
         const usuario = (req.session as any).usuario;
         const idUsuario = Number(req.body.idUsuario);

@@ -84,6 +84,11 @@
                 line-height: 1;
             }
 
+            .padronizar-avatar-publi.bi-person-circle {
+                font-size: 30px;
+                line-height: 1;
+            }
+
             .perfil-layout {
                 display: flex;
                 min-height: 0;
@@ -542,7 +547,8 @@
 
                                 <div class="d-flex justify-content-center">
                                     <% if (usuarioPerfil.imagem) { %>
-                                        <img src="/uploads/<%= usuarioPerfil.imagem %>" class="padronizar-avatar">
+                                        <img src="/uploads/<%= usuarioPerfil.imagem %>" class="padronizar-avatar"
+                                            onerror="const fallback = document.createElement('i'); fallback.className = 'bi bi-person-circle padronizar-avatar'; fallback.setAttribute('aria-hidden', 'true'); this.replaceWith(fallback);">
                                         <% } else { %>
                                             <i class="bi bi-person-circle padronizar-avatar" aria-hidden="true"
                                                 id="fotoPerfil"></i>
@@ -590,7 +596,8 @@
                                             <h3>
                                                 <% if (usuario.imagem) { %>
                                                     <img src="/uploads/<%= usuario.imagem %>"
-                                                        class="padronizar-avatar-publi" alt="">
+                                                        class="padronizar-avatar-publi" alt=""
+                                                        onerror="const fallback = document.createElement('i'); fallback.className = 'bi bi-person-circle padronizar-avatar-publi'; fallback.setAttribute('aria-hidden', 'true'); this.replaceWith(fallback);">
                                                 <% } else { %>
                                                     <i class="bi bi-person-circle" aria-hidden="true"></i>
                                                 <% } %>
@@ -633,7 +640,8 @@
                                                 <div class="publicacao-header">
                                                     <div class="mini-avatar">
                                                         <% if (usuarioPerfil.imagem) { %>
-                                                            <img src="/uploads/<%= usuarioPerfil.imagem %>" alt="">
+                                                            <img src="/uploads/<%= usuarioPerfil.imagem %>" alt=""
+                                                                onerror="const fallback = document.createElement('i'); fallback.className = 'bi bi-person'; fallback.setAttribute('aria-hidden', 'true'); this.replaceWith(fallback);">
                                                         <% } else { %>
                                                             <i class="bi bi-person"></i>
                                                         <% } %>
@@ -715,7 +723,8 @@
                                             <div class="mural-topo">
                                                 <% if (comentario.autor_imagem) { %>
                                                     <img src="/uploads/<%= comentario.autor_imagem %>"
-                                                        class="padronizar-avatar-publi" alt="">
+                                                        class="padronizar-avatar-publi" alt=""
+                                                        onerror="const avatar = document.createElement('div'); avatar.className = 'mini-avatar'; const fallback = document.createElement('i'); fallback.className = 'bi bi-person'; fallback.setAttribute('aria-hidden', 'true'); avatar.append(fallback); this.replaceWith(avatar);">
                                                 <% } else { %>
                                                     <div class="mini-avatar">
                                                         <i class="bi bi-person"></i>

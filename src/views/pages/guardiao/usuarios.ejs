@@ -26,6 +26,8 @@
   .user-vote-action { min-width:150px; padding:5px 10px; border:0; border-radius:6px; background:#6541bd; color:#fff; font-size:11px; }
   .user-vote-action:hover { background:#52319e; color:#fff; }
   .user-vote-action:disabled { background:#aaa4b7; cursor:not-allowed; }
+  .cancel-vote-action { min-width:150px; margin-top:4px; padding:5px 10px; border:1px solid #e2ddf0; border-radius:6px; background:#fff; color:#59409a; font-size:11px; }
+  .cancel-vote-action:hover { background:#f0edff; }
   .user-vote-status { color:#777487; font-size:11px; }
   .empty-users { padding:24px!important; color:#777487; text-align:center; }
   .users-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:48px; margin:8px; padding:7px 12px; border-radius:8px; background:#f5f3fc; }
@@ -82,6 +84,9 @@
                         <span class="user-vote-status d-block">Menos de 3 guardiões</span>
                       <% } else if (usuarioVinculado.meu_voto) { %>
                         <span class="user-vote-status">Voto registrado</span>
+                        <form class="cancel-vote-form" action="/guardiao/usuarios/<%= usuarioVinculado.id %>/cancelar-confirmacao-obito" method="post">
+                          <button type="submit" class="cancel-vote-action">Cancelar confirmação</button>
+                        </form>
                       <% } else { %>
                         <form class="vote-form" action="/guardiao/usuarios/<%= usuarioVinculado.id %>/confirmar-obito" method="post">
                           <button type="submit" class="user-vote-action">Confirmar óbito</button>
@@ -146,10 +151,34 @@
     renderUserPage();
 
     document.querySelectorAll('.vote-form').forEach(form => {
-      form.addEventListener('submit', event => {
-        if (!window.confirm('Confirma que deseja votar pelo falecimento deste usuário?')) {
-          event.preventDefault();
-        }
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const result = await Swal.fire({
+          title: 'Confirmar óbito?',
+          text: 'Confirma que deseja votar pelo falecimento deste usuário?',
+          icon: 'warning',
+          backdrop: false,
+          showCancelButton: true,
+          confirmButtonText: 'Sim, confirmar',
+          cancelButtonText: 'Cancelar'
+        });
+        if (result.isConfirmed) form.submit();
+      });
+    });
+
+    document.querySelectorAll('.cancel-vote-form').forEach(form => {
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const result = await Swal.fire({
+          title: 'Cancelar confirmação?',
+          text: 'Seu voto será removido. A solicitação continuará aguardando os demais guardiões.',
+          icon: 'warning',
+          backdrop: false,
+          showCancelButton: true,
+          confirmButtonText: 'Sim, cancelar',
+          cancelButtonText: 'Voltar'
+        });
+        if (result.isConfirmed) form.submit();
       });
     });
   </script>
